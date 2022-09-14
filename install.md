@@ -17,7 +17,13 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:
 ```
 
 ### Enable in plugins in .zshrc
-> plugins=(git pip brew zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
+`plugins=(git pip brew zsh-autosuggestions history-substring-search zsh-syntax-highlighting)`
+
+Note: make sure zsh-syntax-highlighting is the last one in the above list.
+
+### Fix background theme issues (Not necessary depends on your theme)
+`ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=white'`
+
 
 ### Add this to .zshrc
 ```
