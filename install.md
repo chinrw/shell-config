@@ -21,12 +21,9 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:
 
 Note: make sure zsh-syntax-highlighting is the last one in the above list.
 
-### Fix background theme issues (Not necessary depends on your theme)
-`ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=white'`
-
-
 ### Add this to .zshrc
 ```
+ZSH_AUTOSUGGEST_STRATEGY=(completion history)
 bindkey "^P" history-substring-search-up
 bindkey "^N" history-substring-search-down
 ```
