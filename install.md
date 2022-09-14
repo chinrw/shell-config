@@ -20,5 +20,7 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:
 > plugins=(git pip brew zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
 
 ### Add this to .zshrc
-> bindkey "^P" history-substring-search-up
-> bindkey "^N" history-substring-search-down
+```
+bindkey "^P" history-substring-search-up
+bindkey "^N" history-substring-search-down
+```
