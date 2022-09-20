@@ -1,3 +1,8 @@
+### Install zoxide fzf
+```
+pacman -Sy zoxide fzf
+```
+
 
 ### Install powerlevel10k
 ```
@@ -26,4 +31,5 @@ Note: make sure zsh-syntax-highlighting is the last one in the above list.
 ZSH_AUTOSUGGEST_STRATEGY=(completion history)
 bindkey "^P" history-substring-search-up
 bindkey "^N" history-substring-search-down
+eval "$(zoxide init --cmd cd zsh)"
 ```
