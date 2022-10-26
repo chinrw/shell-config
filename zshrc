@@ -124,14 +124,17 @@ if [ "$(command -v exa)" ]; then
     unalias -m 'll'
     unalias -m 'l'
     unalias -m 'la'
-    alias l='exa -G  --color auto --icons -a -s type'
-    alias ll='exa -l --color always --icons -a -s type'
+    alias l='exa -G  --color auto --git --icons -a -s type'
+    alias ll='exa -l --color always --git --icons -a -s type'
     alias lt='exa --color auto --icons -a -s type --tree -D -L 2 -I ${TREE_IGNORE}'
     alias ltt='exa --color auto --icons -a -s type --tree -D -L 3 -I ${TREE_IGNORE}'
 fi
 
 # eval "$(starship init zsh)"
 eval "$(zoxide init --cmd cd zsh)"
+
+# enable history atuin
+eval "$(atuin init zsh)"
 
 PATH="/home/chin39/perl5/bin${PATH:+:${PATH}}"; export PATH;
 PERL5LIB="/home/chin39/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
