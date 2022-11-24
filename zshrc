@@ -139,6 +139,12 @@ eval "$(atuin init zsh)"
 
 bindkey '^r' _atuin_search_widget
 
+precmd () {
+  echo -n -e "\a" >$TTY
+}
+
+
+
 
 PATH="/home/chin39/perl5/bin${PATH:+:${PATH}}"; export PATH;
 PERL5LIB="/home/chin39/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
