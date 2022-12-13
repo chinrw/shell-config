@@ -124,6 +124,7 @@ if [ "$(command -v exa)" ]; then
     unalias -m 'll'
     unalias -m 'l'
     unalias -m 'la'
+    alias ls='exa -G  --color auto --git --icons -a -s type'
     alias l='exa -G  --color auto --git --icons -a -s type'
     alias ll='exa -l -g --color always --git --icons -a -s type'
     alias lt='exa --color auto --icons -a -s type --tree -D -L 2 -I ${TREE_IGNORE}'
