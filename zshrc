@@ -144,7 +144,7 @@ precmd () {
   echo -n -e "\a" >$TTY
 }
 
-
+bindkey \^U backward-kill-line
 
 
 PATH="/home/chin39/perl5/bin${PATH:+:${PATH}}"; export PATH;
