@@ -132,6 +132,20 @@ if [ "$(command -v exa)" ]; then
     alias ltt='exa --color auto --icons -a -s type --tree -D -L 3 -I ${TREE_IGNORE}'
 fi
 
+zstyle ':autocomplete:*' min-input 1
+zstyle ':autocomplete:*' widget-style menu-select
+zstyle ':autocomplete:*' recent-dirs zoxide
+source ~/config/zsh-autocomplete/zsh-autocomplete.plugin.zsh
+
+# bindkey '^P' up-line-or-search
+# zmodload zsh/complist
+
+# use the vi navigation keys in menu completion
+bindkey -M menuselect 'h' vi-backward-char
+bindkey -M menuselect 'k' vi-up-line-or-history
+bindkey -M menuselect 'l' vi-forward-char
+bindkey -M menuselect 'j' vi-down-line-or-history
+
 # eval "$(starship init zsh)"
 eval "$(zoxide init --cmd cd zsh)"
 
