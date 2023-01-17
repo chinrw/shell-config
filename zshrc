@@ -141,7 +141,8 @@ zstyle ':autocomplete:recent-dirs' backend zoxide
 source ~/config/zsh-autocomplete/zsh-autocomplete.plugin.zsh
 
 # bindkey '^P' up-line-or-search
-# zmodload zsh/complist
+# Return key in completion menu & history menu
+bindkey -M menuselect '\r' accept-line
 
 # use the vi navigation keys in menu completion
 bindkey -M menuselect 'h' vi-backward-char
