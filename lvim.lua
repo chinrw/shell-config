@@ -119,14 +119,6 @@ lvim.plugins = {
   {
     "folke/trouble.nvim",
     cmd = "TroubleToggle",
-    requires = "kyazdani42/nvim-web-devicons",
-    config = function()
-      require("trouble").setup {
-        -- your configuration comes here
-        -- or leave it empty to use the default settings
-        -- refer to the configuration section below
-      }
-    end
   },
   { "matveyt/neoclip" },
   {
@@ -145,20 +137,23 @@ lvim.plugins = {
   },
   {
     'phaazon/hop.nvim',
-    branch = 'v2', -- optional but strongly recommended
+    branch = 'v2', -- optional but strongly recommendd
     config = function()
       local hop = require('hop')
       local directions = require('hop.hint').HintDirection
       vim.keymap.set('', 'f', function()
-        hop.hint_char1({ current_line_only = true })
+        hop.hint_char1()
       end, { remap = true })
-      vim.keymap.set('', 'F', function()
-        hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
+      vim.keymap.set('', 'n', function()
+        hop.hint_anywhere({ current_line_only = true, direction = directions.AFTER_CURSOR })
+      end, { remap = true })
+      vim.keymap.set('', '<Leader>j', function()
+        hop.hint_patterns()
       end, { remap = true })
       vim.keymap.set('', '<Leader>k', function()
         hop.hint_words()
       end, { remap = true })
-      require 'hop'.setup { keys = 'etovxqpdygfblzhckisuran' }
+      require 'hop'.setup { keys = 'etovxqpdgfblzhckisuran;' }
     end
   },
   {
@@ -224,8 +219,6 @@ lvim.plugins = {
       require("todo-comments").setup()
     end,
   },
-
-
 }
 
 lvim.builtin.which_key.mappings["t"] = {
