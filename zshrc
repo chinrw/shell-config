@@ -138,6 +138,8 @@ eval "$(zoxide init --cmd cd zsh)"
 zstyle ':autocomplete:*' min-input 1
 zstyle ':autocomplete:*' widget-style menu-select
 zstyle ':autocomplete:recent-dirs' backend zoxide
+zstyle ':autocomplete:*' recent-dirs zoxide
+zstyle ':autocomplete:*' fzf-completion yes
 source ~/config/zsh-autocomplete/zsh-autocomplete.plugin.zsh
 
 # bindkey '^P' up-line-or-search
