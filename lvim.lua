@@ -137,7 +137,7 @@ lvim.plugins = {
       vim.keymap.set('', 'f', function()
         hop.hint_char1()
       end, { remap = true })
-      vim.keymap.set('', '<Leader>l', function()
+      vim.keymap.set('', 'F', function()
         hop.hint_anywhere({ current_line_only = true, direction = directions.AFTER_CURSOR })
       end, { remap = true })
       vim.keymap.set('', '<Leader>j', function()
