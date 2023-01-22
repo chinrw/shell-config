@@ -15,7 +15,6 @@ lvim.format_on_save = {
   pattern = "*.lua",
   timeout = 1000,
 }
--- to disable icons and use a minimalist setup, uncomment the following
 -- lvim.use_icons = false
 
 -- keymappings <https://www.lunarvim.org/docs/configuration/keybindings>
@@ -48,12 +47,6 @@ lvim.builtin.cmp.preselect = true
 -- -- Use which-key to add extra bindings with the leader-key prefix
 -- lvim.builtin.which_key.mappings["W"] = { "<cmd>noautocmd w<cr>", "Save without formatting" }
 -- lvim.builtin.which_key.mappings["P"] = { "<cmd>Telescope projects<CR>", "Projects" }
-
--- -- Change theme settings
--- lvim.colorscheme = "lunar"
-
-
-
 
 
 -- After changing plugin config exit and reopen LunarVim, Run :PackerSync
@@ -144,7 +137,7 @@ lvim.plugins = {
       vim.keymap.set('', 'f', function()
         hop.hint_char1()
       end, { remap = true })
-      vim.keymap.set('', 'n', function()
+      vim.keymap.set('', '<Leader>l', function()
         hop.hint_anywhere({ current_line_only = true, direction = directions.AFTER_CURSOR })
       end, { remap = true })
       vim.keymap.set('', '<Leader>j', function()
@@ -219,6 +212,12 @@ lvim.plugins = {
       require("todo-comments").setup()
     end,
   },
+  {
+    'nvim-lua/plenary.nvim',
+  },
+  {
+    'mfussenegger/nvim-dap',
+  },
 }
 
 lvim.builtin.which_key.mappings["t"] = {
@@ -239,3 +238,24 @@ vim.api.nvim_create_autocmd("FileType", {
     require("nvim-treesitter.highlight").attach(0, "bash")
   end,
 })
+
+lvim.transparent_window = true
+lvim.colorscheme = "lunar"
+lvim.builtin.treesitter.rainbow.enable = true
+lvim.builtin.treesitter.rainbow.max_file_lines = 5000
+
+-- -- Override Lunarvim defaults
+-- -- =========================================
+-- require("user.builtin").config()
+
+-- -- StatusLine
+-- -- =========================================
+-- if lvim.builtin.fancy_statusline.active then
+--   require("user.lualine").config()
+-- end
+
+-- -- Debugging
+-- -- =========================================
+-- if lvim.builtin.dap.active then
+--   require("user.dap").config()
+-- end
