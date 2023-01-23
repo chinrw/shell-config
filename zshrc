@@ -135,16 +135,16 @@ fi
 # eval "$(starship init zsh)"
 eval "$(zoxide init --cmd cd zsh)"
 
-zstyle ':autocomplete:*' min-input 1
-zstyle ':autocomplete:*' widget-style menu-select
-zstyle ':autocomplete:recent-dirs' backend zoxide
-zstyle ':autocomplete:*' recent-dirs zoxide
-zstyle ':autocomplete:*' fzf-completion yes
-source ~/config/zsh-autocomplete/zsh-autocomplete.plugin.zsh
+# zstyle ':autocomplete:*' min-input 1
+# zstyle ':autocomplete:*' widget-style menu-select
+# zstyle ':autocomplete:recent-dirs' backend zoxide
+# zstyle ':autocomplete:*' recent-dirs zoxide
+# zstyle ':autocomplete:*' fzf-completion yes
+# source ~/config/zsh-autocomplete/zsh-autocomplete.plugin.zsh
 
-# bindkey '^P' up-line-or-search
-# Return key in completion menu & history menu
-bindkey -M menuselect '\r' accept-line
+# # bindkey '^P' up-line-or-search
+# # Return key in completion menu & history menu
+# bindkey -M menuselect '\r' accept-line
 
 # use the vi navigation keys in menu completion
 bindkey -M menuselect 'h' vi-backward-char
