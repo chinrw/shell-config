@@ -8,8 +8,13 @@ cargo install exa atuin tealdeer du-dust fd-find ripgrep bat zoxide topgrade ban
 
 pacman -Sy exa atuin tealdeer dust fd ripgrep bat zoxide bandwhich
 
-#### Install zsh-autocomplete
+#### Install zsh-autocomplete (not using)
 https://github.com/marlonrichert/zsh-autocomplete
 
+#### Install zsh-completions
+https://github.com/zsh-users/zsh-completions
+
 #### Install fzf-tab with omz
-git clone https://github.com/Aloxaf/fzf-tab ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/fzf-tab
+`git clone https://github.com/Aloxaf/fzf-tab`
+
+add `fzf-tab` to plugin
