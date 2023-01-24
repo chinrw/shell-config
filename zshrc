@@ -1,3 +1,10 @@
+# boot with tmux
+if [ -z "$TMUX" ]
+then
+    tmux attach || tmux new -t play 
+fi
+
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -81,8 +88,10 @@ bindkey '\CI' expand-or-complete-prefix
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 # plugins=(git zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
-plugins=(git docker-compose zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
+plugins=(git docker-compose fzf-tab zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'exa -G -a --color auto --sort=accessed --git --icons -s type $realpath'
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
 
 source $ZSH/oh-my-zsh.sh
 
@@ -94,6 +103,7 @@ source $ZSH/oh-my-zsh.sh
 # export LANG=en_US.UTF-8
 
 # Preferred editor for local and remote sessions
+export EDITOR='lvim'
 # if [[ -n $SSH_CONNECTION ]]; then
 #   export EDITOR='vim'
 # else
