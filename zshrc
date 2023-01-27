@@ -1,5 +1,5 @@
 # boot with tmux
-if [ -z "$TMUX" ]
+if [ -z "$TMUX" ] && [[ `uname` != "Darwin" ]]
 then
     tmux attach || tmux new -t play 
 fi
@@ -154,6 +154,9 @@ bindkey "^P" history-substring-search-up
 bindkey "^N" history-substring-search-down
 
 path+=('/home/chin39/.local/bin')
+if [[ `uname` == "Darwin" ]]; then
+    path+=('/Users/chin39/.local/bin')
+fi
 path+=('/home/chin39/.cargo/bin')
 
 TREE_IGNORE="cache|log|logs|node_modules|vendor"
