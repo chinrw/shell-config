@@ -11,7 +11,7 @@ end
 
 -- Reload the configuration every ten minutes
 wezterm.time.call_after(600, function()
-  wezterm.reload_configuration()
+	wezterm.reload_configuration()
 end)
 
 local padding = {
@@ -26,7 +26,7 @@ local function get_theme()
 	if _time.hour >= 1 and _time.hour < 9 then
 		return "Rosé Pine (base16)"
 	elseif _time.hour >= 9 and _time.hour < 17 then
-		return "tokyonight_night"
+		return "tokyonight"
 	elseif _time.hour >= 17 and _time.hour < 21 then
 		return "Catppuccin Mocha"
 	elseif _time.hour >= 21 and _time.hour < 24 or _time.hour >= 0 and _time.hour < 1 then
@@ -37,9 +37,6 @@ end
 return {
 	bidi_enabled = true,
 	bidi_direction = "AutoLeftToRight",
-	default_prog = {
-		"powershell"
-	},
 	color_scheme = get_theme(),
 	font = font_with_fallback({
 		family = "MesloLGM Nerd Font",
@@ -76,17 +73,17 @@ return {
 				weight = "Regular",
 				italic = true,
 			}),
+		},
 	},
-	},
-	-- initial_cols = 128,
-	-- initial_rows = 32,
+	initial_cols = 128,
+	initial_rows = 32,
 	-- use_dead_keys = false,
-	window_decorations = "RESIZE",
+	-- window_decorations = "RESIZE",
 	-- hide_tab_bar_if_only_one_tab = true,
 	selection_word_boundary = " \t\n{}[]()\"'`,;:│=&!%",
 	window_padding = padding,
-	-- line_height = 1.25,
-	font_size = 13,
+	line_height = 1.1,
+	font_size = 14,
 	window_background_opacity = 0.95,
 	bold_brightens_ansi_colors = false,
 	-- swap_backspace_and_delete = false,
