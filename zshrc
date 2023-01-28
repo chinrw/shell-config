@@ -196,11 +196,11 @@ export ATUIN_NOBIND="true"
 eval "$(atuin init zsh)"
 
 bindkey '^r' _atuin_search_widget
-
-precmd () {
-  echo -n -e "\a" >$TTY
-}
-
+if [[ `uname` != "Darwin" ]]; then
+  precmd () {
+    echo -n -e "\a" >$TTY
+  }
+fi
 bindkey \^U backward-kill-line
 
 
