@@ -1,34 +1,95 @@
 local wezterm = require("wezterm")
 
-local scheme = wezterm.get_builtin_color_schemes()["tokyonight"]
+-- local launch_menu = {}
+-- Reload the configuration every ten minutes
 
-local function scheme_for_appearance(appearance)
-	if appearance:find("Dark") then
-		return "tokyonight"
-		-- return "Catppuccin Mocha"
-	else
-		return "Catppuccin Latte"
+-- A helper function for my fallback fonts
+local function font_with_fallback(name, params)
+	local names = { name, "mini-file-icons", "MesloLGM Nerd Font", "SauceCodePro Nerd Font" }
+	return wezterm.font_with_fallback(names, params)
+end
+
+-- Reload the configuration every ten minutes
+wezterm.time.call_after(600, function()
+  wezterm.reload_configuration()
+end)
+
+local padding = {
+	left = "1cell",
+	right = "1cell",
+	top = "0.5cell",
+	bottom = "0.5cell",
+}
+
+local function get_theme()
+	local _time = os.date("*t")
+	if _time.hour >= 1 and _time.hour < 9 then
+		return "Rosé Pine (base16)"
+	elseif _time.hour >= 9 and _time.hour < 17 then
+		return "tokyonight_night"
+	elseif _time.hour >= 17 and _time.hour < 21 then
+		return "Catppuccin Mocha"
+	elseif _time.hour >= 21 and _time.hour < 24 or _time.hour >= 0 and _time.hour < 1 then
+		return "kanagawabones"
 	end
 end
 
 return {
-	-- ...your existing config
-	font = wezterm.font("MesloLGM Nerd Font"),
-	font_size = 14.0,
-	selection_word_boundary = " \t\n{}[]()\"'`,;:│=&!%",
-	window_padding = {
-		left = 0,
-		right = 0,
-		top = 0,
-		bottom = 0,
+	bidi_enabled = true,
+	bidi_direction = "AutoLeftToRight",
+	default_prog = {
+		"powershell"
 	},
-	-- use_fancy_tab_bar = false,
-	-- colors = {
-	-- 	tab_bar = {
-	-- 		background = scheme.background,
-	-- 		new_tab = { bg_color = "#2e3440", fg_color = scheme.ansi[8], intensity = "Bold" },
-	-- 		new_tab_hover = { bg_color = scheme.ansi[1], fg_color = scheme.brights[8], intensity = "Bold" },
-	-- 	},
-	-- },
-	color_scheme = scheme_for_appearance(wezterm.gui.get_appearance()),
+	color_scheme = get_theme(),
+	font = font_with_fallback({
+		family = "MesloLGM Nerd Font",
+		harfbuzz_features = {
+			"zero",
+		},
+	}),
+	font_rules = {
+		{
+			intensity = "Bold",
+			font = font_with_fallback({
+				family = "MesloLGM Nerd Font",
+				harfbuzz_features = {
+					"zero",
+				},
+				weight = "Medium",
+			}),
+		},
+		{
+			italic = true,
+			intensity = "Bold",
+			font = font_with_fallback({
+				family = "Iosevka Nerd Font",
+				-- family = "Dank Mono",
+				weight = "Medium",
+				italic = true,
+			}),
+		},
+		{
+			italic = true,
+			font = font_with_fallback({
+				-- family = "Dank Mono",
+				family = "Iosevka Nerd Font",
+				weight = "Regular",
+				italic = true,
+			}),
+	},
+	},
+	-- initial_cols = 128,
+	-- initial_rows = 32,
+	-- use_dead_keys = false,
+	window_decorations = "RESIZE",
+	-- hide_tab_bar_if_only_one_tab = true,
+	selection_word_boundary = " \t\n{}[]()\"'`,;:│=&!%",
+	window_padding = padding,
+	-- line_height = 1.25,
+	font_size = 13,
+	window_background_opacity = 0.95,
+	bold_brightens_ansi_colors = false,
+	-- swap_backspace_and_delete = false,
+	-- term = "wezterm",
+	-- freetype_load_target = "Light",
 }
