@@ -34,6 +34,10 @@ local function get_theme()
 	end
 end
 
+local act = wezterm.action
+
+
+
 return {
 	bidi_enabled = true,
 	bidi_direction = "AutoLeftToRight",
@@ -44,6 +48,12 @@ return {
 			"zero",
 		},
 	}),
+	
+	 keys = {
+    { key = '{', mods = 'SHIFT|ALT', action = act.MoveTabRelative(-1) },
+    { key = '}', mods = 'SHIFT|ALT', action = act.MoveTabRelative(1) },
+  },
+
 	font_rules = {
 		{
 			intensity = "Bold",
