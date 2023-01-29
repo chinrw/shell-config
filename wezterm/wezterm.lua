@@ -35,7 +35,22 @@ local function get_theme()
 end
 
 local act = wezterm.action
-
+local mykeys = {}
+for i = 1, 8 do
+  -- ALT + number to activate that tab
+  table.insert(mykeys, {
+    key = tostring(i),
+    mods = 'ALT',
+    action = act.ActivateTab(i - 1),
+  })
+end
+table.insert(mykeys, 
+  	{ key = '{', mods = 'SHIFT|ALT', action = act.MoveTabRelative(-1) }
+)
+table.insert(mykeys, 
+  	{ key = '}', mods = 'SHIFT|ALT', action = act.MoveTabRelative(1) }
+  	)
+    
 
 
 return {
@@ -49,10 +64,7 @@ return {
 		},
 	}),
 	
-	 keys = {
-    { key = '{', mods = 'SHIFT|ALT', action = act.MoveTabRelative(-1) },
-    { key = '}', mods = 'SHIFT|ALT', action = act.MoveTabRelative(1) },
-  },
+	 keys = mykeys,
 
 	font_rules = {
 		{
