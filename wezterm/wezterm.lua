@@ -27,31 +27,23 @@ local function get_theme()
 		return "Rosé Pine (base16)"
 	elseif _time.hour >= 9 and _time.hour < 17 then
 		return "tokyonight"
-	elseif _time.hour >= 17 and _time.hour < 21 then
+	elseif _time.hour >= 17 and _time.hour < 24 or _time.hour >= 0 and _time.hour < 1 then
 		return "Catppuccin Mocha"
-	elseif _time.hour >= 21 and _time.hour < 24 or _time.hour >= 0 and _time.hour < 1 then
-		return "kanagawabones"
 	end
 end
 
 local act = wezterm.action
 local mykeys = {}
 for i = 1, 8 do
-  -- ALT + number to activate that tab
-  table.insert(mykeys, {
-    key = tostring(i),
-    mods = 'ALT',
-    action = act.ActivateTab(i - 1),
-  })
+	-- ALT + number to activate that tab
+	table.insert(mykeys, {
+		key = tostring(i),
+		mods = "ALT",
+		action = act.ActivateTab(i - 1),
+	})
 end
-table.insert(mykeys, 
-  	{ key = '{', mods = 'SHIFT|ALT', action = act.MoveTabRelative(-1) }
-)
-table.insert(mykeys, 
-  	{ key = '}', mods = 'SHIFT|ALT', action = act.MoveTabRelative(1) }
-  	)
-    
-
+table.insert(mykeys, { key = "{", mods = "SHIFT|ALT", action = act.MoveTabRelative(-1) })
+table.insert(mykeys, { key = "}", mods = "SHIFT|ALT", action = act.MoveTabRelative(1) })
 
 return {
 	bidi_enabled = true,
@@ -63,8 +55,8 @@ return {
 			"zero",
 		},
 	}),
-	
-	 keys = mykeys,
+
+	keys = mykeys,
 
 	font_rules = {
 		{
