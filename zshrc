@@ -153,11 +153,9 @@ export EDITOR='lvim'
 bindkey "^P" history-substring-search-up
 bindkey "^N" history-substring-search-down
 
-path+=('/home/chin39/.local/bin')
-if [[ `uname` == "Darwin" ]]; then
-    path+=('/Users/chin39/.local/bin')
-fi
-path+=('/home/chin39/.cargo/bin')
+path+=("$HOME/.local/bin")
+path+=("$HOME/.cargo/bin")
+path+=("$HOME/go/bin")
 
 TREE_IGNORE="cache|log|logs|node_modules|vendor"
 if [ "$(command -v exa)" ]; then
