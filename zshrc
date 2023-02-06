@@ -114,7 +114,7 @@ bindkey '\CI' expand-or-complete-prefix
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 # plugins=(git zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
-plugins=(git docker-compose fzf-tab zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
+plugins=(git rust python pip sudo tmux systemd ssh-agent cp brew archlinux zoxide docker docker-compose fzf-tab zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'exa -G -a --color auto --sort=accessed --git --icons -s type $realpath'
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
