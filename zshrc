@@ -1,7 +1,7 @@
 # boot with tmux
 if [ -z "$TMUX" ] && [[ `uname` != "Darwin" ]]
 then
-    tmux attach || tmux new -t play 
+    tmux attach-session -t play || tmux new -t play
 fi
 
 # Update Display variables with tmux
