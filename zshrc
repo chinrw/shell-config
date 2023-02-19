@@ -153,6 +153,10 @@ export EDITOR='lvim'
 bindkey "^P" history-substring-search-up
 bindkey "^N" history-substring-search-down
 
+if [[ $TERM = dumb ]]; then
+  unset zle_bracketed_paste
+fi
+
 path+=("$HOME/.local/bin")
 path+=("$HOME/.cargo/bin")
 path+=("$HOME/go/bin")
