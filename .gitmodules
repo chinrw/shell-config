@@ -1,6 +1,8 @@
 [submodule "tmux"]
 	path = tmux
 	url = git@github.com:chinrw/k-tmux.git
+  branch = master
 [submodule "qemu-script"]
 	path = qemu-script
 	url = git@github.com:chinrw/qemu-script.git
+  branch = main
