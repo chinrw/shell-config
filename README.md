@@ -1,5 +1,7 @@
 # zsh-config
 
+### Get submodules
+git pull --recurse-submodules
 
 ### Installed Plugins
 ```
