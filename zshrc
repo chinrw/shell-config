@@ -1,8 +1,8 @@
 # boot with tmux
-if [ -z "$TMUX" ] && [[ `uname` != "Darwin" ]]
-then
-    tmux a || tmux new -s play
+if [[ $- =~ i ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_TTY" ]]; then
+  tmux attach-session -t play || tmux new-session -s play
 fi
+
 
 # Update Display variables with tmux
 if [ -n "$TMUX" ]; then
