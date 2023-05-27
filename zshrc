@@ -176,6 +176,11 @@ fi
 # eval "$(starship init zsh)"
 eval "$(zoxide init --cmd cd zsh)"
 
+# Add completion for 1passowrd 
+if [ "$(command -v op)" ]; then
+eval "$(op completion zsh)"; compdef _op op
+fi
+
 # zstyle ':autocomplete:*' min-input 1
 # zstyle ':autocomplete:*' widget-style menu-select
 # zstyle ':autocomplete:recent-dirs' backend zoxide
@@ -212,18 +217,50 @@ PERL_LOCAL_LIB_ROOT="/home/chin39/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_
 PERL_MB_OPT="--install_base \"/home/chin39/perl5\""; export PERL_MB_OPT;
 PERL_MM_OPT="INSTALL_BASE=/home/chin39/perl5"; export PERL_MM_OPT;
 
+if [ "$(command -v flatpak)" ] ; then
+    PATH="/var/lib/flatpak/exports/bin:$PATH"
+    PATH="$HOME/.local/share/flatpak/exports/bin:$PATH"
+fi
+
+# Alias all flatpaks to their logical command names, but only if they're not already commands.
+# tld.domain.AppName becomes the alias "appname"
+# if "appname" is already used by another command then "tld.domain.AppName" is used instead.
+# If both are used, nothing is aliased.
+
+alias_flatpak_exports() {
+  zmodload zsh/parameter
+	local item
+	for item in {${XDG_DATA_HOME:-$HOME/.local/share},/var/lib}/flatpak/exports/bin/*; do
+		[ -x "$item" ] || continue
+
+    local flatpak_short_alias="${item//*.}"
+		local flatpak_long_alias="${item//*\/}"
+	
+		if [ ! "$(command -v "$flatpak_short_alias")" ]; then
+      alias "${(L)flatpak_short_alias}"="$item"
+		elif [ ! "$(command -v "$flatpak_long_alias")" ]; then
+			alias "$flatpak_long_alias"="$item"
+		fi
+	done
+}
+alias_flatpak_exports
+
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/opt/homebrew/Caskroom/miniconda/base/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+__conda_setup="$('/usr/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
 else
-    if [ -f "/opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh" ]; then
-        . "/opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh"
+    if [ -f "/usr/etc/profile.d/conda.sh" ]; then
+        . "/usr/etc/profile.d/conda.sh"
     else
-        export PATH="/opt/homebrew/Caskroom/miniconda/base/bin:$PATH"
+        export PATH="/usr/bin:$PATH"
     fi
 fi
+if [ "${XDG_SESSION_TYPE}" = "wayland" -o "${XDG_SESSION_TYPE}" = "x11" ]
+  then ln -f ${HOME}/.config/monitors.{${XDG_SESSION_TYPE},xml}
+fi
+
 unset __conda_setup
 # <<< conda initialize <<<
 
