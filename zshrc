@@ -245,6 +245,10 @@ alias_flatpak_exports() {
 }
 alias_flatpak_exports
 
+if [ "${XDG_SESSION_TYPE}" = "wayland" -o "${XDG_SESSION_TYPE}" = "x11" ]
+  then ln -f ${HOME}/.config/monitors.{${XDG_SESSION_TYPE},xml}
+fi
+
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
 __conda_setup="$('/usr/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
@@ -256,9 +260,6 @@ else
     else
         export PATH="/usr/bin:$PATH"
     fi
-fi
-if [ "${XDG_SESSION_TYPE}" = "wayland" -o "${XDG_SESSION_TYPE}" = "x11" ]
-  then ln -f ${HOME}/.config/monitors.{${XDG_SESSION_TYPE},xml}
 fi
 
 unset __conda_setup
