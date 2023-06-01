@@ -210,17 +210,11 @@ if [[ `uname` != "Darwin" ]]; then
 fi
 bindkey \^U backward-kill-line
 
-
 PATH="/home/chin39/perl5/bin${PATH:+:${PATH}}"; export PATH;
 PERL5LIB="/home/chin39/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
 PERL_LOCAL_LIB_ROOT="/home/chin39/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"; export PERL_LOCAL_LIB_ROOT;
 PERL_MB_OPT="--install_base \"/home/chin39/perl5\""; export PERL_MB_OPT;
 PERL_MM_OPT="INSTALL_BASE=/home/chin39/perl5"; export PERL_MM_OPT;
-
-if [ "$(command -v flatpak)" ] ; then
-    PATH="/var/lib/flatpak/exports/bin:$PATH"
-    PATH="$HOME/.local/share/flatpak/exports/bin:$PATH"
-fi
 
 # Alias all flatpaks to their logical command names, but only if they're not already commands.
 # tld.domain.AppName becomes the alias "appname"
@@ -243,7 +237,12 @@ alias_flatpak_exports() {
 		fi
 	done
 }
-alias_flatpak_exports
+
+if [ "$(command -v flatpak)" ] ; then
+    PATH="/var/lib/flatpak/exports/bin:$PATH"
+    PATH="$HOME/.local/share/flatpak/exports/bin:$PATH"
+    alias_flatpak_exports
+fi
 
 if [ "${XDG_SESSION_TYPE}" = "wayland" -o "${XDG_SESSION_TYPE}" = "x11" ]
   then ln -f ${HOME}/.config/monitors.{${XDG_SESSION_TYPE},xml}
