@@ -14,6 +14,8 @@ if [ -n "$TMUX" ]; then
         renew_tmux_env_one DISPLAY
         renew_tmux_env_one SSH_CONNECTION
         renew_tmux_env_one SSH_AUTH_SOCK
+        # update xauth
+        xauth merge $HOME/.Xauthority
     }
 else
     function renew_tmux_env {}
