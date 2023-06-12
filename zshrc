@@ -117,6 +117,17 @@ bindkey '\CI' expand-or-complete-prefix
 # Add wisely, as too many plugins slow down shell startup.
 # plugins=(git zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
 
+
+plugins=(fzf-tab git rust python pip sudo tmux systemd ssh-agent cp brew archlinux docker docker-compose zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+source $ZSH/oh-my-zsh.sh
+
+# config zoxide
+export _ZO_FZF_OPTS='--preview exa -G -a --color auto --sort=accessed --git --icons -s type $realpath'
+eval "$(zoxide init --cmd z zsh)"
+
+# User configuration
+zstyle ':fzf-tab:complete:exa:*' fzf-preview 'exa -G -a --color auto --sort=accessed --git --icons -s type $realpath'
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'exa -G -a --color auto --sort=accessed --git --icons -s type $realpath'
 # disable sort when completing `git checkout`
 zstyle ':completion:*:git-checkout:*' sort false
@@ -143,12 +154,6 @@ zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview \
 	"recent commit object name") git show --color=always $word | delta ;;
 	*) git log --color=always $word ;;
 	esac'
-
-
-plugins=(fzf-tab git rust python pip sudo tmux systemd ssh-agent cp brew archlinux docker docker-compose zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
-ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-source $ZSH/oh-my-zsh.sh
-# User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
@@ -201,7 +206,6 @@ if [ "$(command -v exa)" ]; then
 fi
 
 # eval "$(starship init zsh)"
-eval "$(zoxide init --cmd cd zsh)"
 
 # Add completion for 1passowrd 
 if [ "$(command -v op)" ]; then
