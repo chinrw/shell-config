@@ -70,7 +70,7 @@ bindkey '\CI' expand-or-complete-prefix
 
 # Uncomment one of the following lines to change the auto-update behavior
 # zstyle ':omz:update' mode disabled  # disable automatic updates
-# zstyle ':omz:update' mode auto      # update automatically without asking
+zstyle ':omz:update' mode auto      # update automatically without asking
 # zstyle ':omz:update' mode reminder  # just remind me to update when it's time
 
 # Uncomment the following line to change how often to auto-update (in days).
@@ -86,7 +86,7 @@ bindkey '\CI' expand-or-complete-prefix
 # DISABLE_AUTO_TITLE="true"
 
 # Uncomment the following line to enable command auto-correction.
-# ENABLE_CORRECTION="true"
+ENABLE_CORRECTION="true"
 
 # Uncomment the following line to display red dots whilst waiting for completion.
 # You can also set it to another string to have that shown instead of the default red dots.
@@ -118,13 +118,13 @@ bindkey '\CI' expand-or-complete-prefix
 # plugins=(git zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
 
 
-plugins=(fzf-tab git rust python pip sudo tmux systemd ssh-agent cp brew archlinux docker docker-compose zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
+plugins=(fzf-tab git rust python pip sudo tmux systemd ssh-agent cp brew archlinux docker docker-compose zsh-autosuggestions history-substring-search zsh-syntax-highlighting zoxide)
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 source $ZSH/oh-my-zsh.sh
 
 # config zoxide
-export _ZO_FZF_OPTS='--preview exa -G -a --color auto --sort=accessed --git --icons -s type $realpath'
-eval "$(zoxide init --cmd z zsh)"
+export _ZO_FZF_OPTS="--preview 'exa -G -a --color auto --sort=accessed --git --icons -s type {2}'"
+# eval "$(zoxide init --cmd z zsh)"
 
 # User configuration
 zstyle ':fzf-tab:complete:exa:*' fzf-preview 'exa -G -a --color auto --sort=accessed --git --icons -s type $realpath'
@@ -160,13 +160,7 @@ zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview \
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
 
-# Preferred editor for local and remote sessions
 export EDITOR='lvim'
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='mvim'
-# fi
 
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
