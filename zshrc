@@ -183,9 +183,9 @@ if [[ $TERM = dumb ]]; then
   unset zle_bracketed_paste
 fi
 
-path+=("$HOME/.local/bin")
-path+=("$HOME/.cargo/bin")
-path+=("$HOME/go/bin")
+PATH="$HOME/.local/bin:$PATH"
+PATH="$HOME/.cargo/bin:$PATH"
+PATH="$HOME/go/bin:$PATH"
 
 TREE_IGNORE="cache|log|logs|node_modules|vendor"
 if [ "$(command -v exa)" ]; then
