@@ -273,6 +273,26 @@ if [ "${XDG_SESSION_TYPE}" = "wayland" -o "${XDG_SESSION_TYPE}" = "x11" ]
   then ln -f ${HOME}/.config/monitors.{${XDG_SESSION_TYPE},xml}
 fi
 
+# 2x ctrl-d to exit ...
+export IGNOREEOF=1
+
+# bash like ctrl-d wrapper for IGNOREEOF
+setopt ignore_eof
+function bash-ctrl-d() {
+  if [[ $CURSOR == 0 && -z $BUFFER ]]
+  then
+    [[ -z $IGNOREEOF || $IGNOREEOF == 0 ]] && exit
+    if [[ "$LASTWIDGET" == "bash-ctrl-d" ]]
+    then
+      (( --__BASH_IGNORE_EOF <= 0 )) && exit
+    else
+      (( __BASH_IGNORE_EOF = IGNOREEOF ))
+    fi
+  fi
+}
+zle -N bash-ctrl-d
+bindkey "^d" bash-ctrl-d
+
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
 __conda_setup="$('/usr/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
