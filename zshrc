@@ -123,17 +123,17 @@ ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 source $ZSH/oh-my-zsh.sh
 
 # config zoxide
-export _ZO_FZF_OPTS="--preview 'exa -G -a --color auto --sort=accessed --git --icons -s type {2}'"
+export _ZO_FZF_OPTS="--preview 'eza -G -a --color auto --sort=accessed --git --icons -s type {2}'"
 # eval "$(zoxide init --cmd z zsh)"
 
 # User configuration
-zstyle ':fzf-tab:complete:exa:*' fzf-preview 'exa -G -a --color auto --sort=accessed --git --icons -s type $realpath'
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'exa -G -a --color auto --sort=accessed --git --icons -s type $realpath'
+zstyle ':fzf-tab:complete:eza:*' fzf-preview 'eza -G -a --color auto --sort=accessed --git --icons -s type $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -G -a --color auto --sort=accessed --git --icons -s type $realpath'
 # disable sort when completing `git checkout`
 zstyle ':completion:*:git-checkout:*' sort false
 # set list-colors to enable filename colorizing
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-# preview directory's content with exa when completing cd
+# preview directory's content with eza when completing cd
 zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl status $word'
 
 # it is an example. you can change it
@@ -188,15 +188,15 @@ PATH="$HOME/.cargo/bin:$PATH"
 PATH="$HOME/go/bin:$PATH"
 
 TREE_IGNORE="cache|log|logs|node_modules|vendor"
-if [ "$(command -v exa)" ]; then
+if [ "$(command -v eza)" ]; then
     unalias -m 'll'
     unalias -m 'l'
     unalias -m 'la'
-    alias ls='exa -G  --color auto --git --icons -s type'
-    alias l='exa -G  --color auto --git --icons -s type'
-    alias ll='exa -l -g --color always --git --icons -a -s type'
-    alias lt='exa --color auto --icons -a -s type --tree -D -L 2 -I ${TREE_IGNORE}'
-    alias ltt='exa --color auto --icons -a -s type --tree -D -L 3 -I ${TREE_IGNORE}'
+    alias ls='eza -G  --color auto --git --icons -s type'
+    alias l='eza -G  --color auto --git --icons -s type'
+    alias ll='eza -l -g --color always --git --icons -a -s type'
+    alias lt='eza --color auto --icons -a -s type --tree -D -L 2 -I ${TREE_IGNORE}'
+    alias ltt='eza --color auto --icons -a -s type --tree -D -L 3 -I ${TREE_IGNORE}'
 fi
 
 # eval "$(starship init zsh)"
