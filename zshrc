@@ -160,7 +160,7 @@ zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview \
 # You may need to manually set your language environment
 # export LANG=en_US.UTF-8
 
-export EDITOR='lvim'
+export EDITOR='nvim'
 
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
