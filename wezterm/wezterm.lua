@@ -23,11 +23,11 @@ local padding = {
 
 local function get_theme()
 	local _time = os.date("*t")
-	if _time.hour >= 1 and _time.hour < 9 then
+	if _time.hour >= 22 and _time.hour < 9 then
 		return "Rosé Pine (base16)"
 	elseif _time.hour >= 9 and _time.hour < 17 then
 		return "tokyonight"
-	elseif _time.hour >= 17 and _time.hour < 24 or _time.hour >= 0 and _time.hour < 1 then
+	elseif _time.hour >= 17 and _time.hour < 22 then
 		return "Catppuccin Mocha"
 	end
 end
