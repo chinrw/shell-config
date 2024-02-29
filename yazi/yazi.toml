@@ -1,0 +1,33 @@
+[manager]
+ratio = [1, 4, 4]
+sort_by = "natural"
+linemode = "none"
+show_hidden = true
+
+[preview]
+tab_size = 2
+max_width = 1500
+max_height = 2000
+
+[opener]
+play = [{ exec = 'IINA "%1"', orphan = true, for = "macos" }]
+edit = [
+	{ exec = '${EDITOR:=vi} "$@"', desc = "$EDITOR", block = true, for = "unix" },
+	{ exec = 'subl "$@"', desc = "sublime", block = false, for = "unix" },
+]
+
+view = [{ exec = 'bat "$@"', desc = "bat", block = true, for = "unix" }]
+
+[open]
+rules = [
+	{ mime = "text/*", use = [
+		"view",
+		"edit",
+		"reveal",
+	] },
+	{ mime = "*", use = [
+		"open",
+		"view",
+		"reveal",
+	] },
+]
