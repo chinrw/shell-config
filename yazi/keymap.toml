@@ -1,32 +1,43 @@
 [[manager.prepend_keymap]]
-on   = [ "S" ]
+on = ["L"]
+exec = "open --interactive"
+desc = "Open the selected files interactively"
+
+[[manager.prepend_keymap]]
+on = ["S"]
 exec = 'shell "$SHELL" --block --confirm'
 desc = "Open shell here"
 
 [[manager.prepend_keymap]]
-on   = [ "R" ]
+on = ["R"]
 exec = 'search rg'
 desc = "Search files by content using ripgrep"
 
 [[input.prepend_keymap]]
-on   = [ "<Esc>" ]
+on = ["<Esc>"]
 exec = "close"
 desc = "Cancel input"
 
 [[manager.prepend_keymap]]
-on = [ "q" ]
+on = ["q"]
 exec = "close"
 desc = "Close the current tab, or quit if it is last tab"
 
 [[manager.prepend_keymap]]
-on   = [ "l" ]
+on = ["l"]
 exec = "plugin --sync smart-enter"
 desc = "Enter the child directory, or open the file"
 
 [[manager.prepend_keymap]]
-on   = [ "k" ]
+on = ["k"]
 exec = "plugin --sync arrow --args=-1"
 
 [[manager.prepend_keymap]]
-on   = [ "j" ]
+on = ["j"]
 exec = "plugin --sync arrow --args=1"
+
+[[tasks.prepend_keymap]]
+on = [ "q" ]
+exec = "close"
+desc = "Hide the task manager"
+
