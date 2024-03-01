@@ -6,3 +6,6 @@
 	path = qemu-script
 	url = git@github.com:chinrw/qemu-script.git
   branch = main
+[submodule "yazi/plugins/hexyl.yazi"]
+	path = yazi/plugins/hexyl.yazi
+	url = https://github.com/Reledia/hexyl.yazi.git
