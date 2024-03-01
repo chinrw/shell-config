@@ -118,7 +118,7 @@ zstyle ':omz:update' mode auto      # update automatically without asking
 # plugins=(git zsh-autosuggestions history-substring-search zsh-syntax-highlighting)
 
 
-plugins=(fzf-tab git rust python pip sudo tmux systemd ssh-agent cp brew archlinux docker docker-compose zsh-autosuggestions history-substring-search zsh-syntax-highlighting zoxide)
+plugins=(fzf-tab git rust python pip sudo tmux systemd ohmyzsh-full-autoupdate ssh-agent cp brew archlinux docker docker-compose zsh-autosuggestions history-substring-search zsh-syntax-highlighting zoxide)
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 source $ZSH/oh-my-zsh.sh
 
