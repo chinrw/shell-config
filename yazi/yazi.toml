@@ -2,7 +2,7 @@
 ratio = [1, 4, 4]
 sort_by = "natural"
 linemode = "none"
-show_hidden = true
+show_hidden = false
 
 [preview]
 tab_size = 2
@@ -31,3 +31,9 @@ rules = [
 		"reveal",
 	] },
 ]
+
+[plugin]
+append_previewers = [
+  { name = "*", exec = "hexyl" },
+]
+
