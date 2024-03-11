@@ -10,13 +10,13 @@ max_width = 1500
 max_height = 2000
 
 [opener]
-append_play = [{ exec = 'IINA "%1"', orphan = true, for = "macos" }]
+append_play = [{ run = 'IINA "%1"', orphan = true, for = "macos" }]
 append_edit = [
-	{ exec = '${EDITOR:=vi} "$@"', desc = "$EDITOR", block = true, for = "unix" },
-	{ exec = 'subl "$@"', desc = "sublime", block = false, for = "unix" },
+	{ run = '${EDITOR:=vi} "$@"', desc = "$EDITOR", block = true, for = "unix" },
+	{ run = 'subl "$@"', desc = "sublime", block = false, for = "unix" },
 ]
 
-view = [{ exec = 'bat "$@"', desc = "bat", block = true, for = "unix" }]
+view = [{ run = 'bat "$@"', desc = "bat", block = true, for = "unix" }]
 
 [open]
 append_rules = [
@@ -33,4 +33,4 @@ append_rules = [
 ]
 
 [plugin]
-append_previewers = [{ name = "*", exec = "hexyl" }]
+append_previewers = [{ name = "*", run = "hexyl" }]
