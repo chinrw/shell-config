@@ -6,8 +6,8 @@ show_hidden = false
 
 [preview]
 tab_size = 2
-max_width = 800
-max_height = 1000
+max_width = 1500
+max_height = 2000
 
 
 [opener]
@@ -55,8 +55,8 @@ rules = [
 	] },
 
 	{ mime = "text/*", use = [
-		"edit",
 		"view",
+		"edit",
 		"reveal",
 	] },
 	{ mime = "image/*", use = [
