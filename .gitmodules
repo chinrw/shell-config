@@ -9,3 +9,6 @@
 [submodule "yazi/plugins/hexyl.yazi"]
 	path = yazi/plugins/hexyl.yazi
 	url = https://github.com/Reledia/hexyl.yazi.git
+[submodule "yazi/plugins/mime.yazi"]
+	path = yazi/plugins/mime.yazi
+	url = https://github.com/DreamMaoMao/mime.yazi.git
