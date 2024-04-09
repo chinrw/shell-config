@@ -38,6 +38,7 @@
     # =========================[ Line #2 ]=========================
     newline                 # \n
     prompt_char             # prompt symbol
+    yazi
   )
 
   # The list of segments shown on the right. Fill it with less important segments.
@@ -59,7 +60,7 @@
     nvm                     # node.js version from nvm (https://github.com/nvm-sh/nvm)
     nodeenv                 # node.js environment (https://github.com/ekalinin/nodeenv)
     # node_version          # node.js version
-    # go_version            # go version (https://golang.org)
+    go_version            # go version (https://golang.org)
     rust_version          # rustc version (https://www.rust-lang.org)
     # dotnet_version        # .NET version (https://dotnet.microsoft.com)
     # php_version           # php version (https://www.php.net/)
@@ -1619,6 +1620,11 @@
 
   # If p10k is already loaded, reload configuration.
   # This works even with POWERLEVEL9K_DISABLE_HOT_RELOAD=true.
+  function prompt_yazi() {
+	if [ -n "$YAZI_LEVEL" ]; then
+		p10k segment -f 006 -i '' -t 'Yazi'
+	fi
+  }
   (( ! $+functions[p10k] )) || p10k reload
 }
 
