@@ -34,7 +34,7 @@ image = [
 	{ run = '/home/chin39/.local/share/flatpak/exports/bin/com.xnview.XnViewMP "$@"', orphan = true, desc = "Xnviewmp", for = "linux" },
 ]
 extract = [
-	{ run = 'unar "$1"', desc = "Extract here", for = "unix" },
+	{ run = 'ouch d --yes "$1"', desc = "Extract here", for = "unix" },
 	{ run = 'unar "%1"', desc = "Extract here", for = "windows" },
 ]
 play = [
@@ -126,4 +126,13 @@ rules = [
 ]
 
 [plugin]
+prepend_previewers = [
+	# Archive previewer
+	{ mime = "application/*zip", run = "ouch" },
+	{ mime = "application/x-tar", run = "ouch" },
+	{ mime = "application/x-bzip2", run = "ouch" },
+	{ mime = "application/x-7z-compressed", run = "ouch" },
+	{ mime = "application/x-rar", run = "ouch" },
+	{ mime = "application/x-xz", run = "ouch" },
+]
 append_previewers = [{ name = "*", run = "hexyl" }]
