@@ -12,3 +12,6 @@
 [submodule "yazi/plugins/mime.yazi"]
 	path = yazi/plugins/mime.yazi
 	url = https://github.com/DreamMaoMao/mime.yazi.git
+[submodule "yazi/plugins/ouch.yazi"]
+	path = yazi/plugins/ouch.yazi
+	url = git@github.com:ndtoan96/ouch.yazi.git
