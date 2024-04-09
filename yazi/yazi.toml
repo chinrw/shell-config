@@ -34,7 +34,7 @@ image = [
 	{ run = '/home/chin39/.local/share/flatpak/exports/bin/com.xnview.XnViewMP "$@"', orphan = true, desc = "Xnviewmp", for = "linux" },
 ]
 extract = [
-	{ run = 'ouch d --yes "$1"', desc = "Extract here", for = "unix" },
+	{ run = 'unar "$1"', desc = "Extract here", for = "unix" },
 	{ run = 'unar "%1"', desc = "Extract here", for = "windows" },
 ]
 play = [
