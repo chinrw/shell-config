@@ -5,7 +5,16 @@ local wezterm = require("wezterm")
 
 -- A helper function for my fallback fonts
 local function font_with_fallback(name, params)
-	local names = { name, "mini-file-icons", "MesloLGM Nerd Font", "SauceCodePro Nerd Font" }
+	local names = {
+		name,
+		"MesloLGM Nerd Font",
+		"mini-file-icons",
+		"SauceCodePro Nerd Font",
+		"Noto Sans CJK JP",
+		"Noto Sans CJK SC",
+		"Noto Sans CJK TC",
+		"WenQuanYi Micro Hei",
+	}
 	return wezterm.font_with_fallback(names, params)
 end
 
@@ -32,6 +41,9 @@ local function get_theme()
 	end
 end
 
+local gpus = wezterm.gui.enumerate_gpus()
+
+
 local act = wezterm.action
 local mykeys = {}
 for i = 1, 8 do
@@ -45,16 +57,25 @@ end
 table.insert(mykeys, { key = "{", mods = "SHIFT|ALT", action = act.MoveTabRelative(-1) })
 table.insert(mykeys, { key = "}", mods = "SHIFT|ALT", action = act.MoveTabRelative(1) })
 
-return {
+local config = {
 	bidi_enabled = true,
 	bidi_direction = "AutoLeftToRight",
 	color_scheme = get_theme(),
+	-- color_scheme = "tokyonight",
 	font = font_with_fallback({
 		family = "MesloLGM Nerd Font",
 		harfbuzz_features = {
 			"zero",
 		},
 	}),
+	mouse_bindings = {
+		-- Disable left drag
+		{
+			event = { Up = { streak = 1, button = "Left" } },
+			mods = "NONE",
+			action = "Nop",
+		},
+	},
 
 	keys = mykeys,
 
@@ -73,7 +94,7 @@ return {
 			italic = true,
 			intensity = "Bold",
 			font = font_with_fallback({
-				family = "Iosevka Nerd Font",
+				family = "MesloLGM Nerd Font",
 				-- family = "Dank Mono",
 				weight = "Medium",
 				italic = true,
@@ -83,7 +104,7 @@ return {
 			italic = true,
 			font = font_with_fallback({
 				-- family = "Dank Mono",
-				family = "Iosevka Nerd Font",
+				family = "MesloLGM Nerd Font",
 				weight = "Regular",
 				italic = true,
 			}),
@@ -93,14 +114,20 @@ return {
 	initial_rows = 32,
 	-- use_dead_keys = false,
 	-- window_decorations = "RESIZE",
-	-- hide_tab_bar_if_only_one_tab = true,
+	hide_tab_bar_if_only_one_tab = true,
 	selection_word_boundary = " \t\n{}[]()\"'`,;:│=&!%",
 	window_padding = padding,
 	line_height = 1.1,
-	font_size = 14,
-	window_background_opacity = 0.95,
+	font_size = 12,
+	-- window_background_opacity = 0.95,
 	bold_brightens_ansi_colors = false,
+  warn_about_missing_glyphs = false,
 	-- swap_backspace_and_delete = false,
 	-- term = "wezterm",
 	-- freetype_load_target = "Light",
 }
+
+-- config.webgpu_preferred_adapter = gpus[2]
+config.front_end = 'WebGpu'
+
+return config
