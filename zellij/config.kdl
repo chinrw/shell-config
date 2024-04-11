@@ -84,7 +84,6 @@ keybinds clear-defaults=true {
 		// bind "Alt c" { Copy; }
 	}
 	search {
-		bind "Ctrl /" { SwitchToMode "Normal"; }
 		bind "j" "Down" { ScrollDown; }
 		bind "k" "Up" { ScrollUp; }
 		bind "Ctrl f" "PageDown" "Right" "l" { PageScrollDown; }
@@ -98,7 +97,7 @@ keybinds clear-defaults=true {
 		bind "o" { SearchToggleOption "WholeWord"; }
 	}
 	entersearch {
-		bind "Ctrl b" "Esc" { SwitchToMode "Scroll"; }
+		bind "Esc" { SwitchToMode "Scroll"; }
 		bind "Enter" { SwitchToMode "Search"; }
 	}
 	renametab {
@@ -159,6 +158,7 @@ keybinds clear-defaults=true {
 		    SwitchToMode "Normal"
 		}
 		bind "a" { ToggleFloatingPanes; SwitchToMode "Normal"; }
+		bind "/" { SwitchToMode "EnterSearch"; SearchInput 0; }
 	}
 	shared_except "locked" {
 		bind "Ctrl g" { SwitchToMode "Locked"; }
@@ -181,9 +181,9 @@ keybinds clear-defaults=true {
 	//shared_except "resize" "locked" {
 	//	bind "Ctrl n" { SwitchToMode "Resize"; }
 	//}
-	shared_except "scroll" "locked" {
-		bind "Ctrl b" { SwitchToMode "Scroll"; }
-	}
+	// shared_except "scroll" "locked" {
+	//		bind "Ctrl b" { SwitchToMode "Scroll"; }
+	// }
 	shared_except "session" "locked" {
 		bind "Ctrl x" { SwitchToMode "Session"; }
 	}
