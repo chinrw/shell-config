@@ -159,6 +159,7 @@ keybinds clear-defaults=true {
 		    SwitchToMode "Normal"
 		}
 		bind "a" { ToggleFloatingPanes; SwitchToMode "Normal"; }
+		bind "e" { EditScrollback; SwitchToMode "Normal"; }
 		bind "/" { SwitchToMode "EnterSearch"; SearchInput 0; }
 	}
 	shared_except "locked" {
@@ -197,14 +198,22 @@ keybinds clear-defaults=true {
 	shared_except "tmux" "locked" {
 		bind "Ctrl s" { SwitchToMode "Tmux"; }
 	}
+	// shared_except "tmux" "locked" {
+    // 	bind "Ctrl y" {
+    // 	    LaunchOrFocusPlugin "file:~/.config/zellij/plugins/room.wasm" {
+    // 	        floating true
+    // 	        ignore_case true
+    // 	    	}
+    // 		}
+	// }
 	shared_except "tmux" "locked" {
-    	bind "Ctrl y" {
-    	    LaunchOrFocusPlugin "file:~/.config/zellij/plugins/room.wasm" {
-    	        floating true
-    	        ignore_case true
-    	    	}
-    		}
+    bind "Ctrl y" {
+        LaunchOrFocusPlugin "file:~/.config/zellij/plugins/harpoon.wasm" {
+            floating true; move_to_focused_tab true;
+        }
+    }
 	}
+
 }
 
 plugins {
