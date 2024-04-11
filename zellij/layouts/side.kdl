@@ -45,7 +45,7 @@ layout {
     tab name="play" {}
     tab name="harmony" {}
     tab name="rclone" {
-        pane split_direction="vertical" {
+        pane split_direction="horizontal" {
             pane
             pane
         }
