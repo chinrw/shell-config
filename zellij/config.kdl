@@ -80,6 +80,7 @@ keybinds clear-defaults=true {
 		bind "Ctrl b" "PageUp" "Left" "h" { PageScrollUp; }
 		bind "d" { HalfPageScrollDown; }
 		bind "u" { HalfPageScrollUp; }
+		bind "/" { SwitchToMode "EnterSearch"; SearchInput 0; }
 		// uncomment this and adjust key if using copy_on_select=false
 		// bind "Alt c" { Copy; }
 	}
@@ -195,6 +196,14 @@ keybinds clear-defaults=true {
 	}
 	shared_except "tmux" "locked" {
 		bind "Ctrl s" { SwitchToMode "Tmux"; }
+	}
+	shared_except "tmux" "locked" {
+    	bind "Ctrl y" {
+    	    LaunchOrFocusPlugin "file:~/.config/zellij/plugins/room.wasm" {
+    	        floating true
+    	        ignore_case true
+    	    	}
+    		}
 	}
 }
 
