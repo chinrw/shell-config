@@ -5,7 +5,7 @@ layout {
             plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
                 format_left   "{mode} #[fg=#89B4FA,bold]{session} {command_net_speed}"
                 format_center "{tabs}"
-                format_right  "{command_uptime} {datetime}"
+                format_right  "#[fg=#6C7086,bold]{command_uptime} {datetime}"
                 format_space  ""
 
                 border_enabled  "false"
