@@ -1,0 +1,51 @@
+layout {
+    default_tab_template {
+        children
+        pane size=1 borderless=true {
+            plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
+                format_left   "{mode} #[fg=#89B4FA,bold]{session} {command_net_speed}"
+                format_center "{tabs}"
+                format_right  "#[fg=#6C7086,bold]{command_uptime} {datetime}"
+                format_space  ""
+
+                border_enabled  "false"
+                border_char     "─"
+                border_format   "#[fg=#6C7086]{char}"
+                border_position "top"
+
+                mode_normal  "#[bg=blue] "
+                mode_tmux    "#[bg=#ffc387] "
+                mode_locked  "#[bg=#89B4FA] {name} "
+                mode_scroll  "#[bg=#89B4FA] {name} "
+
+                tab_normal   "#[fg=#6C7086] {name} "
+                tab_active   "#[fg=blue,bold,italic] {name} "
+
+                command_git_branch_command     "git rev-parse --abbrev-ref HEAD"
+                command_git_branch_format      "#[fg=blue] {stdout} "
+                command_git_branch_interval    "10"
+                command_git_branch_command     "git rev-parse --abbrev-ref HEAD"
+
+                command_uptime_command     "bash -c \"uptime | awk '{print $(NF-2),$(NF-1),$NF}'\""
+                command_uptime_format      "#[fg=blue] {stdout} "
+                command_uptime_interval    "2"
+                command_uptime_rendermode  "dynamic"
+
+                command_net_speed_command     "~/.tmux/plugins/tmux-net-speed/scripts/net_speed.sh"
+                command_net_speed_format      "#[fg=blue] {stdout} "
+                command_net_speed_interval    "2"
+                command_net_speed_rendermode  "dynamic"
+
+                datetime        "#[fg=#6C7086,bold] {format} "
+                datetime_format "%b %d %Y %H:%M"
+                datetime_timezone "Asia/Shanghai"
+            }
+        }
+    }
+    tab name="play" {}
+    tab name="nvim" {}
+    tab name="portage" {}
+    tab name="yazi" {}
+    tab name="kernel" {}
+}
+

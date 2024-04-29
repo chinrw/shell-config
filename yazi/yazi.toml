@@ -1,7 +1,7 @@
 [manager]
 ratio = [1, 4, 4]
 sort_by = "natural"
-linemode = "none"
+linemode = "size"
 show_hidden = false
 
 [preview]
@@ -126,4 +126,13 @@ rules = [
 ]
 
 [plugin]
+prepend_previewers = [
+	# Archive previewer
+	{ mime = "application/*zip", run = "ouch" },
+	{ mime = "application/x-tar", run = "ouch" },
+	{ mime = "application/x-bzip2", run = "ouch" },
+	{ mime = "application/x-7z-compressed", run = "ouch" },
+	{ mime = "application/x-rar", run = "ouch" },
+	{ mime = "application/x-xz", run = "ouch" },
+]
 append_previewers = [{ name = "*", run = "hexyl" }]

@@ -1,7 +1,12 @@
 # boot with tmux
-if [[ $- =~ i ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_TTY" ]]; then
-  tmux attach-session -t play || tmux new-session -s play
-fi
+# if [[ $- =~ i ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_TTY" ]]; then
+#   ctrl-alt-T
+#   bindkey -M emacs '^[^T' renew_tmux_env
+#   bindkey -M vicmd '^[^T' renew_tmux_env
+#   bindkey -M viins '^[^T' renew_tmux_env
+#   zle -N renew_tmux_env
+#   tmux attach-session -t play || tmux new-session -s play
+# fi
 
 
 # Update Display variables with tmux
@@ -24,13 +29,6 @@ fi
 function preexec {
     renew_tmux_env
 }
-
-zle -N renew_tmux_env
-# ctrl-alt-T
-bindkey -M emacs '^[^T' renew_tmux_env
-bindkey -M vicmd '^[^T' renew_tmux_env
-bindkey -M viins '^[^T' renew_tmux_env
-
 
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
@@ -228,11 +226,12 @@ export ATUIN_NOBIND="true"
 eval "$(atuin init zsh)"
 
 bindkey '^r' _atuin_search_widget
-if [[ `uname` != "Darwin" ]]; then
-  precmd () {
-    echo -n -e "\a" >$TTY
-  }
-fi
+
+# if [[ `uname` != "Darwin" ]]; then
+#   precmd () {
+#     echo -n -e "\a" >$TTY
+#   }
+# fi
 bindkey \^U backward-kill-line
 
 PATH="/home/chin39/perl5/bin${PATH:+:${PATH}}"; export PATH;
@@ -273,25 +272,25 @@ if [ "${XDG_SESSION_TYPE}" = "wayland" -o "${XDG_SESSION_TYPE}" = "x11" ]
   then ln -f ${HOME}/.config/monitors.{${XDG_SESSION_TYPE},xml}
 fi
 
-# 2x ctrl-d to exit ...
-export IGNOREEOF=1
-
-# bash like ctrl-d wrapper for IGNOREEOF
-setopt ignore_eof
-function bash-ctrl-d() {
-  if [[ $CURSOR == 0 && -z $BUFFER ]]
-  then
-    [[ -z $IGNOREEOF || $IGNOREEOF == 0 ]] && exit
-    if [[ "$LASTWIDGET" == "bash-ctrl-d" ]]
-    then
-      (( --__BASH_IGNORE_EOF <= 0 )) && exit
-    else
-      (( __BASH_IGNORE_EOF = IGNOREEOF ))
-    fi
-  fi
-}
-zle -N bash-ctrl-d
-bindkey "^d" bash-ctrl-d
+# # 2x ctrl-d to exit ...
+# export IGNOREEOF=1
+#
+# # bash like ctrl-d wrapper for IGNOREEOF
+# setopt ignore_eof
+# function bash-ctrl-d() {
+#   if [[ $CURSOR == 0 && -z $BUFFER ]]
+#   then
+#     [[ -z $IGNOREEOF || $IGNOREEOF == 0 ]] && exit
+#     if [[ "$LASTWIDGET" == "bash-ctrl-d" ]]
+#     then
+#       (( --__BASH_IGNORE_EOF <= 0 )) && exit
+#     else
+#       (( __BASH_IGNORE_EOF = IGNOREEOF ))
+#     fi
+#   fi
+# }
+# zle -N bash-ctrl-d
+# bindkey "^d" bash-ctrl-d
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
