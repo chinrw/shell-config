@@ -4,11 +4,9 @@
 , lib
 , config
 , pkgs
-, neovim-overlays
 , ...
 }:
 let
-
 in
 {
   # You can import other home-manager modules here
@@ -24,7 +22,7 @@ in
     # You can add overlays here
     overlays = [
       # If you want to use overlays exported from other flakes:
-      # neovim-overlays
+      inputs.neovim-nightly-overlay.overlay
 
       # Or define it inline, for example:
       # (final: prev: {
@@ -39,6 +37,8 @@ in
       allowUnfree = true;
       # Workaround for https://github.com/nix-community/home-manager/issues/2942
       allowUnfreePredicate = _: true;
+
+
     };
   };
 
@@ -60,6 +60,7 @@ in
   home.packages = with pkgs; [
     eza
     jellyfin-media-player
+    nushellFull
   ];
 
   # Enable home-manager and git
