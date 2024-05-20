@@ -56,7 +56,7 @@
         "chin39@laptop" = home-manager.lib.homeManagerConfiguration {
           pkgs = pkgs;
           extraSpecialArgs = { inherit inputs outputs; };
-          modules = [ ./home-manager/home.nix ];
+          modules = [ ./home-manager/laptop.nix ];
         };
       };
 
