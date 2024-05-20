@@ -61,6 +61,8 @@ in
     eza
     jellyfin-media-player
     nushellFull
+  ] ++ [
+    inputs.yazi.packages.${pkgs.system}.default
   ];
 
   # Enable home-manager and git

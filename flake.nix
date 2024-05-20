@@ -12,6 +12,7 @@
     };
 
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+    yazi.url = "github:sxyazi/yazi";
   };
 
   outputs =
@@ -25,6 +26,9 @@
       neovim-overlays = [
         inputs.neovim-nightly-overlay.overlay
       ];
+
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
     in
     {
       # NixOS configuration entrypoint
@@ -41,7 +45,7 @@
       # Available through 'home-manager --flake .#your-username@your-hostname'
       homeConfigurations = {
         "chin39@chin39-desktop" = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux; # Home-manager requires 'pkgs' instance
+          pkgs = pkgs; # Home-manager requires 'pkgs' instance
           extraSpecialArgs = { inherit inputs outputs; };
           # > Our main home-manager configuration file <
           modules = [ ./home-manager/home.nix ];
