@@ -44,13 +44,21 @@
       # Standalone home-manager configuration entrypoint
       # Available through 'home-manager --flake .#your-username@your-hostname'
       homeConfigurations = {
-        "chin39@chin39-desktop" = home-manager.lib.homeManagerConfiguration {
+        "chin39@desktop" = home-manager.lib.homeManagerConfiguration {
           pkgs = pkgs; # Home-manager requires 'pkgs' instance
           extraSpecialArgs = { inherit inputs outputs; };
           # > Our main home-manager configuration file <
           modules = [ ./home-manager/home.nix ];
         };
-
       };
+
+      homeConfigurations = {
+        "chin39@laptop" = home-manager.lib.homeManagerConfiguration {
+          pkgs = pkgs;
+          extraSpecialArgs = { inherit inputs outputs; };
+          modules = [ ./home-manager/home.nix ];
+        };
+      };
+
     };
 }
