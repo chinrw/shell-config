@@ -23,9 +23,6 @@
     } @ inputs:
     let
       inherit (self) outputs;
-      neovim-overlays = [
-        inputs.neovim-nightly-overlay.overlay
-      ];
 
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -56,7 +53,7 @@
         "chin39@laptop" = home-manager.lib.homeManagerConfiguration {
           pkgs = pkgs;
           extraSpecialArgs = { inherit inputs outputs; };
-          modules = [ ./home-manager/laptop.nix ];
+          modules = [ ./home-manager/default.nix ];
         };
       };
 

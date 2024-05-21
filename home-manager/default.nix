@@ -4,9 +4,14 @@
 , lib
 , config
 , pkgs
+, hostname
 , ...
 }:
 let
+  neovim-overlays = [
+    inputs.neovim-nightly-overlay.overlay
+  ];
+  isLaptop = if (hostname == "laptop") then true else false;
 in
 {
   # You can import other home-manager modules here
@@ -22,6 +27,7 @@ in
     # You can add overlays here
     overlays = [
       # If you want to use overlays exported from other flakes:
+      # neovim-overlays
       inputs.neovim-nightly-overlay.overlay
 
       # Or define it inline, for example:
@@ -59,7 +65,8 @@ in
   # programs.neovim.enable = true;
   home.packages = with pkgs; [
     eza
-    nushellFull
+    # nushellFull
+    neovim-nightly
   ] ++ [
     inputs.yazi.packages.${pkgs.system}.default
   ];
@@ -76,6 +83,10 @@ in
   # programs.bash = {
   #   enable = true;
   # };
+
+  programs.nushell = {
+    enable = true;
+  };
 
   # programs.zsh = {
   #   enable = true;
