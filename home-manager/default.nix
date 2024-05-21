@@ -68,6 +68,7 @@ in
     eza
     # nushellFull
     neovim-nightly
+    zellij
   ] ++ [
     inputs.yazi.packages.${pkgs.system}.default
   ];
