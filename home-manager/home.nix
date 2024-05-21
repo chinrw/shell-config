@@ -30,6 +30,15 @@ in
       #     patches = [ ./change-hello-to-hi.patch ];
       #   });
       # })
+      # (final: prev: {
+      #   stdenv = prev.stdenvAdapters.addAttrsToDerivation
+      #     {
+      #       NIX_CFLAGS_COMPILE = "-O2";
+      #       NIX_LDFLAGS = "";
+      #     }
+      #     prev.stdenv;
+      # })
+
     ];
     # Configure your nixpkgs instance
     config = {
@@ -61,6 +70,14 @@ in
     eza
     jellyfin-media-player
     nushellFull
+    fastfetch
+    onefetch
+    gitui
+    openapi-tui
+    genact
+    angle-grinder
+    zellij
+    # yazi
   ] ++ [
     inputs.yazi.packages.${pkgs.system}.default
   ];
