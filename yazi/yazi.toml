@@ -43,7 +43,9 @@ play = [
 	{ run = 'mpv "%1"', orphan = true, for = "windows" },
 	{ run = '''mediainfo "$1"; echo "Press enter to exit"; read _''', block = true, desc = "Show media info", for = "unix" },
 ]
-view = [{ run = 'bat --pager "less -XR" "$@"', desc = "bat", block = true, for = "unix" }]
+view = [
+	{ run = 'bat --pager "less -XR" "$@"', desc = "bat", block = true, for = "unix" },
+]
 
 [open]
 rules = [
@@ -126,6 +128,10 @@ rules = [
 ]
 
 [plugin]
+prefetchers = [
+	# Mimetype
+	{ name = "*", cond = "!mime", run = "mime", prio = "high" },
+]
 prepend_previewers = [
 	# Archive previewer
 	{ mime = "application/*zip", run = "ouch" },

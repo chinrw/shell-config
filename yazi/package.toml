@@ -1,0 +1,9 @@
+[plugin]
+deps = [
+	{ use = "Reledia/hexyl", commit = "f71d9d9" },
+	{ use = "DreamMaoMao/mime", commit = "fa40dae" },
+	{ use = "ndtoan96/ouch", commit = "694d149" },
+]
+
+[flavor]
+deps = []
