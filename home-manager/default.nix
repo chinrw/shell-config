@@ -69,6 +69,7 @@ in
     # nushellFull
     neovim-nightly
     zellij
+    glow
   ] ++ [
     inputs.yazi.packages.${pkgs.system}.default
   ];
