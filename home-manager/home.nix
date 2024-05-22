@@ -16,6 +16,7 @@ in
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
+    ./programs/nushell
   ];
 
   nixpkgs = {
@@ -69,7 +70,6 @@ in
   home.packages = with pkgs; [
     eza
     jellyfin-media-player
-    nushellFull
     fastfetch
     onefetch
     gitui

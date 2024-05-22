@@ -66,10 +66,13 @@ in
   # programs.neovim.enable = true;
   home.packages = with pkgs; [
     eza
-    # nushellFull
-    neovim-nightly
-    zellij
     glow
+    fastfetch
+    onefetch
+    gitui
+    genact
+    angle-grinder
+    zellij
   ] ++ [
     inputs.yazi.packages.${pkgs.system}.default
   ];
@@ -86,10 +89,6 @@ in
   # programs.bash = {
   #   enable = true;
   # };
-
-  programs.nushell = {
-    enable = true;
-  };
 
   # programs.zsh = {
   #   enable = true;
