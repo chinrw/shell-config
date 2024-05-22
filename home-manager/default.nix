@@ -12,6 +12,7 @@ let
     inputs.neovim-nightly-overlay.overlay
   ];
   isLaptop = if (hostname == "laptop") then true else false;
+  isDekstop = if (hostname == "desktop") then true else false;
 in
 {
   # You can import other home-manager modules here
@@ -44,8 +45,6 @@ in
       allowUnfree = true;
       # Workaround for https://github.com/nix-community/home-manager/issues/2942
       allowUnfreePredicate = _: true;
-
-
     };
   };
 
@@ -58,7 +57,6 @@ in
     };
     username = "chin39";
     homeDirectory = "/home/chin39/";
-
   };
 
 
@@ -73,8 +71,13 @@ in
     genact
     angle-grinder
     zellij
-  ] ++ [
+    rclone
     inputs.yazi.packages.${pkgs.system}.default
+  ] ++ lib.optionals (isLaptop) [
+    lazygit
+  ] ++ lib.optionals (isDekstop) [
+    openapi-tui
+    jellyfin-media-player
   ];
 
   # Enable home-manager and git

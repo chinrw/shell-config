@@ -28,6 +28,7 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in
     {
+
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
       nixosConfigurations = {
@@ -43,16 +44,16 @@
       homeConfigurations = {
         "chin39@desktop" = home-manager.lib.homeManagerConfiguration {
           pkgs = pkgs; # Home-manager requires 'pkgs' instance
-          extraSpecialArgs = { inherit inputs outputs; };
+          extraSpecialArgs = { inherit inputs outputs; hostname = "desktop"; };
           # > Our main home-manager configuration file <
-          modules = [ ./home-manager/home.nix ];
+          modules = [ ./home-manager/default.nix ];
         };
       };
 
       homeConfigurations = {
         "chin39@laptop" = home-manager.lib.homeManagerConfiguration {
           pkgs = pkgs;
-          extraSpecialArgs = { inherit inputs outputs; };
+          extraSpecialArgs = { inherit inputs outputs; hostname = "laptop"; };
           modules = [ ./home-manager/default.nix ];
         };
       };
