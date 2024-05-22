@@ -7,6 +7,9 @@ git pull --recurse-submodules
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 ### Install Plugins
+Replace current `.zshrc` and `.p10k.zsh`, `ln -s $PWD/zshrc ~/.zshrc` and `ln -s $PWD/p10k.zsh ~/.p10k.zsh`
+
+### Install Plugins
 ```
 git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
