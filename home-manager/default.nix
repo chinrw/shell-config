@@ -73,9 +73,9 @@ in
     zellij
     rclone
     gitoxide
+    lazygit
     inputs.yazi.packages.${pkgs.system}.default
   ] ++ lib.optionals (isLaptop) [
-    lazygit
   ] ++ lib.optionals (isDekstop) [
     openapi-tui
     jellyfin-media-player
