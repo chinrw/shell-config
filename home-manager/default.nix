@@ -72,6 +72,7 @@ in
     angle-grinder
     zellij
     rclone
+    gitoxide
     inputs.yazi.packages.${pkgs.system}.default
   ] ++ lib.optionals (isLaptop) [
     lazygit
