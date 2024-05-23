@@ -1,6 +1,7 @@
 # This is your home-manager configuration file
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
 { inputs
+, outputs
 , lib
 , config
 , pkgs
@@ -11,8 +12,14 @@ let
   neovim-overlays = [
     inputs.neovim-nightly-overlay.overlay
   ];
-  isLaptop = if (hostname == "laptop") then true else false;
-  isDekstop = if (hostname == "desktop") then true else false;
+  isLaptop =
+    if (hostname == "laptop")
+    then true
+    else false;
+  isDekstop =
+    if (hostname == "desktop")
+    then true
+    else false;
 in
 {
   # You can import other home-manager modules here
@@ -30,7 +37,11 @@ in
     overlays = [
       # If you want to use overlays exported from other flakes:
       # neovim-overlays
-      inputs.neovim-nightly-overlay.overlay
+      outputs.neovim-nightly-overlay.overlay
+
+      outputs.overlays.additions
+      outputs.overlays.modifications
+      outputs.overlays.unstable-packages
 
       # Or define it inline, for example:
       # (final: prev: {
@@ -48,7 +59,6 @@ in
     };
   };
 
-
   home = {
     # useGlobalPkgs = true;
     sessionVariables = {
@@ -60,42 +70,41 @@ in
     homeDirectory = "/home/chin39/";
   };
 
-
   # Add stuff for your user as you see fit:
   # programs.neovim.enable = true;
-  home.packages = with pkgs; [
-    fzf
-    eza
-    glow
-    fastfetch
-    onefetch
-    gitui
-    genact
-    angle-grinder
-    zellij
-    rclone
-    gitoxide
-    lazygit
-    hexyl
-    dua
-    nix-index
-    _7zz
-    ouch
-    helix
-    nix-search-cli
-    inputs.yazi.packages.${pkgs.system}.default
-  ] ++ lib.optionals (isLaptop) [
-  ] ++ lib.optionals (isDekstop) [
-    openapi-tui
-    jellyfin-media-player
-  ];
+  home.packages = with pkgs;
+    [
+      fzf
+      eza
+      glow
+      fastfetch
+      onefetch
+      gitui
+      genact
+      angle-grinder
+      zellij
+      rclone
+      gitoxide
+      lazygit
+      hexyl
+      dua
+      nix-index
+      _7zz
+      ouch
+      helix
+      nix-search-cli
+      outputs.yazi.packages.${pkgs.system}.default
+    ]
+    ++ lib.optionals isLaptop [
+    ]
+    ++ lib.optionals isDekstop [
+      openapi-tui
+      jellyfin-media-player
+    ];
 
   # Enable home-manager and git
   programs.home-manager.enable = true;
   programs.git.enable = true;
-
-  # Nicely reload system units when changing configs
-  # systemd.user.startServices = "sd-switch";
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   home.stateVersion = "24.05";
@@ -109,9 +118,10 @@ in
     enableNushellIntegration = true;
   };
 
+  # Nicely reload system units when changing configs
+  systemd.user.startServices = "sd-switch";
 
   # programs.zsh = {
   #   enable = true;
   # };
-
 }

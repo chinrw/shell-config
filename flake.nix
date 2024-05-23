@@ -1,7 +1,6 @@
 {
   description = "chin39-config";
 
-
   nixConfig = {
     substituters = [
       # cache mirror located in China
@@ -25,6 +24,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    flake-utils.url = "github:numtide/flake-utils";
+
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
     yazi.url = "github:sxyazi/yazi";
     nix-index-database.url = "github:nix-community/nix-index-database";
@@ -40,10 +41,32 @@
     let
       inherit (self) outputs;
 
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
+      systems = [
+        "aarch64-linux"
+        "i686-linux"
+        "x86_64-linux"
+        "aarch64-darwin"
+        "x86_64-darwin"
+      ];
+      # This is a function that generates an attribute by calling a function you
+      # pass to it, with each system as an argument
+      forAllSystems = nixpkgs.lib.genAttrs systems;
     in
     {
+      # Your custom packages
+      # Accessible through 'nix build', 'nix shell', etc
+      packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
+
+      # Your custom packages and modifications, exported as overlays
+      overlays = import ./overlays { inherit inputs; };
+
+      # Reusable nixos modules you might want to export
+      # These are usually stuff you would upstream into nixpkgs
+      # nixosModules = import ./modules/nixos;
+
+      # Reusable home-manager modules you might want to export
+      # These are usually stuff you would upstream into home-manager
+      homeManagerModules = import ./modules/home-manager;
 
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
@@ -59,23 +82,49 @@
       # Available through 'home-manager --flake .#your-username@your-hostname'
       homeConfigurations = {
         "chin39@desktop" = home-manager.lib.homeManagerConfiguration {
-          pkgs = pkgs; # Home-manager requires 'pkgs' instance
-          extraSpecialArgs = { inherit inputs outputs; hostname = "desktop"; };
+          pkgs = nixpkgs.legacyPackages.x86_64-linux; # Home-manager requires 'pkgs' instance
+          extraSpecialArgs = {
+            inherit inputs outputs;
+            hostname = "desktop";
+          };
           # > Our main home-manager configuration file <
-          modules = [ ./home-manager/default.nix ];
-        };
-      };
-
-      homeConfigurations = {
-        "chin39@laptop" = home-manager.lib.homeManagerConfiguration {
-          pkgs = pkgs;
-          extraSpecialArgs = { inherit inputs outputs; hostname = "laptop"; };
           modules = [
-            ./home-manager/default.nix
+            ./home-manager/home.nix
             inputs.nix-index-database.nixosModules.nix-index
           ];
         };
       };
 
+      homeConfigurations = {
+        "chin39@laptop" = home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          extraSpecialArgs = {
+            inherit inputs outputs;
+            hostname = "laptop";
+          };
+          modules = [
+            ./home-manager/home.nix
+          ];
+        };
+      };
     };
+    # // inputs.flake-utils.lib.eachDefaultSystem
+    #   (
+    #     system:
+    #     let
+    #       pkgs = import inputs.nixpkgs { inherit system; };
+    #     in
+    #     {
+    #       # If you're not using NixOS and only want to load your home
+    #       # configuration when `nix` is installed on your system and
+    #       # flakes are enabled.
+    #       #
+    #       # Enable a `nix develop` shell with home-manager and git to
+    #       # only load your home configuration.
+    #       devShell = pkgs.mkShell {
+    #         buildInputs = with pkgs; [ home-manager git ];
+    #         NIX_CONFIG = "experimental-features = nix-command flakes";
+    #       };
+    #     }
+    #   );
 }
