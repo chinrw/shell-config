@@ -74,6 +74,9 @@ in
     rclone
     gitoxide
     lazygit
+    hexyl
+    dua
+    nix-search-cli
     inputs.yazi.packages.${pkgs.system}.default
   ] ++ lib.optionals (isLaptop) [
   ] ++ lib.optionals (isDekstop) [
