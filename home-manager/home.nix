@@ -9,9 +9,6 @@
 , ...
 }:
 let
-  neovim-overlays = [
-    inputs.neovim-nightly-overlay.overlay
-  ];
   isLaptop =
     if (hostname == "laptop")
     then true
@@ -37,7 +34,7 @@ in
     overlays = [
       # If you want to use overlays exported from other flakes:
       # neovim-overlays
-      outputs.neovim-nightly-overlay.overlay
+      inputs.neovim-nightly-overlay.overlay
 
       outputs.overlays.additions
       outputs.overlays.modifications
@@ -51,12 +48,11 @@ in
       # })
     ];
     # Configure your nixpkgs instance
-    config = {
-      # Disable if you don't want unfree packages
-      allowUnfree = true;
-      # Workaround for https://github.com/nix-community/home-manager/issues/2942
-      allowUnfreePredicate = _: true;
-    };
+    # config = {
+    #   # Disable if you don't want unfree packages
+    #   allowUnfree = true;
+    #   # Workaround for https://github.com/nix-community/home-manager/issues/2942
+    # };
   };
 
   home = {
@@ -93,7 +89,7 @@ in
       ouch
       helix
       nix-search-cli
-      outputs.yazi.packages.${pkgs.system}.default
+      inputs.yazi.packages.${pkgs.system}.default
     ]
     ++ lib.optionals isLaptop [
     ]

@@ -90,7 +90,7 @@
           # > Our main home-manager configuration file <
           modules = [
             ./home-manager/home.nix
-            inputs.nix-index-database.nixosModules.nix-index
+            # inputs.nix-index-database.nixosModules.nix-index
           ];
         };
       };
@@ -108,23 +108,4 @@
         };
       };
     };
-    # // inputs.flake-utils.lib.eachDefaultSystem
-    #   (
-    #     system:
-    #     let
-    #       pkgs = import inputs.nixpkgs { inherit system; };
-    #     in
-    #     {
-    #       # If you're not using NixOS and only want to load your home
-    #       # configuration when `nix` is installed on your system and
-    #       # flakes are enabled.
-    #       #
-    #       # Enable a `nix develop` shell with home-manager and git to
-    #       # only load your home configuration.
-    #       devShell = pkgs.mkShell {
-    #         buildInputs = with pkgs; [ home-manager git ];
-    #         NIX_CONFIG = "experimental-features = nix-command flakes";
-    #       };
-    #     }
-    #   );
 }
