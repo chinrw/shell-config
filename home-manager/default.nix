@@ -54,6 +54,7 @@ in
     sessionVariables = {
       http_proxy = "http://10.0.0.242:10809";
       https_proxy = "http://10.0.0.242:10809";
+      _ZO_FZF_OPTS = "--preview 'eza -G -a --color auto --sort=accessed --git --icons -s type {2}'";
     };
     username = "chin39";
     homeDirectory = "/home/chin39/";
@@ -63,6 +64,7 @@ in
   # Add stuff for your user as you see fit:
   # programs.neovim.enable = true;
   home.packages = with pkgs; [
+    fzf
     eza
     glow
     fastfetch
@@ -76,6 +78,10 @@ in
     lazygit
     hexyl
     dua
+    nix-index
+    _7zz
+    ouch
+    helix
     nix-search-cli
     inputs.yazi.packages.${pkgs.system}.default
   ] ++ lib.optionals (isLaptop) [
@@ -93,9 +99,16 @@ in
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   home.stateVersion = "24.05";
-  # programs.bash = {
-  #   enable = true;
-  # };
+  programs.fish = {
+    enable = true;
+  };
+
+  programs.zoxide = {
+    enable = true;
+    enableFishIntegration = true;
+    enableNushellIntegration = true;
+  };
+
 
   # programs.zsh = {
   #   enable = true;

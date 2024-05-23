@@ -27,6 +27,8 @@
 
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
     yazi.url = "github:sxyazi/yazi";
+    nix-index-database.url = "github:nix-community/nix-index-database";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -68,7 +70,10 @@
         "chin39@laptop" = home-manager.lib.homeManagerConfiguration {
           pkgs = pkgs;
           extraSpecialArgs = { inherit inputs outputs; hostname = "laptop"; };
-          modules = [ ./home-manager/default.nix ];
+          modules = [
+            ./home-manager/default.nix
+            inputs.nix-index-database.nixosModules.nix-index
+          ];
         };
       };
 
