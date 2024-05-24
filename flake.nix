@@ -28,7 +28,8 @@
 
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
     yazi.url = "github:sxyazi/yazi";
-    nix-index-database.url = "github:nix-community/nix-index-database";
+
+    nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
   };
 

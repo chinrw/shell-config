@@ -27,7 +27,12 @@ in
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
+    inputs.nix-index-database.hmModules.nix-index
   ];
+
+  file = {
+    "${config.xdg.configHome}/.zshrc".text = builtins.readFile ./zsh/zshrc;
+  };
 
   nixpkgs = {
     # You can add overlays here
@@ -115,6 +120,26 @@ in
 
   programs.zsh = {
     enable = true;
+
+    plugins = [
+      {
+        name = "zsh-autosuggestions";
+        src = pkgs.zsh-syntax-highlighting;
+        file = "share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh";
+      }
+      {
+        name = "powerlevel10k";
+        src = pkgs.zsh-powerlevel10k;
+        file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+      }
+      {
+        name = "powerlevel10k-config";
+        src = lib.cleanSource ./p10k-config;
+        file = "p10k.zsh";
+      }
+    ];
+
+
     oh-my-zsh = {
       enable = true;
       plugins = [
@@ -127,7 +152,6 @@ in
         "ssh-agent"
         "docker"
         "docker-compose"
-        "zsh-autosuggestions"
         "history-substring-search"
         "zsh-syntax-highlighting"
         "zoxide"
@@ -135,19 +159,9 @@ in
       theme = "powerlevel10k/powerlevel10k";
     };
 
-    plugin = [
-      {
-        name = "powerlevel10k";
-        src = pkgs.zsh-powerlevel10k;
-        file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
-      }
-      {
-        name = "powerlevel10k-config";
-        src = lib.cleanSource ./p10k-config;
-        file = "p10k.zsh";
-      }
-    ];
   };
+
+  # nix-index.enable = true;
 
   # Nicely reload system units when changing configs
   # systemd.user.startServices = "sd-switch";
