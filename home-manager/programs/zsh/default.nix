@@ -60,7 +60,7 @@ fi
 bindkey \^U backward-kill-line
 bindkey '^r' _atuin_search_widget
 
-" + lib.optionals isDesktop
+" + lib.optionalString isDesktop
       "
 alias_flatpak_exports() {
   zmodload zsh/parameter
