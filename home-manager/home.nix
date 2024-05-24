@@ -9,6 +9,7 @@
 , ...
 }:
 let
+  inherit (pkgs.stdenv) isDarwin isLinux;
   isLaptop =
     if (hostname == "laptop")
     then true
@@ -17,6 +18,7 @@ let
     if (hostname == "desktop")
     then true
     else false;
+  username = "chin39";
 in
 {
   # You can import other home-manager modules here
@@ -24,15 +26,13 @@ in
     # If you want to use home-manager modules from other flakes (such as nix-colors):
     # inputs.nix-colors.homeManagerModule
     ./programs/nushell
+    ./programs/zsh
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
     inputs.nix-index-database.hmModules.nix-index
   ];
 
-  file = {
-    "${config.xdg.configHome}/.zshrc".text = builtins.readFile ./zsh/zshrc;
-  };
 
   nixpkgs = {
     # You can add overlays here
@@ -67,46 +67,49 @@ in
       https_proxy = "http://10.0.0.242:10809";
       _ZO_FZF_OPTS = "--preview 'eza -G -a --color auto --sort=accessed --git --icons -s type {2}'";
     };
-    username = "chin39";
-    homeDirectory = "/home/chin39/";
-  };
+    username = username;
+    homeDirectory = "/home/${username}";
+    #
+    # file = {
+    #   "${config.home.homeDirectory}/.zshrc".text = builtins.readFile ./zsh/zshrc;
+    # };
+    packages = with pkgs;
+      [
+        fzf
+        eza
+        glow
+        conda
+        fastfetch
+        onefetch
+        gitui
+        genact
+        angle-grinder
+        zellij
+        rclone
+        gitoxide
+        lazygit
+        hexyl
+        dua
+        _7zz
+        ouch
+        helix
+        nix-search-cli
+        inputs.yazi.packages.${pkgs.system}.default
+      ]
+      ++ lib.optionals isLaptop [
+      ]
+      ++ lib.optionals isDekstop [
+        openapi-tui
+        jellyfin-media-player
+      ];
 
-  home.packages = with pkgs;
-    [
-      fzf
-      eza
-      glow
-      fastfetch
-      onefetch
-      gitui
-      genact
-      angle-grinder
-      zellij
-      rclone
-      gitoxide
-      lazygit
-      hexyl
-      dua
-      nix-index
-      _7zz
-      ouch
-      helix
-      nix-search-cli
-      inputs.yazi.packages.${pkgs.system}.default
-    ]
-    ++ lib.optionals isLaptop [
-    ]
-    ++ lib.optionals isDekstop [
-      openapi-tui
-      jellyfin-media-player
-    ];
+  };
 
   # Enable home-manager and git
   programs.home-manager.enable = true;
   programs.git.enable = true;
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-  home.stateVersion = "24.05";
   programs.fish = {
     enable = true;
   };
@@ -118,52 +121,23 @@ in
     enableNushellIntegration = true;
   };
 
-  programs.zsh = {
+  programs.nix-index = {
     enable = true;
-
-    plugins = [
-      {
-        name = "zsh-autosuggestions";
-        src = pkgs.zsh-syntax-highlighting;
-        file = "share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh";
-      }
-      {
-        name = "powerlevel10k";
-        src = pkgs.zsh-powerlevel10k;
-        file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
-      }
-      {
-        name = "powerlevel10k-config";
-        src = lib.cleanSource ./p10k-config;
-        file = "p10k.zsh";
-      }
-    ];
-
-
-    oh-my-zsh = {
-      enable = true;
-      plugins = [
-        "fzf-tab"
-        "git"
-        "rust"
-        "python"
-        "pip"
-        "systemd"
-        "ssh-agent"
-        "docker"
-        "docker-compose"
-        "history-substring-search"
-        "zsh-syntax-highlighting"
-        "zoxide"
-      ];
-      theme = "powerlevel10k/powerlevel10k";
-    };
-
   };
 
-  # nix-index.enable = true;
+  home.stateVersion = "24.05";
+
+  xdg = {
+    enable = isLinux;
+    userDirs = {
+      enable = isLinux;
+      createDirectories = lib.mkDefault true;
+      extraConfig = {
+        XDG_SCREENSHOTS_DIR = "${config.home.homeDirectory}/Pictures/Screenshots";
+      };
+    };
+  };
 
   # Nicely reload system units when changing configs
   # systemd.user.startServices = "sd-switch";
-
 }
