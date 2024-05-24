@@ -1,59 +1,82 @@
-{ lib, pkgs, ... }: {
+{ lib, pkgs, isDesktop, ... }: {
 
   programs.zsh = {
     enable = true;
 
     initExtra = "
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r \"\${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-\${(%):-%n}.zsh\" ]]; then
+  source \"\${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-\${(%):-%n}.zsh\"
+fi
 
-      # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-      # Initialization code that may require console input (password prompts, [y/n]
-      # confirmations, etc.) must go above this block; everything else may go below.
-      if [[ -r \"\${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-\${(%):-%n}.zsh\" ]]; then
-        source \"\${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-\${(%):-%n}.zsh\"
-      fi
+# Uncomment the following line to use hyphen-insensitive completion.
+# Case-sensitive completion must be off. _ and - will be interchangeable.
+HYPHEN_INSENSITIVE=\"true\"
+bindkey '\CI' expand-or-complete-prefix
 
-      # Uncomment the following line to use hyphen-insensitive completion.
-      # Case-sensitive completion must be off. _ and - will be interchangeable.
-      HYPHEN_INSENSITIVE=\"true\"
-      bindkey '\CI' expand-or-complete-prefix
+# User configuration
+zstyle ':fzf-tab:complete:eza:*' fzf-preview 'eza -G -a --color auto --sort=accessed --git --icons -s type $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -G -a --color auto --sort=accessed --git --icons -s type $realpath'
+# disable sort when completing `git checkout`
+zstyle ':completion:*:git-checkout:*' sort false
+# set list-colors to enable filename colorizing
+zstyle ':completion:*' list-colors \${(s.:.)LS_COLORS}
+# preview directory's content with eza when completing cd
+zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl status $word'
 
-      # User configuration
-      zstyle ':fzf-tab:complete:eza:*' fzf-preview 'eza -G -a --color auto --sort=accessed --git --icons -s type $realpath'
-      zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -G -a --color auto --sort=accessed --git --icons -s type $realpath'
-      # disable sort when completing `git checkout`
-      zstyle ':completion:*:git-checkout:*' sort false
-      # set list-colors to enable filename colorizing
-      zstyle ':completion:*' list-colors \${(s.:.)LS_COLORS}
-      # preview directory's content with eza when completing cd
-      zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl status $word'
+# it is a fzf example. you can change it
+zstyle ':fzf-tab:complete:git-(add|diff|restore):*' fzf-preview \\
+	'git diff $word | delta'
+zstyle ':fzf-tab:complete:git-log:*' fzf-preview \\
+	'git log --color=always $word'
+zstyle ':fzf-tab:complete:git-help:*' fzf-preview \\
+	'git help $word | bat -plman --color=always'
+zstyle ':fzf-tab:complete:git-show:*' fzf-preview \\
+	'case \"\$group\" in
+	\"commit tag\") git show --color=always $word ;;
+	*) git show --color=always $word | delta ;;
+	esac'
+zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview \\
+	'case \"\$group\" in
+	\"modified file\") git diff $word | delta ;;
+	\"recent commit object nam\") git show --color=always $word | delta ;;
+	*) git log --color=always $word ;;
+	esac'
 
-      # it is an example. you can change it
-      zstyle ':fzf-tab:complete:git-(add|diff|restore):*' fzf-preview \\
-      	'git diff $word | delta'
-      zstyle ':fzf-tab:complete:git-log:*' fzf-preview \\
-      	'git log --color=always $word'
-      zstyle ':fzf-tab:complete:git-help:*' fzf-preview \\
-      	'git help $word | bat -plman --color=always'
-      zstyle ':fzf-tab:complete:git-show:*' fzf-preview \\
-      	'case \"\$group\" in
-      	\"commit tag\") git show --color=always $word ;;
-      	*) git show --color=always $word | delta ;;
-      	esac'
-      zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview \\
-      	'case \"\$group\" in
-      	\"modified file\") git diff $word | delta ;;
-      	\"recent commit object nam\") git show --color=always $word | delta ;;
-      	*) git log --color=always $word ;;
-      	esac'
+bindkey \"^P\" history-substring-search-up
+bindkey \"^N\" history-substring-search-down
 
-        bindkey \"^P\" history-substring-search-up
-      bindkey \"^N\" history-substring-search-down
+if [[ $TERM = dumb ]]; then
+  unset zle_bracketed_paste
+fi
 
-      if [[ $TERM = dumb ]]; then
-        unset zle_bracketed_paste
-      fi
+" + lib.optionals isDesktop
+      "
+alias_flatpak_exports() {
+  zmodload zsh/parameter
+	local item
+	for item in {\${XDG_DATA_HOME:-$HOME/.local/share},/var/lib}/flatpak/exports/bin/*; do
+		[ -x \"$item\" ] || continue
 
-      ";
+    local flatpak_short_alias=\"\${item//*.}\"
+		local flatpak_long_alias=\"\${item//*\/}\"
+	
+		if [ ! \"$(command -v \"$flatpak_short_alias\")\" ]; then
+      alias \"\${(L)flatpak_short_alias}\"=\"$item\"
+		elif [ ! \"\$(command -v \"\$flatpak_long_alias\")\" ]; then
+			alias \"$flatpak_long_alias\"=\"$item\"
+		fi
+	done
+}
+
+if [ \"$(command -v flatpak)\" ] ; then
+    PATH=\"/var/lib/flatpak/exports/bin:$PATH\"
+    PATH=\"$HOME/.local/share/flatpak/exports/bin:$PATH\"
+    alias_flatpak_exports
+fi
+";
 
     plugins = [
       {
@@ -87,7 +110,6 @@
     oh-my-zsh = {
       enable = true;
       plugins = [
-        # "fzf-tab"
         "git"
         "rust"
         "python"
@@ -97,13 +119,9 @@
         "docker"
         "docker-compose"
         "history-substring-search"
-        # "zsh-syntax-highlighting"
-        # "zoxide"
       ];
-      extraConfig = "
-
-
-      ";
+      # extraConfig = "
+      #   ";
     };
 
   };

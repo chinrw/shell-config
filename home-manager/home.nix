@@ -14,7 +14,7 @@ let
     if (hostname == "laptop")
     then true
     else false;
-  isDekstop =
+  isDesktop =
     if (hostname == "desktop")
     then true
     else false;
@@ -26,13 +26,12 @@ in
     # If you want to use home-manager modules from other flakes (such as nix-colors):
     # inputs.nix-colors.homeManagerModule
     ./programs/nushell
-    ./programs/zsh
+    (import ./programs/zsh { inherit lib pkgs isDesktop isLaptop; })
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
     inputs.nix-index-database.hmModules.nix-index
   ];
-
 
   nixpkgs = {
     # You can add overlays here
@@ -98,7 +97,7 @@ in
       ]
       ++ lib.optionals isLaptop [
       ]
-      ++ lib.optionals isDekstop [
+      ++ lib.optionals isDesktop [
         openapi-tui
         jellyfin-media-player
       ];
