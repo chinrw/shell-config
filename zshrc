@@ -10,25 +10,25 @@
 
 
 # Update Display variables with tmux
-if [ -n "$TMUX" ]; then
-    function renew_tmux_env_one {
-        oneenv=$(tmux show-environment | grep "^$1")
-        [[ ! -z $oneenv ]] && export $oneenv
-    }
-    function renew_tmux_env {
-        renew_tmux_env_one DISPLAY
-        renew_tmux_env_one SSH_CONNECTION
-        renew_tmux_env_one SSH_AUTH_SOCK
-        # update xauth
-        xauth merge $HOME/.Xauthority
-    }
-else
-    function renew_tmux_env {}
-fi
-
-function preexec {
-    renew_tmux_env
-}
+# if [ -n "$TMUX" ]; then
+#     function renew_tmux_env_one {
+#         oneenv=$(tmux show-environment | grep "^$1")
+#         [[ ! -z $oneenv ]] && export $oneenv
+#     }
+#     function renew_tmux_env {
+#         renew_tmux_env_one DISPLAY
+#         renew_tmux_env_one SSH_CONNECTION
+#         renew_tmux_env_one SSH_AUTH_SOCK
+#         # update xauth
+#         xauth merge $HOME/.Xauthority
+#     }
+# else
+#     function renew_tmux_env {}
+# fi
+#
+# function preexec {
+#     renew_tmux_env
+# }
 
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
