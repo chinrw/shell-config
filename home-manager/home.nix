@@ -34,7 +34,7 @@ in
     overlays = [
       # If you want to use overlays exported from other flakes:
       # neovim-overlays
-      inputs.neovim-nightly-overlay.overlay
+      # inputs.neovim-nightly-overlay.overlays
 
       outputs.overlays.additions
       outputs.overlays.modifications
@@ -66,8 +66,6 @@ in
     homeDirectory = "/home/chin39/";
   };
 
-  # Add stuff for your user as you see fit:
-  # programs.neovim.enable = true;
   home.packages = with pkgs;
     [
       fzf
@@ -111,13 +109,47 @@ in
   programs.zoxide = {
     enable = true;
     enableFishIntegration = true;
+    enableZshIntegration = true;
     enableNushellIntegration = true;
   };
 
-  # Nicely reload system units when changing configs
-  systemd.user.startServices = "sd-switch";
+  programs.zsh = {
+    enable = true;
+    oh-my-zsh = {
+      enable = true;
+      plugins = [
+        "fzf-tab"
+        "git"
+        "rust"
+        "python"
+        "pip"
+        "systemd"
+        "ssh-agent"
+        "docker"
+        "docker-compose"
+        "zsh-autosuggestions"
+        "history-substring-search"
+        "zsh-syntax-highlighting"
+        "zoxide"
+      ];
+      theme = "powerlevel10k/powerlevel10k";
+    };
 
-  # programs.zsh = {
-  #   enable = true;
-  # };
+    plugin = [
+      {
+        name = "powerlevel10k";
+        src = pkgs.zsh-powerlevel10k;
+        file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+      }
+      {
+        name = "powerlevel10k-config";
+        src = lib.cleanSource ./p10k-config;
+        file = "p10k.zsh";
+      }
+    ];
+  };
+
+  # Nicely reload system units when changing configs
+  # systemd.user.startServices = "sd-switch";
+
 }
