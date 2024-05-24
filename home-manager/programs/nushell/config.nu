@@ -10,7 +10,7 @@ $env.config = {
         padding: { left: 2, right: 1 }
     }
     completions: {
-        algorithm: prefix # fuzzy, prefix
+        algorithm: fuzzy # fuzzy, prefix
         quick: true
         case_sensitive: false
         external: {

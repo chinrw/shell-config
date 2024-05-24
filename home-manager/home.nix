@@ -68,7 +68,7 @@ in
     };
     username = username;
     homeDirectory = "/home/${username}";
-    #
+
     # file = {
     #   "${config.home.homeDirectory}/.zshrc".text = builtins.readFile ./zsh/zshrc;
     # };
@@ -111,6 +111,28 @@ in
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   programs.fish = {
     enable = true;
+  };
+
+  programs.atuin = {
+    enable = true;
+    enableNushellIntegration = true;
+    enableZshIntegration = true;
+    enableFishIntegration = true;
+
+    flags = [
+      "--disable-up-arrow"
+    ];
+
+    package = pkgs.atuin;
+    settings = {
+      # auto_sync = false;
+      show_preview = true;
+      search_mode = "skim";
+      style = "compact";
+      # sync_frequency = "1h";
+      # sync_address = "https://api.atuin.sh";
+      update_check = false;
+    };
   };
 
   programs.zoxide = {

@@ -3,6 +3,11 @@
   programs.zsh = {
     enable = true;
 
+    localVariables = {
+      # variable for eza
+      TREE_IGNORE = [ "cache|log|logs|node_modules|vendor" ];
+    };
+
     initExtra = "
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
@@ -52,6 +57,9 @@ if [[ $TERM = dumb ]]; then
   unset zle_bracketed_paste
 fi
 
+bindkey \^U backward-kill-line
+bindkey '^r' _atuin_search_widget
+
 " + lib.optionals isDesktop
       "
 alias_flatpak_exports() {
@@ -77,18 +85,20 @@ if [ \"$(command -v flatpak)\" ] ; then
     alias_flatpak_exports
 fi
 ";
+    autosuggestion.enable = true;
+    syntaxHighlighting.enable = true;
 
     plugins = [
-      {
-        name = "zsh-syntax-highlighting";
-        src = pkgs.zsh-syntax-highlighting;
-        file = "share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh";
-      }
-      {
-        name = "zsh-autosuggestions";
-        src = pkgs.zsh-autosuggestions;
-        file = "share/zsh-autosuggestions/zsh-autosuggestions.zsh";
-      }
+      # {
+      #   name = "zsh-syntax-highlighting";
+      #   src = pkgs.zsh-syntax-highlighting;
+      #   file = "share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh";
+      # }
+      # {
+      #   name = "zsh-autosuggestions";
+      #   src = pkgs.zsh-autosuggestions;
+      #   file = "share/zsh-autosuggestions/zsh-autosuggestions.zsh";
+      # }
       {
         name = "fzf-tab";
         src = pkgs.zsh-fzf-tab;
@@ -106,6 +116,13 @@ fi
       }
     ];
 
+    shellAliases = {
+      ls = "eza -G  --color auto --git --icons -s type";
+      l = "eza -G  --color auto --git --icons -s type";
+      ll = "eza -l -g --color always --git --icons -a -s type";
+      lt = "eza --color auto --icons -a -s type --tree -D -L 2 -I \${TREE_IGNORE}";
+      ltt = "eza --color auto --icons -a -s type --tree -D -L 3 -I \${TREE_IGNORE}";
+    };
 
     oh-my-zsh = {
       enable = true;
