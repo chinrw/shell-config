@@ -61,11 +61,15 @@ in
 
   home = {
     # useGlobalPkgs = true;
-    sessionVariables = {
-      http_proxy = "http://10.0.0.242:10809";
-      https_proxy = "http://10.0.0.242:10809";
-      _ZO_FZF_OPTS = "--preview 'eza -G -a --color auto --sort=accessed --git --icons -s type {2}'";
-    };
+    sessionVariables = lib.mkMerge [
+      {
+        _ZO_FZF_OPTS = "--preview 'eza -G -a --color auto --sort=accessed --git --icons -s type {2}'";
+      }
+      (lib.mkIf isDesktop {
+        http_proxy = "http://10.0.0.242:10809";
+        https_proxy = "http://10.0.0.242:10809";
+      })
+    ];
     username = username;
     homeDirectory = "/home/${username}";
 
