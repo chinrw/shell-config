@@ -85,6 +85,8 @@ if [ \"$(command -v flatpak)\" ] ; then
     alias_flatpak_exports
 fi
 ";
+
+    enableCompletion = true;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
 
@@ -114,6 +116,11 @@ fi
         src = lib.cleanSource ./p10k-config;
         file = "p10k.zsh";
       }
+      {
+        name = "rclone_complete";
+        src = pkgs.rclone;
+        file = "share/zsh/site-functions/_rclone";
+      }
     ];
 
     shellAliases = {
@@ -127,6 +134,8 @@ fi
     oh-my-zsh = {
       enable = true;
       plugins = [
+        "1password"
+        "fzf"
         "git"
         "rust"
         "python"

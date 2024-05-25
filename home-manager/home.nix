@@ -38,7 +38,7 @@ in
     overlays = [
       # If you want to use overlays exported from other flakes:
       # neovim-overlays
-      # inputs.neovim-nightly-overlay.overlays
+      # inputs.neovim-nightly-overlay.overlay
 
       outputs.overlays.additions
       outputs.overlays.modifications
@@ -79,7 +79,6 @@ in
     packages = with pkgs;
       [
         fzf
-        eza
         glow
         conda
         fastfetch
@@ -117,40 +116,80 @@ in
     enable = true;
   };
 
-  programs.atuin = {
-    enable = true;
-    enableNushellIntegration = true;
-    enableZshIntegration = true;
-    enableFishIntegration = true;
-
-    flags = [
-      "--disable-up-arrow"
-    ];
-
-    package = pkgs.atuin;
-    settings = {
-      # auto_sync = false;
-      show_preview = true;
-      search_mode = "skim";
-      style = "compact";
-      # sync_frequency = "1h";
-      # sync_address = "https://api.atuin.sh";
-      update_check = false;
-    };
-  };
-
-  programs.zoxide = {
-    enable = true;
-    enableFishIntegration = true;
-    enableZshIntegration = true;
-    enableNushellIntegration = true;
-  };
 
   programs.nix-index = {
     enable = true;
   };
 
-  home.stateVersion = "24.05";
+  programs = {
+    zoxide = {
+      enable = true;
+      enableFishIntegration = true;
+      enableZshIntegration = true;
+      enableNushellIntegration = true;
+    };
+
+    atuin = {
+      enable = true;
+      enableNushellIntegration = true;
+      enableZshIntegration = true;
+      enableFishIntegration = true;
+
+      flags = [
+        "--disable-up-arrow"
+      ];
+
+      package = pkgs.atuin;
+      settings = {
+        # auto_sync = false;
+        show_preview = true;
+        search_mode = "skim";
+        style = "compact";
+        # sync_frequency = "1h";
+        # sync_address = "https://api.atuin.sh";
+        update_check = false;
+      };
+    };
+
+    bat = {
+      enable = true;
+      extraPackages = with pkgs.bat-extras; [
+        batgrep
+        batwatch
+        prettybat
+      ];
+    };
+
+    direnv = {
+      enable = true;
+      enableBashIntegration = true;
+      enableZshIntegration = true;
+      nix-direnv = {
+        enable = true;
+      };
+    };
+
+    eza = {
+      enable = true;
+      extraOptions = [
+        "--group-directories-first"
+        "--header"
+      ];
+      git = true;
+      icons = true;
+    };
+
+    ripgrep = {
+      arguments = [
+        "--colors=line:style:bold"
+        "--max-columns-preview"
+        "--smart-case"
+      ];
+      enable = true;
+    };
+  };
+
+  home.stateVersion = "24.11";
 
   xdg = {
     enable = isLinux;
