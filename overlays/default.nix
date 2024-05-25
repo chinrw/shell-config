@@ -7,9 +7,20 @@
   # You can change versions, add patches, set compilation flags, anything really.
   # https://nixos.wiki/wiki/Overlays
   modifications = final: prev: {
-    # example = prev.example.overrideAttrs (oldAttrs: rec {
-    # ...
-    # });
+    eza = prev.eza.overrideAttrs (old: rec {
+      # We can change the version of the package
+      # pname = "eza";
+      # version = "0.18.15";
+      # src = prev.fetchFromGitHub {
+      #   owner = "eza-community";
+      #   repo = "eza";
+      #   rev = "v${version}";
+      #   hash = "sha256-8Kv2jDWb1HDjxeGZ36btQM/b+lx3yKkkvMxDyzmMUvw=";
+      # };
+      # cargoHash = "";
+
+      extraRustcOpts = "-C target-cpu=native";
+    });
   };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will

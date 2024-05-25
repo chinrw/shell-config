@@ -44,6 +44,9 @@ in
       outputs.overlays.modifications
       outputs.overlays.unstable-packages
 
+
+      (import ../overlays/rust-overlay.nix)
+
       # Or define it inline, for example:
       # (final: prev: {
       #   hi = final.hello.overrideAttrs (oldAttrs: {
