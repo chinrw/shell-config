@@ -18,8 +18,7 @@
       #   hash = "sha256-8Kv2jDWb1HDjxeGZ36btQM/b+lx3yKkkvMxDyzmMUvw=";
       # };
       # cargoHash = "";
-
-      extraRustcOpts = "-C target-cpu=native";
+      # extraRustcOpts = "-C target-cpu=native";
     });
   };
 

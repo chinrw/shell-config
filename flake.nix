@@ -5,7 +5,7 @@
     substituters = [
       # cache mirror located in China
       # status: https://mirror.sjtu.edu.cn/
-      # "https://mirror.sjtu.edu.cn/nix-channels/store"
+      "https://mirror.sjtu.edu.cn/nix-channels/store"
       # status: https://mirrors.ustc.edu.cn/status/
       # "https://mirrors.ustc.edu.cn/nix-channels/store"
       "https://cache.nixos.org"
@@ -67,7 +67,7 @@
 
       # Reusable home-manager modules you might want to export
       # These are usually stuff you would upstream into home-manager
-      homeManagerModules = import ./modules/home-manager;
+      # homeManagerModules = import ./modules/home-manager;
 
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
@@ -91,7 +91,6 @@
           # > Our main home-manager configuration file <
           modules = [
             ./home-manager/home.nix
-            # inputs.nix-index-database.nixosModules.nix-index
           ];
         };
       };

@@ -62,6 +62,9 @@ in
     # };
   };
 
+  # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
+  home.stateVersion = "24.11";
+
   home = {
     # useGlobalPkgs = true;
     sessionVariables = lib.mkMerge [
@@ -114,7 +117,6 @@ in
   programs.home-manager.enable = true;
   programs.git.enable = true;
 
-  # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   programs.fish = {
     enable = true;
   };
@@ -192,7 +194,6 @@ in
     };
   };
 
-  home.stateVersion = "24.11";
 
   xdg = {
     enable = isLinux;
