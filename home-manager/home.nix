@@ -38,7 +38,7 @@ in
     overlays = [
       # If you want to use overlays exported from other flakes:
       # neovim-overlays
-      # inputs.neovim-nightly-overlay.overlays.default
+      inputs.neovim-nightly-overlay.overlays.default
       # (import ../overlays/rust-overlay.nix)
 
       outputs.overlays.additions
@@ -53,12 +53,12 @@ in
       # })
     ];
     # Configure your nixpkgs instance
-    # config = {
-    #   # Disable if you don't want unfree packages
-    #   allowUnfree = true;
-    #   # Workaround for https://github.com/nix-community/home-manager/issues/2942
-    #   allowUnfreePredicate = _: true;
-    # };
+    config = {
+      # Disable if you don't want unfree packages
+      allowUnfree = true;
+      # Workaround for https://github.com/nix-community/home-manager/issues/2942
+      allowUnfreePredicate = _: true;
+    };
   };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
@@ -97,9 +97,10 @@ in
         lazygit
         hexyl
         dua
-        # (_7zz.override { enableUnfree = true; })
+        (_7zz.override { enableUnfree = true; })
         ouch
         helix
+        neovim
         nix-search-cli
         inputs.yazi.packages.${pkgs.system}.default
       ]
