@@ -11,10 +11,10 @@ max_height = 2000
 
 
 [opener]
-append_edit = [
-	{ run = '${EDITOR:=vi} "$@"', desc = "$EDITOR", block = true, for = "unix" },
-	{ run = 'subl "$@"', desc = "sublime", block = false, for = "unix" },
-]
+# append_edit = [
+# 	{ run = '${EDITOR:=vi} "$@"', desc = "$EDITOR", block = true, for = "unix" },
+# 	{ run = 'subl "$@"', desc = "sublime", block = false, for = "unix" },
+# ]
 edit = [
 	{ run = '${EDITOR:=vi} "$@"', desc = "$EDITOR", block = true, for = "unix" },
 	{ run = 'code "%*"', orphan = true, desc = "code", for = "windows" },
@@ -57,7 +57,6 @@ rules = [
 	] },
 
 	{ mime = "text/*", use = [
-		"view",
 		"edit",
 		"reveal",
 	] },
