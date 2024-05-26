@@ -38,14 +38,12 @@ in
     overlays = [
       # If you want to use overlays exported from other flakes:
       # neovim-overlays
-      # inputs.neovim-nightly-overlay.overlay
+      # inputs.neovim-nightly-overlay.overlays.default
+      # (import ../overlays/rust-overlay.nix)
 
       outputs.overlays.additions
       outputs.overlays.modifications
       outputs.overlays.unstable-packages
-
-
-      (import ../overlays/rust-overlay.nix)
 
       # Or define it inline, for example:
       # (final: prev: {
@@ -59,6 +57,7 @@ in
     #   # Disable if you don't want unfree packages
     #   allowUnfree = true;
     #   # Workaround for https://github.com/nix-community/home-manager/issues/2942
+    #   allowUnfreePredicate = _: true;
     # };
   };
 
@@ -98,7 +97,7 @@ in
         lazygit
         hexyl
         dua
-        _7zz
+        # (_7zz.override { enableUnfree = true; })
         ouch
         helix
         nix-search-cli
