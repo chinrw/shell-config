@@ -1,4 +1,4 @@
-{ lib, pkgs, isDesktop, ... }: {
+{ lib, pkgs, isDesktop, isLaptop, ... }: {
 
   programs.zsh = {
     enable = true;
@@ -60,7 +60,12 @@ fi
 bindkey \^U backward-kill-line
 bindkey '^r' _atuin_search_widget
 
-" + lib.optionalString isDesktop
+" + lib.optionalString isLaptop
+      "
+# for single user mode
+if [ -e /home/chin39/.nix-profile/etc/profile.d/nix.sh ]; then . /home/chin39/.nix-profile/etc/profile.d/nix.sh; fi 
+"
+    + lib.optionalString isDesktop
       "
 alias_flatpak_exports() {
   zmodload zsh/parameter
