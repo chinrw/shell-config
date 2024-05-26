@@ -177,7 +177,6 @@ in
       enable = true;
       extraOptions = [
         "--group-directories-first"
-        "--header"
       ];
       git = true;
       icons = true;
