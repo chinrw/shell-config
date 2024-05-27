@@ -184,11 +184,11 @@
         "pre-commit-hooks": "pre-commit-hooks"
       },
       "locked": {
-        "lastModified": 1716760058,
-        "narHash": "sha256-5fMMNezTARjbc8HgEkvcOazlrsBBzlKSMVp56xTCY2g=",
+        "lastModified": 1716818885,
+        "narHash": "sha256-sBi+rAf30wHnlhwOueoVHExGZFr4o1LTTexe8Llfc1Q=",
         "owner": "nix-community",
         "repo": "neovim-nightly-overlay",
-        "rev": "0c1fc48841eda5e35402327b1a71f4bb034a012c",
+        "rev": "241821173b62c73be35e3bc824de4f07bdd3c157",
         "type": "github"
       },
       "original": {
@@ -380,11 +380,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1716766090,
-        "narHash": "sha256-/l5Bc9ppnU2C8L574PymR60daFctr8Q2NXMTPAcQhbY=",
+        "lastModified": 1716816975,
+        "narHash": "sha256-cfHI44DW6QFXapbgFxM7GUwM3qiSrHXwOK4CK0pNqgw=",
         "owner": "sxyazi",
         "repo": "yazi",
-        "rev": "1ab3df6850640c034a624566abcc8ef968c77a89",
+        "rev": "b81b707a3ea767e04fb02fddfc3a093e7769229e",
         "type": "github"
       },
       "original": {
