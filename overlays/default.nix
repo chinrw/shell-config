@@ -11,6 +11,12 @@
       # We can change the version of the package
       extraRustcOpts = "-C target-cpu=native";
     });
+
+    yazi = prev.yazi.overrideAttrs (old: rec {
+      # We can change the version of the package
+      extraRustcOpts = "-C target-cpu=native";
+    });
+
   };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
