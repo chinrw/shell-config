@@ -184,11 +184,11 @@
         "pre-commit-hooks": "pre-commit-hooks"
       },
       "locked": {
-        "lastModified": 1716672993,
-        "narHash": "sha256-KISj1WGeeEb6d2rYFRGYHYiDvNJN1JtRKU2+jE32LMQ=",
+        "lastModified": 1716760058,
+        "narHash": "sha256-5fMMNezTARjbc8HgEkvcOazlrsBBzlKSMVp56xTCY2g=",
         "owner": "nix-community",
         "repo": "neovim-nightly-overlay",
-        "rev": "0f91f34a626baade98dfa091cc7a023266644d91",
+        "rev": "0c1fc48841eda5e35402327b1a71f4bb034a012c",
         "type": "github"
       },
       "original": {
@@ -298,13 +298,13 @@
         "lastModified": 1716213921,
         "narHash": "sha256-xrsYFST8ij4QWaV6HEokCUNIZLjjLP1bYC60K8XiBVA=",
         "owner": "cachix",
-        "repo": "pre-commit-hooks.nix",
+        "repo": "git-hooks.nix",
         "rev": "0e8fcc54b842ad8428c9e705cb5994eaf05c26a0",
         "type": "github"
       },
       "original": {
         "owner": "cachix",
-        "repo": "pre-commit-hooks.nix",
+        "repo": "git-hooks.nix",
         "type": "github"
       }
     },
@@ -380,11 +380,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1716732633,
-        "narHash": "sha256-Ft88BIa9+Eoqm6TwZrrZlWGCRek5pQfMOfR5BwEIP+4=",
+        "lastModified": 1716766090,
+        "narHash": "sha256-/l5Bc9ppnU2C8L574PymR60daFctr8Q2NXMTPAcQhbY=",
         "owner": "sxyazi",
         "repo": "yazi",
-        "rev": "53d658d4dcabd3f05701a6d3f5b9421fc751f872",
+        "rev": "1ab3df6850640c034a624566abcc8ef968c77a89",
         "type": "github"
       },
       "original": {
