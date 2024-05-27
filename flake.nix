@@ -3,6 +3,8 @@
 
   nixConfig = {
     substituters = [
+      # personal cache server
+      "https://chinrw.cachix.org"
       # cache mirror located in China
       # status: https://mirror.sjtu.edu.cn/
       "https://mirror.sjtu.edu.cn/nix-channels/store"
@@ -10,8 +12,9 @@
       # "https://mirrors.ustc.edu.cn/nix-channels/store"
       "https://cache.nixos.org"
     ];
-    # trusted-public-keys = [
-    # ];
+    trusted-public-keys = [
+      "chinrw.cachix.org-1:TShvVLuNeWsGoLW2/VGdUT4k8T+03RuQEXA6ZiN16Rw="
+    ];
   };
 
   inputs = {

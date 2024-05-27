@@ -101,6 +101,7 @@ in
         ouch
         helix
         neovim
+        cachix
         nix-search-cli
         inputs.yazi.packages.${pkgs.system}.default
       ]
