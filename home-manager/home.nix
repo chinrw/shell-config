@@ -192,6 +192,12 @@ in
       ];
       enable = true;
     };
+
+    neovim = {
+      enable = true;
+      defaultEditor = true;
+      package = pkgs.neovim;
+    };
   };
 
 
