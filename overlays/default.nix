@@ -9,12 +9,11 @@
   modifications = final: prev: {
     eza = prev.eza.overrideAttrs (old: rec {
       # We can change the version of the package
-      extraRustcOpts = "-C target-cpu=native";
+      extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold";
     });
-
     yazi = prev.yazi.overrideAttrs (old: rec {
       # We can change the version of the package
-      extraRustcOpts = "-C target-cpu=native";
+      extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold";
     });
 
   };
