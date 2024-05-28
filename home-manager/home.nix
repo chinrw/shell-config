@@ -110,8 +110,11 @@ in
       ++ lib.optionals isDesktop [
         openapi-tui
         jellyfin-media-player
+      ]
+      ++ lib.optionals (!isDesktop) [
+        mold
+        rust
       ];
-
   };
 
   # Enable home-manager and git

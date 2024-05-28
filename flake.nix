@@ -35,12 +35,24 @@
 
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Rust development
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
+
   };
 
   outputs =
     { self
     , nixpkgs
     , home-manager
+    , flake-utils
+    , rust-overlay
     , ...
     } @ inputs:
     let
@@ -56,8 +68,29 @@
       # This is a function that generates an attribute by calling a function you
       # pass to it, with each system as an argument
       forAllSystems = nixpkgs.lib.genAttrs systems;
+
+      overlays = [
+        rust-overlay.overlays.default
+        (final: prev: {
+          rustToolchain = final.rust-bin.stable.latest.default.override {
+            extensions = [ "rust-src" ];
+          };
+        })
+      ];
+
     in
-    {
+    flake-utils.lib.eachDefaultSystem
+      (system:
+      let
+        overlays = [ (import rust-overlay) ];
+        pkgs = import nixpkgs {
+          inherit system overlays;
+        };
+      in
+      {
+        devShells.default = import ./shell/rust.nix { inherit pkgs inputs; };
+      })
+    // {
       # Your custom packages
       # Accessible through 'nix build', 'nix shell', etc
       packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
