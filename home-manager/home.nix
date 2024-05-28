@@ -106,6 +106,8 @@ in
         inputs.yazi.packages.${pkgs.system}.default
       ]
       ++ lib.optionals isLaptop [
+        cmake
+        ninja
       ]
       ++ lib.optionals isDesktop [
         openapi-tui
