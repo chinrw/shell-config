@@ -113,7 +113,7 @@ in
       ]
       ++ lib.optionals (!isDesktop) [
         mold
-        rust
+        rustup
       ];
   };
 
@@ -125,6 +125,9 @@ in
     enable = true;
   };
 
+  programs.bash = {
+    enable = true;
+  };
 
   programs.nix-index = {
     enable = true;
@@ -135,14 +138,16 @@ in
       enable = true;
       enableFishIntegration = true;
       enableZshIntegration = true;
+      enableBashIntegration = true;
       enableNushellIntegration = true;
     };
 
     atuin = {
       enable = true;
-      enableNushellIntegration = true;
-      enableZshIntegration = true;
       enableFishIntegration = true;
+      enableZshIntegration = true;
+      enableBashIntegration = true;
+      enableNushellIntegration = true;
 
       flags = [
         "--disable-up-arrow"
@@ -171,8 +176,9 @@ in
 
     direnv = {
       enable = true;
-      enableBashIntegration = true;
       enableZshIntegration = true;
+      enableBashIntegration = true;
+      enableNushellIntegration = true;
       nix-direnv = {
         enable = true;
       };

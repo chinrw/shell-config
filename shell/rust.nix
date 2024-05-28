@@ -2,7 +2,10 @@
 
 pkgs.mkShell {
   packages = with pkgs; [
-    rustToolchain
+    # rustToolchain
+    (pkgs.rust-bin.beta.latest.default.override {
+      extensions = [ "rust-src" ];
+    })
     rust-analyzer
 
     nodePackages.cspell
@@ -16,6 +19,8 @@ pkgs.mkShell {
     ripgrep
     fzf
     zoxide
+    # keep this line if you use bash
+    pkgs.bashInteractive
   ];
 
   buildInputs = with pkgs;

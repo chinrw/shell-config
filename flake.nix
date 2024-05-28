@@ -69,14 +69,6 @@
       # pass to it, with each system as an argument
       forAllSystems = nixpkgs.lib.genAttrs systems;
 
-      overlays = [
-        rust-overlay.overlays.default
-        (final: prev: {
-          rustToolchain = final.rust-bin.stable.latest.default.override {
-            extensions = [ "rust-src" ];
-          };
-        })
-      ];
 
     in
     flake-utils.lib.eachDefaultSystem
@@ -88,7 +80,7 @@
         };
       in
       {
-        devShells.default = import ./shell/rust.nix { inherit pkgs inputs; };
+        devShells.rust = import ./shell/rust.nix { inherit pkgs inputs; };
       })
     // {
       # Your custom packages
