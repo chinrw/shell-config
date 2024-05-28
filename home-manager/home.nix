@@ -129,6 +129,10 @@ in
 
   programs.bash = {
     enable = true;
+    bashrcExtra = "
+      source /etc/bash/bashrc
+    ";
+    enableCompletion = true;
   };
 
   programs.nix-index = {
