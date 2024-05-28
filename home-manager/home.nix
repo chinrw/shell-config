@@ -103,6 +103,7 @@ in
         neovim
         cachix
         nix-search-cli
+        inputs.nixgl.packages.${pkgs.system}.nixGLDefault
         inputs.yazi.packages.${pkgs.system}.default
       ]
       ++ lib.optionals isLaptop [
