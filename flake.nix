@@ -81,6 +81,7 @@
       in
       {
         devShells.rust = import ./shell/rust.nix { inherit pkgs inputs; };
+        devShells.hm = import ./shell/home-manager.nix { inherit pkgs inputs; };
       })
     // {
       # Your custom packages
