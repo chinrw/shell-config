@@ -103,6 +103,7 @@ in
         neovim
         cachix
         nix-search-cli
+        nurl # Generate Nix fetcher calls from repository URLs
         inputs.yazi.packages.${pkgs.system}.default
       ]
       ++ lib.optionals isLaptop [
