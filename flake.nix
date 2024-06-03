@@ -46,6 +46,13 @@
       };
     };
 
+
+    # Zellij plugin
+    zjstatus = {
+      url = "github:dj95/zjstatus";
+    };
+
+
   };
 
   outputs =

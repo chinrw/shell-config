@@ -45,6 +45,11 @@ in
       outputs.overlays.modifications
       outputs.overlays.unstable-packages
 
+
+      (final: prev: {
+        zjstatus = inputs.zjstatus.packages.${prev.system}.default;
+      })
+
       # Or define it inline, for example:
       # (final: prev: {
       #   hi = final.hello.overrideAttrs (oldAttrs: {
@@ -105,6 +110,7 @@ in
         nix-search-cli
         nurl # Generate Nix fetcher calls from repository URLs
         inputs.yazi.packages.${pkgs.system}.default
+        zjstatus
       ]
       ++ lib.optionals isLaptop [
         cmake
