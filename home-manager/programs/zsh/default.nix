@@ -107,6 +107,11 @@ fi
       #   file = "share/zsh-autosuggestions/zsh-autosuggestions.zsh";
       # }
       {
+        name = "zsh-nix-shell";
+        src = pkgs.zsh-nix-shell;
+        file = "share/zsh-nix-shell/nix-shell.plugin.zsh";
+      }
+      {
         name = "fzf-tab";
         src = pkgs.zsh-fzf-tab;
         file = "share/fzf-tab/fzf-tab.zsh";

@@ -39,6 +39,7 @@
     newline                 # \n
     prompt_char             # prompt symbol
     yazi
+    in_nix_shell
   )
 
   # The list of segments shown on the right. Fill it with less important segments.
@@ -69,7 +70,7 @@
     # package               # name@version from package.json (https://docs.npmjs.com/files/package.json)
     rbenv                   # ruby version from rbenv (https://github.com/rbenv/rbenv)
     rvm                     # ruby version from rvm (https://rvm.io)
-    fvm                     # flutter version management (https://github.com/leoafarias/fvm)
+    # fvm                     # flutter version management (https://github.com/leoafarias/fvm)
     luaenv                  # lua version from luaenv (https://github.com/cehoffman/luaenv)
     jenv                    # java version from jenv (https://github.com/jenv/jenv)
     plenv                   # perl version from plenv (https://github.com/tokuhirom/plenv)
@@ -88,9 +89,9 @@
     toolbox                 # toolbox name (https://github.com/containers/toolbox)
     context                 # user@hostname
     nordvpn                 # nordvpn connection status, linux only (https://nordvpn.com/)
-    ranger                  # ranger shell (https://github.com/ranger/ranger)
-    nnn                     # nnn shell (https://github.com/jarun/nnn)
-    xplr                    # xplr shell (https://github.com/sayanarijit/xplr)
+    # ranger                  # ranger shell (https://github.com/ranger/ranger)
+    # nnn                     # nnn shell (https://github.com/jarun/nnn)
+    # xplr                    # xplr shell (https://github.com/sayanarijit/xplr)
     vim_shell               # vim shell indicator (:sh)
     midnight_commander      # midnight commander shell (https://midnight-commander.org/)
     nix_shell               # nix shell (https://nixos.org/nixos/nix-pills/developing-with-nix-shell.html)
@@ -1566,6 +1567,33 @@
   # Type `p10k help segment` for documentation and a more sophisticated example.
   function prompt_example() {
     p10k segment -f 208 -i '⭐' -t 'hello, %n'
+  }
+
+  function prompt_shell_level() {
+    if [[ $SHLVL -gt 1 ]]; then
+      p10k segment -i '⚡' -f yellow -t "$SHLVL"
+    fi
+  }
+
+  # Show If In Nix Shell
+  function prompt_in_nix_shell() {
+    if echo "$PATH" | grep -qc '/nix/store'; then
+      p10k segment -i '' -f "#7EBAE4" -t "nix"
+    fi
+  }
+
+  # Show Nix Development Shell Name
+  function prompt_nix_dev_shell_name() {
+    if [[ -n $IN_NIX_SHELL ]]; then
+      p10k segment -i '📦' -f yellow -t $name
+    fi
+  }
+
+  # Show if Direnv Active
+  function prompt_in_direnv() {
+    if [[ -n $DIRENV_ACTIVE ]]; then
+      p10k segment -i '📂' -f yellow -t "direnv"
+    fi
   }
 
   # User-defined prompt segments may optionally provide an instant_prompt_* function. Its job

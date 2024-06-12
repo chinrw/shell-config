@@ -111,6 +111,7 @@ in
         nurl # Generate Nix fetcher calls from repository URLs
         inputs.yazi.packages.${pkgs.system}.default
         zjstatus
+        tailspin #  🌀 A log file highlighter 
       ]
       ++ lib.optionals isLaptop [
         cmake
