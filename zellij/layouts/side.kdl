@@ -37,7 +37,7 @@ layout {
                 command_net_speed_rendermode  "dynamic"
 
                 datetime        "#[fg=#6C7086,bold] {format} "
-                datetime_format "%b %d %Y %H:%M"
+                datetime_format "%b %d %H:%M"
                 datetime_timezone "Asia/Shanghai"
 
                 notification_format_unread           "#[fg=#89B4FA,bg=#181825,blink]  #[fg=#89B4FA,bg=#181825] {message} "
