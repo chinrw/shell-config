@@ -3,7 +3,7 @@ layout {
         children
         pane size=1 borderless=true {
             plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
-                format_left   "{mode} #[fg=#89B4FA,bold]{session} {command_net_speed}"
+                format_left   "{mode} #[fg=#89B4FA,bold]{session} {notifications}"
                 format_center "{tabs}"
                 format_right  "#[fg=#6C7086,bold]{command_uptime} {datetime}"
                 format_space  ""
@@ -39,6 +39,10 @@ layout {
                 datetime        "#[fg=#6C7086,bold] {format} "
                 datetime_format "%b %d %Y %H:%M"
                 datetime_timezone "Asia/Shanghai"
+
+                notification_format_unread           "#[fg=#89B4FA,bg=#181825,blink]  #[fg=#89B4FA,bg=#181825] {message} "
+                notification_format_no_notifications "#[fg=#89B4FA,bg=#181825,dim]   "
+                notification_show_interval           "10"
             }
         }
     }
