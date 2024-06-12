@@ -3,9 +3,9 @@ layout {
         children
         pane size=1 borderless=true {
             plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
-                format_left   "{mode} #[fg=#89B4FA,bold]{session} {notifications}"
+                format_left   "{mode} #[fg=#89B4FA,bold]{session}{notifications}"
                 format_center "{tabs}"
-                format_right  "#[fg=#6C7086,bold]{command_uptime} {datetime}"
+                format_right  "#[fg=#6C7086,bold]{command_uptime}{datetime}"
                 format_space  ""
 
                 border_enabled  "false"
@@ -26,7 +26,7 @@ layout {
                 command_git_branch_interval    "10"
                 command_git_branch_command     "git rev-parse --abbrev-ref HEAD"
 
-                command_uptime_command     "bash -c \"uptime | awk '{print $(NF-2),$(NF-1)}'\""
+                command_uptime_command     "bash -c \"uptime | awk '{print $(NF-2),$(NF-1)}'| tr ', ' ' '\""
                 command_uptime_format      "#[fg=blue] {stdout} "
                 command_uptime_interval    "2"
                 command_uptime_rendermode  "dynamic"
