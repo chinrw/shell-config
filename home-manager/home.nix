@@ -27,6 +27,7 @@ in
     # inputs.nix-colors.homeManagerModule
     ./programs/nushell
     (import ./programs/zsh { inherit lib pkgs isDesktop isLaptop; })
+    # (import ./programs/zellij { inherit lib pkgs isDarwin isDesktop isLaptop; })
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
@@ -83,6 +84,11 @@ in
     username = username;
     homeDirectory = "/home/${username}";
 
+    file."${config.xdg.configHome}/zellij" = {
+      source = ../zellij;
+      recursive = true;
+    };
+
     # file = {
     #   "${config.home.homeDirectory}/.zshrc".text = builtins.readFile ./zsh/zshrc;
     # };
@@ -121,6 +127,7 @@ in
         openapi-tui
         inputs.nixgl.packages.${pkgs.system}.nixGLDefault
         jellyfin-media-player
+        aria2
       ]
       ++ lib.optionals (!isDesktop) [
         mold
