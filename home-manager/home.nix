@@ -94,6 +94,7 @@ in
     # };
     packages = with pkgs;
       [
+        fd
         fzf
         glow
         conda
