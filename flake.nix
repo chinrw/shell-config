@@ -147,5 +147,17 @@
           ];
         };
       };
+      homeConfigurations = {
+        "chin39@work" = home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          extraSpecialArgs = {
+            inherit inputs outputs;
+            hostname = "laptop";
+          };
+          modules = [
+            ./home-manager/home.nix
+          ];
+        };
+      };
     };
 }
