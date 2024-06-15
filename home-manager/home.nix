@@ -189,6 +189,8 @@ in
 
       gpg.format = "ssh";
       pull.rebase = true;
+      push.autoSetupRemote = true;
+
       merge.conflictstyle = "zdiff3";
       init.defaultBranch = "main";
       interactive.diffFilter = "delta --color-only";
