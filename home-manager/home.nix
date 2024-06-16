@@ -16,6 +16,12 @@ let
   isWsl = hostname == "wsl";
   username = "chin39";
 
+  proxyUrl =
+    if (isWsl || isDesktop) then
+      "http://10.0.0.242:10809"
+    else if isWork then
+      "http://squid.corp.redhat.com:3128"
+    else "";
 in
 {
   # You can import other home-manager modules here
@@ -24,7 +30,7 @@ in
     # inputs.nix-colors.homeManagerModule
     ./programs/nushell
     (import ./programs/zsh { inherit lib pkgs isDesktop noGUI; })
-    (import ./programs/git { inherit lib pkgs isDesktop noGUI isWork isWsl; })
+    (import ./programs/git { inherit lib pkgs isDesktop noGUI isWork isWsl proxyUrl; })
     # (import ./programs/zellij { inherit lib pkgs isDarwin isDesktop isLaptop; })
 
     # You can also split up your configuration and import pieces of it here:
@@ -74,9 +80,9 @@ in
       {
         _ZO_FZF_OPTS = "--preview 'eza -G -a --color auto --sort=accessed --git --icons -s type {2}'";
       }
-      (lib.mkIf isDesktop {
-        http_proxy = "http://10.0.0.242:10809";
-        https_proxy = "http://10.0.0.242:10809";
+      (lib.mkIf (proxyUrl != "") {
+        http_proxy = proxyUrl;
+        https_proxy = proxyUrl;
       })
     ];
     username = username;

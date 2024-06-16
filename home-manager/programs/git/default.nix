@@ -1,4 +1,4 @@
-{ lib, pkgs, isDesktop, isWsl, noGUI, isWork, ... }: {
+{ lib, pkgs, isDesktop, isWsl, noGUI, isWork, proxyUrl, ... }: {
 
 
   programs.git = {
@@ -44,32 +44,34 @@
       key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMasqR2edNuMaTk0djcs46/s/OiIQo97qa6oyF/ybgih";
       signByDefault = true;
     };
-    extraConfig = {
-      core = {
-        packedGitLimit = "512m";
-        packedGitWindowSize = "512m";
-      };
-      pack = {
-        deltaCacheSize = "2047m";
-        packSizeLimit = "2047m";
-        windowMemory = "2047m";
-      };
-      http.proxy =
-        if isWsl then
-          ""
-        # "http://127.0.0.1:7891"
-        else if isWork
-        then "http://squid.corp.redhat.com:3128"
-        else "";
+    extraConfig =
+      {
+        core = {
+          packedGitLimit = "512m";
+          packedGitWindowSize = "512m";
+        };
+        pack = {
+          deltaCacheSize = "2047m";
+          packSizeLimit = "2047m";
+          windowMemory = "2047m";
+        };
 
 
-      gpg.format = "ssh";
-      pull.rebase = true;
-      push.autoSetupRemote = true;
+        gpg.format = "ssh";
+        pull.rebase = true;
+        push.autoSetupRemote = true;
 
-      merge.conflictstyle = "zdiff3";
-      init.defaultBranch = "main";
-      interactive.diffFilter = "delta --color-only";
-    };
+        merge.conflictstyle = "zdiff3";
+        init.defaultBranch = "main";
+        interactive.diffFilter = "delta --color-only";
+      }
+      //
+      lib.optionalAttrs (proxyUrl != "")
+        {
+          http.proxy = proxyUrl;
+        }
+      //
+      lib.optionalAttrs (isWork)
+        { http.version = "HTTP/1.1"; };
   };
 }
