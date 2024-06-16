@@ -44,34 +44,33 @@
       key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMasqR2edNuMaTk0djcs46/s/OiIQo97qa6oyF/ybgih";
       signByDefault = true;
     };
-    extraConfig =
-      {
-        core = {
-          packedGitLimit = "512m";
-          packedGitWindowSize = "512m";
-        };
-        pack = {
-          deltaCacheSize = "2047m";
-          packSizeLimit = "2047m";
-          windowMemory = "2047m";
-        };
+    extraConfig = {
+      core = {
+        packedGitLimit = "512m";
+        packedGitWindowSize = "512m";
+      };
+      pack = {
+        deltaCacheSize = "2047m";
+        packSizeLimit = "2047m";
+        windowMemory = "2047m";
+      };
 
 
-        gpg.format = "ssh";
-        pull.rebase = true;
-        push.autoSetupRemote = true;
+      gpg.format = "ssh";
+      pull.rebase = true;
+      push.autoSetupRemote = true;
 
-        merge.conflictstyle = "zdiff3";
-        init.defaultBranch = "main";
-        interactive.diffFilter = "delta --color-only";
-      }
-      //
-      lib.optionalAttrs (proxyUrl != "")
+      merge.conflictstyle = "zdiff3";
+      init.defaultBranch = "main";
+      interactive.diffFilter = "delta --color-only";
+      http = { }
+        // lib.optionalAttrs (proxyUrl != "")
         {
-          http.proxy = proxyUrl;
+          proxy = proxyUrl;
         }
-      //
-      lib.optionalAttrs (isWork)
-        { http.version = "HTTP/1.1"; };
+        //
+        lib.optionalAttrs (isWork)
+          { version = "HTTP/1.1"; };
+    };
   };
 }
