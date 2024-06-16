@@ -63,14 +63,17 @@
       merge.conflictstyle = "zdiff3";
       init.defaultBranch = "main";
       interactive.diffFilter = "delta --color-only";
-      http = { }
-        // lib.optionalAttrs (proxyUrl != "")
+      http = {
+        postBuffer = 524288000;
+      }
+      // lib.optionalAttrs (proxyUrl != "")
         {
           proxy = proxyUrl;
-        }
-        //
-        lib.optionalAttrs (isWork)
-          { version = "HTTP/1.1"; };
+          version = "HTTP/1.1";
+        };
+      # //
+      # lib.optionalAttrs (isWork)
+      #   {  };
     };
   };
 }
