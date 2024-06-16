@@ -1,4 +1,4 @@
-{ lib, pkgs, isDesktop, isLaptop, ... }: {
+{ lib, pkgs, isDesktop, noGUI, ... }: {
 
   programs.zsh = {
     enable = true;
@@ -60,7 +60,7 @@ fi
 bindkey \^U backward-kill-line
 bindkey '^r' _atuin_search_widget
 
-" + lib.optionalString isLaptop
+" + lib.optionalString noGUI
       "
 # for single user mode
 if [ -e /home/chin39/.nix-profile/etc/profile.d/nix.sh ]; then . /home/chin39/.nix-profile/etc/profile.d/nix.sh; fi 

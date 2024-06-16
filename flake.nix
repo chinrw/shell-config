@@ -136,11 +136,11 @@
       };
 
       homeConfigurations = {
-        "chin39@laptop" = home-manager.lib.homeManagerConfiguration {
+        "chin39@wsl" = home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           extraSpecialArgs = {
             inherit inputs outputs;
-            hostname = "laptop";
+            hostname = "wsl";
           };
           modules = [
             ./home-manager/home.nix
@@ -152,7 +152,7 @@
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           extraSpecialArgs = {
             inherit inputs outputs;
-            hostname = "laptop";
+            hostname = "work";
           };
           modules = [
             ./home-manager/home.nix

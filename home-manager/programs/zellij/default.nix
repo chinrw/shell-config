@@ -1,4 +1,4 @@
-{ lib, pkgs, isDesktop, isLaptop, ... }: {
+{ lib, pkgs, ... }: {
 
   programs.zellij = {
 
@@ -8,9 +8,8 @@
     enableZshIntegration = true;
     enableFishIntegration = true;
 
-    settings = "
-
-    ";
+    # settings = "
+    #   ";
 
   };
 }
