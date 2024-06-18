@@ -143,6 +143,9 @@ in
       ++ lib.optionals (!isDesktop) [
         mold
         rustup
+      ]
+      ++ lib.optionals isWork [
+        mypy #  Optional static typing for Python 
       ];
   };
 
