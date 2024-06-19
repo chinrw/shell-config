@@ -114,6 +114,7 @@ in
 
         btop # system monitor
         glances # same thing
+        fq # jq for binary formats - tool, language and decoders for working with binary and text formats
 
         rclone
         gitoxide
