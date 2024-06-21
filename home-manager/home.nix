@@ -147,6 +147,10 @@ in
       ]
       ++ lib.optionals isWork [
         mypy #  Optional static typing for Python 
+      ]
+      ++ lib.optionals isWsl [
+        clang-tools
+        marksman
       ];
   };
 
