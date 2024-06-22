@@ -149,7 +149,11 @@ in
         mypy #  Optional static typing for Python 
       ]
       ++ lib.optionals isWsl [
-        clang-tools
+        # Clangd from clang-tools must come first.
+        (hiPrio clang-tools.override {
+          llvmPackages = llvmPackages_18;
+          enableLibcxx = true;
+        })
         marksman
       ];
   };
