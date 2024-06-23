@@ -39,6 +39,8 @@
     nix-index-database.url = "github:Mic92/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
 
+    # support for wsl
+    nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
     # Rust development
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -112,10 +114,15 @@
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
       nixosConfigurations = {
-        chin39-desktop = nixpkgs.lib.nixosSystem {
+        wsl = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs outputs; };
+          system = "x86_64-linux";
+
           # > Our main nixos configuration file <
-          modules = [ ./nixos/configuration.nix ];
+          modules = [
+            inputs.nixos-wsl.nixosModules.default
+            ./nixos/configuration.nix
+          ];
         };
       };
 
