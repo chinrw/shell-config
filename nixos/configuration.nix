@@ -111,8 +111,6 @@
   ];
   # Set the default editor to vim
   environment.variables.EDITOR = "nvim";
-  networking.proxy.default = "http://127.0.0.1:7891";
-  networking.enableIPv6 = false;
 
   programs = {
     nix-ld = {

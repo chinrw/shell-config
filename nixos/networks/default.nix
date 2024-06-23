@@ -13,6 +13,9 @@
     };
   };
 
+  networking.proxy.default = "http://192.168.0.101:7891";
+  networking.enableIPv6 = false;
+
   # Enable WireGuard
   networking.wireguard.interfaces = {
     # "wg0" is the network interface name. You can name the interface arbitrarily.
