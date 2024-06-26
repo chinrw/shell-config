@@ -151,10 +151,7 @@ in
       ]
       ++ lib.optionals isWsl [
         # Clangd from clang-tools must come first.
-        (hiPrio clang-tools.override {
-          llvmPackages = llvmPackages_18;
-          enableLibcxx = true;
-        })
+        (hiPrio clang-tools)
         marksman
       ];
   };
