@@ -151,7 +151,7 @@ in
       ]
       ++ lib.optionals isWsl [
         # Clangd from clang-tools must come first.
-        (hiPrio clang-tools)
+        (hiPrio clang-tools_18)
         marksman
       ];
   };

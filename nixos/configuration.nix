@@ -98,6 +98,7 @@
     wget
     curl
     (hiPrio clang_18)
+    (hiPrio llvm_18)
     gcc
     rustc
     cargo
