@@ -2,6 +2,7 @@
 
   networking = {
     interfaces = {
+      eth0.ipv4.useDHCP = false;
       eth0.ipv4.addresses = [{
         address = "192.168.0.201";
         prefixLength = 24;
