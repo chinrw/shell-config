@@ -15,6 +15,10 @@
       # We can change the version of the package
       extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold";
     });
+    zoxide = prev.zoxide.overrideAttrs (old: rec {
+      # We can change the version of the package
+      extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold";
+    });
   };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
