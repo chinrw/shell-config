@@ -1,7 +1,7 @@
 [plugin]
 deps = [
-	{ use = "Reledia/hexyl", commit = "f71d9d9" },
-	{ use = "DreamMaoMao/mime", commit = "fa40dae" },
+	{ use = "Reledia/hexyl", commit = "64daf93" },
+	{ use = "DreamMaoMao/mime", commit = "8e866b9" },
 	{ use = "ndtoan96/ouch", commit = "694d149" },
 ]
 

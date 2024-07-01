@@ -33,6 +33,7 @@ in
     ./programs/nushell
     (import ./programs/zsh { inherit lib pkgs isDesktop noGUI; })
     (import ./programs/git { inherit lib pkgs isDesktop noGUI isWork isWsl proxyUrl; })
+    (import ./programs/yazi.nix { inherit config; })
     # (import ./programs/zellij { inherit lib pkgs isDarwin isDesktop isLaptop; })
 
     # You can also split up your configuration and import pieces of it here:
