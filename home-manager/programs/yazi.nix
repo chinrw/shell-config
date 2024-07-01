@@ -1,7 +1,7 @@
 { config, ... }:
 {
-  file."${config.xdg.configHome}/yazi" = {
-    source = ../zellij;
+  home.file."${config.xdg.configHome}/yazi" = {
+    source = ../../yazi;
     recursive = true;
   };
 }
