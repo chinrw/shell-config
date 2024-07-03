@@ -1,7 +1,7 @@
 { lib, pkgs, config, ... }: {
 
   home.file."${config.xdg.configHome}/zellij" = {
-    source = ../zellij;
+    source = ../../../zellij;
     recursive = true;
   };
   # programs.zellij = {
