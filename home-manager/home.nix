@@ -20,9 +20,9 @@ let
     if (isWsl || isDesktop) then
     # "http://10.0.0.242:10809"
     # "http://127.0.0.1:10809"
-      "http://192.168.0.101:7891"
+      config.sops.secrets."proxy/clash".path
     else if isWork then
-      config.sops.secrets."proxy.work".path
+      config.sops.secrets."proxy/work".path
     else "";
 in
 {
