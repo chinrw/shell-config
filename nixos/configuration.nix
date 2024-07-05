@@ -11,6 +11,7 @@
     # If you want to use modules from other flakes (such as nixos-hardware):
     # inputs.hardware.nixosModules.common-cpu-amd
     # inputs.hardware.nixosModules.common-ssd
+    inputs.sops-nix.nixosModules.sops
 
     # You can also split up your configuration and import pieces of it here:
     # ./users.nix
@@ -71,6 +72,19 @@
 
 
 
+  sops = {
+    age.keyFile = "/home/chin39/.config/sops/age/keys.txt"; # must have no password!
+    # It's also possible to use a ssh key, but only when it has no password:
+    #age.sshKeyPaths = [ "/home/user/path-to-ssh-key" ];
+    defaultSopsFile = ../secrets/hosts.yaml;
+    defaultSopsFormat = "yaml";
+
+    secrets = {
+      "wg/privatekey" = { };
+      "wg/pubkey" = { };
+      "ssh_pub_key" = { };
+    };
+  };
 
 
   wsl = {
@@ -84,7 +98,7 @@
     extraGroups = [ "docker" "wheel" ];
     shell = pkgs.zsh;
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMasqR2edNuMaTk0djcs46/s/OiIQo97qa6oyF/ybgih chin39@fedora"
+      config.sops.secrets.ssh_pub_key.path
     ];
   };
 

@@ -22,7 +22,7 @@ let
     # "http://127.0.0.1:10809"
       "http://192.168.0.101:7891"
     else if isWork then
-     builtins.readFile /home/chin39/Documents/proxy.txt
+      config.sops.secrets."proxy.work".path
     else "";
 in
 {
@@ -35,10 +35,13 @@ in
     (import ./programs/git { inherit lib pkgs isDesktop noGUI isWork isWsl proxyUrl; })
     (import ./programs/yazi.nix { inherit config; })
     (import ./programs/zellij { inherit lib pkgs config; })
+    (import ./programs/sops.nix { inherit config; })
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
     inputs.nix-index-database.hmModules.nix-index
+
+    inputs.sops-nix.homeManagerModules.sops
   ];
 
   nixpkgs = {
@@ -128,6 +131,8 @@ in
         inputs.yazi.packages.${pkgs.system}.default
         zjstatus
         tailspin #  🌀 A log file highlighter 
+        age # A simple, modern and secure encryption tool
+        sops
       ]
       ++ lib.optionals noGUI [
         cmake
@@ -279,6 +284,7 @@ in
     };
   };
 
+  systemd.user.services.mbsync.Unit.After = [ "sops-nix.service" ];
   # Nicely reload system units when changing configs
   # systemd.user.startServices = "sd-switch";
 }

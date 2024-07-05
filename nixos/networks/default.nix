@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{ config, pkgs, ... }: {
 
   networking = {
     interfaces = {
@@ -30,7 +30,7 @@
       # Note: The private key can also be included inline via the privateKey option,
       # but this makes the private key world-readable; thus, using privateKeyFile is
       # recommended.
-      privateKeyFile = "/home/chin39/wireguard-keys/private";
+      privateKeyFile = config.sops.secrets."wg/privatekey".path;
 
       peers = [
         # For a client configuration, one peer entry for the server will suffice.
