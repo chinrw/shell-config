@@ -22,7 +22,7 @@ let
     # "http://127.0.0.1:10809"
       "http://192.168.0.101:7891"
     else if isWork then
-      "http://squid.corp.redhat.com:3128"
+     builtins.readFile /home/chin39/Documents/proxy.txt
     else "";
 in
 {
@@ -121,6 +121,7 @@ in
         ouch
         helix
         neovim
+        pyright
         cachix
         nix-search-cli
         nurl # Generate Nix fetcher calls from repository URLs
