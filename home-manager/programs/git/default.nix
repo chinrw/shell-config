@@ -65,12 +65,7 @@
       interactive.diffFilter = "delta --color-only";
       http = {
         postBuffer = 524288000;
-      }
-      // lib.optionalAttrs (proxyUrl != "")
-        {
-          proxy = proxyUrl;
-          version = "HTTP/1.1";
-        };
+      };
       # //
       # lib.optionalAttrs (isWork)
       #   {  };
