@@ -42,6 +42,8 @@ in
     inputs.nix-index-database.hmModules.nix-index
 
     inputs.sops-nix.homeManagerModules.sops
+  ] ++ lib.optionals isWsl [
+    (import ./programs/rclone.nix { inherit config lib pkgs; })
   ];
 
   nixpkgs = {
