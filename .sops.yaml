@@ -1,7 +1,7 @@
 keys:
   - &chin39 age15meyx2lnegjd0rgzzg4k7yv3m45yl9jurfq6p2mssh2vzkkhmdlqsepnvr
 creation_rules:
-  - path_regex: secrets/[^/]+\.(yaml|json|env|ini|sops)$
+  - path_regex: secrets/[^/]+\.(yaml|json|env|ini|sops|conf)$
     key_groups:
     - age:
       - *chin39
