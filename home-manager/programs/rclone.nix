@@ -1,8 +1,6 @@
 { config, lib, pkgs, ... }:
 
 let
-  home = "/home/chin39";
-  user = "chin39";
   rcloneService =
     { name
     , REMOTE_NAME
@@ -22,7 +20,7 @@ let
     , RCLONE_MOUNT_POLL_INTERVAL ? "1m0s"
     , RCLONE_MOUNT_UMASK ? "022"
     , RCLONE_MOUNT_VFS_CACHE_MAX_AGE ? "1h0m0s"
-    , RCLONE_MOUNT_VFS_CACHE_MAX_SIZE ? "512G"
+    , RCLONE_MOUNT_VFS_CACHE_MAX_SIZE ? "128G"
     , RCLONE_MOUNT_VFS_CACHE_MODE ? "writes"
     , RCLONE_MOUNT_VFS_CACHE_POLL_INTERVAL ? "1m0s"
     , RCLONE_MOUNT_VFS_READ_CHUNK_SIZE ? "128M"
@@ -97,6 +95,7 @@ in
         name = "alist";
         REMOTE_NAME = "alist";
         REMOTE_PATH = "/";
+        RCLONE_TEMP_DIR="%u/.cache/rclone/";
         RCLONE_MOUNT_DIR_CACHE_TIME = "48h";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
@@ -107,6 +106,7 @@ in
         name = "union-115";
         REMOTE_NAME = "union-115";
         REMOTE_PATH = "/";
+        RCLONE_TEMP_DIR="%u/.cache/rclone/";
         RCLONE_MOUNT_DIR_CACHE_TIME = "48h";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
@@ -115,9 +115,10 @@ in
         RCLONE_MOUNT_TIMEOUT = "120m";
       })
       (rcloneService {
-        name = "union-115";
+        name = "115-single";
         REMOTE_NAME = "encrypted-115-single";
         REMOTE_PATH = "/";
+        RCLONE_TEMP_DIR="%u/.cache/rclone/";
         RCLONE_MOUNT_DIR_CACHE_TIME = "48h";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
