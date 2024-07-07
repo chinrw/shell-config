@@ -107,6 +107,7 @@
     # Flakes clones its dependencies through the git command,
     # so git must be installed first
     git
+    tzdata
     nodejs
     neovim
     unzip
