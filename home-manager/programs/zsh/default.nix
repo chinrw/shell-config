@@ -1,4 +1,4 @@
-{ lib, pkgs, isDesktop, noGUI, ... }: {
+{ lib, pkgs, isDesktop, noGUI, proxyUrl, ... }: {
 
   programs.zsh = {
     enable = true;
@@ -15,6 +15,9 @@
 if [[ -r \"\${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-\${(%):-%n}.zsh\" ]]; then
   source \"\${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-\${(%):-%n}.zsh\"
 fi
+
+export http_proxy=$(cat ${proxyUrl})
+export https_proxy=$(cat ${proxyUrl})
 
 # Uncomment the following line to use hyphen-insensitive completion.
 # Case-sensitive completion must be off. _ and - will be interchangeable.

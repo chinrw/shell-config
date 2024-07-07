@@ -19,7 +19,7 @@ let
   proxyUrl =
     if (isWsl || isDesktop) then
     # "http://10.0.0.242:10809"
-    # "http://127.0.0.1:10809"
+    # "http://192.168.0.101:10809"
       config.sops.secrets."proxy/clash".path
     else if isWork then
       config.sops.secrets."proxy/work".path
@@ -31,7 +31,7 @@ in
     # If you want to use home-manager modules from other flakes (such as nix-colors):
     # inputs.nix-colors.homeManagerModule
     ./programs/nushell
-    (import ./programs/zsh { inherit lib pkgs isDesktop noGUI; })
+    (import ./programs/zsh { inherit lib pkgs isDesktop noGUI proxyUrl; })
     (import ./programs/git { inherit lib pkgs isDesktop noGUI isWork isWsl proxyUrl; })
     (import ./programs/yazi.nix { inherit config; })
     (import ./programs/zellij { inherit lib pkgs config; })
@@ -88,10 +88,10 @@ in
       {
         _ZO_FZF_OPTS = "--preview 'eza -G -a --color auto --sort=accessed --git --icons -s type {2}'";
       }
-      (lib.mkIf (proxyUrl != "") {
-        http_proxy = proxyUrl;
-        https_proxy = proxyUrl;
-      })
+      # (lib.mkIf (proxyUrl != "") {
+      #   http_proxy = proxyUrl;
+      #   https_proxy = proxyUrl;
+      # })
     ];
     username = username;
     homeDirectory = "/home/${username}";
