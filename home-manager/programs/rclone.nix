@@ -96,7 +96,6 @@ in
         REMOTE_NAME = "alist";
         REMOTE_PATH = "/";
         RCLONE_TEMP_DIR="%u/.cache/rclone/";
-        RCLONE_MOUNT_DIR_CACHE_TIME = "48h";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
         RCLONE_MOUNT_TRANSFER = "1";
@@ -107,7 +106,6 @@ in
         REMOTE_NAME = "union-115";
         REMOTE_PATH = "/";
         RCLONE_TEMP_DIR="%u/.cache/rclone/";
-        RCLONE_MOUNT_DIR_CACHE_TIME = "48h";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
         RCLONE_MOUNT_TRANSFER = "1";
@@ -119,7 +117,6 @@ in
         REMOTE_NAME = "encrypted-115-single";
         REMOTE_PATH = "/";
         RCLONE_TEMP_DIR="%u/.cache/rclone/";
-        RCLONE_MOUNT_DIR_CACHE_TIME = "48h";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
         RCLONE_MOUNT_TRANSFER = "1";
