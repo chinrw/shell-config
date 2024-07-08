@@ -79,7 +79,7 @@ let
             ${REMOTE_NAME}:${REMOTE_PATH} ${MOUNT_DIR}
       '';
           ExecStartPost = "${pkgs.bash}/bin/bash -c ${POST_MOUNT_SCRIPT}";
-          ExecStop = "${pkgs.fuse3}/bin/fusermount -u ${MOUNT_DIR}";
+          ExecStop = "${pkgs.fuse}/bin/fusermount -zu ${MOUNT_DIR}";
           Environment = [ "PATH=/run/wrappers/bin/:$PATH" ];
           Restart = "always";
           RestartSec = "10s";
@@ -95,20 +95,21 @@ in
         name = "alist";
         REMOTE_NAME = "alist";
         REMOTE_PATH = "/";
-        RCLONE_TEMP_DIR="%u/.cache/rclone/";
+        RCLONE_TEMP_DIR="${config.xdg.cacheHome}/rclone";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
-        RCLONE_MOUNT_TRANSFER = "1";
+        RCLONE_MOUNT_TRANSFER = "2";
         RCLONE_MOUNT_VFS_CACHE_MODE = "full";
       })
       (rcloneService {
         name = "union-115";
         REMOTE_NAME = "union-115";
         REMOTE_PATH = "/";
-        RCLONE_TEMP_DIR="%u/.cache/rclone/";
+        RCLONE_TEMP_DIR="${config.xdg.cacheHome}/rclone";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
-        RCLONE_MOUNT_TRANSFER = "1";
+        RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "4h";
+        RCLONE_MOUNT_TRANSFER = "2";
         RCLONE_MOUNT_VFS_CACHE_MODE = "full";
         RCLONE_MOUNT_TIMEOUT = "120m";
       })
@@ -116,10 +117,10 @@ in
         name = "115-single";
         REMOTE_NAME = "encrypted-115-single";
         REMOTE_PATH = "/";
-        RCLONE_TEMP_DIR="%u/.cache/rclone/";
+        RCLONE_TEMP_DIR="${config.xdg.cacheHome}/rclone";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
-        RCLONE_MOUNT_TRANSFER = "1";
+        RCLONE_MOUNT_TRANSFER = "2";
         RCLONE_MOUNT_VFS_CACHE_MODE = "full";
         RCLONE_MOUNT_TIMEOUT = "120m";
       })
