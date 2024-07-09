@@ -151,19 +151,29 @@
             inherit inputs outputs;
             hostname = "desktop";
           };
-          # > Our main home-manager configuration file <
           modules = [
             ./home-manager/home.nix
           ];
         };
       };
-
       homeConfigurations = {
         "chin39@wsl" = home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           extraSpecialArgs = {
             inherit inputs outputs;
             hostname = "wsl";
+          };
+          modules = [
+            ./home-manager/home.nix
+          ];
+        };
+      };
+      homeConfigurations = {
+        "chin39@archlinux" = home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          extraSpecialArgs = {
+            inherit inputs outputs;
+            hostname = "archlinux";
           };
           modules = [
             ./home-manager/home.nix
