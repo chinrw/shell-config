@@ -90,6 +90,7 @@
   wsl = {
     enable = true;
     defaultUser = "chin39";
+    useWindowsDriver = true;
   };
 
   # enable docker
@@ -153,6 +154,10 @@
     };
   };
 
+  zramSwap = {
+    enable = true;
+  };
+
 
 
   fileSystems."/mnt/autofs/data" = {
@@ -161,6 +166,8 @@
     options = [ "noauto" "x-systemd.automount" "x-systemd.idle-timeout=1h" ];
   };
   time.timeZone = "Asia/Shanghai";
+
+  services.zram-generator.enable = true;
 
   services.openssh = {
     enable = true;
