@@ -2,7 +2,6 @@
 $env.config = {
     show_banner: false
     footer_mode: always
-    shell_integration: true
     table: {
         mode: rounded
         index_mode: always
