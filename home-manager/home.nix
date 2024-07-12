@@ -6,11 +6,11 @@
 , config
 , pkgs
 , hostname
+, noGUI
 , ...
 }:
 let
   inherit (pkgs.stdenv) isDarwin isLinux;
-  noGUI = hostname == "laptop" || hostname == "work" || hostname == "wsl";
   isDesktop = hostname == "desktop";
   isWork = hostname == "work";
   isWsl = hostname == "wsl";
