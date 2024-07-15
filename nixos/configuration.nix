@@ -154,9 +154,9 @@
     };
   };
 
-  zramSwap = {
-    enable = true;
-  };
+  # zramSwap = {
+  #   enable = true;
+  # };
 
 
 
@@ -167,7 +167,6 @@
   };
   time.timeZone = "Asia/Shanghai";
 
-  services.zram-generator.enable = true;
 
   services.openssh = {
     enable = true;
