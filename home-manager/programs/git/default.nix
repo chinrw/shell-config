@@ -1,5 +1,15 @@
 { lib, pkgs, isDesktop, isWsl, noGUI, isWork, proxyUrl, ... }: {
 
+  programs.jujutsu = {
+    enable = true;
+    settings = {
+      user = {
+        name = "Ruowen Qin";
+        email = if (!isWork) then "chinqrw@gmail.com" else "ruqin@redhat.com";
+      };
+      ui.editor = "nvim";
+    };
+  };
 
   programs.git = {
     enable = true;
