@@ -71,6 +71,11 @@
     };
 
 
+  services.ollama = {
+    enable = true;
+    acceleration = "cuda";
+  };
+
 
   sops = {
     age.keyFile = "/home/chin39/.config/sops/age/keys.txt"; # must have no password!
