@@ -135,6 +135,7 @@ in
         tailspin #  🌀 A log file highlighter 
         age # A simple, modern and secure encryption tool
         sops
+        yt-dlp # website video downloader
       ]
       ++ lib.optionals noGUI [
         cmake
