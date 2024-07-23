@@ -136,6 +136,7 @@ in
         age # A simple, modern and secure encryption tool
         sops
         yt-dlp # website video downloader
+        ueberzugpp # terminal image preview
       ]
       ++ lib.optionals noGUI [
         cmake
