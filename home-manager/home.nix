@@ -137,6 +137,7 @@ in
         sops
         yt-dlp # website video downloader
         ueberzugpp # terminal image preview
+        gh # github shell
       ]
       ++ lib.optionals noGUI [
         cmake
