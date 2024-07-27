@@ -138,6 +138,7 @@ in
         yt-dlp # website video downloader
         ueberzugpp # terminal image preview
         gh # github shell
+        procs # A modern replacement for ps written in Rust
       ]
       ++ lib.optionals noGUI [
         cmake
