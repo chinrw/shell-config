@@ -14,7 +14,7 @@
     };
   };
 
-  networking.proxy.default = "http://192.168.0.101:7891";
+  networking.proxy.default = "http://192.168.0.201:10809";
   networking.enableIPv6 = false;
 
   # Enable WireGuard
