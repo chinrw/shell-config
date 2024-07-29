@@ -161,6 +161,7 @@ in
         # Clangd from clang-tools must come first.
         (hiPrio clang-tools_18)
         marksman
+        aria2
       ];
   };
 
