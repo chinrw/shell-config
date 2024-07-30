@@ -139,6 +139,7 @@ in
         ueberzugpp # terminal image preview
         gh # github shell
         procs # A modern replacement for ps written in Rust
+        sampler # Tool for shell commands execution, visualization and alerting
       ]
       ++ lib.optionals noGUI [
         cmake
