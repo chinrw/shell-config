@@ -141,6 +141,7 @@ in
         gh # github shell
         procs # A modern replacement for ps written in Rust
         sampler # Tool for shell commands execution, visualization and alerting
+        nmap # port scanner
       ]
       ++ lib.optionals noGUI [
         cmake
