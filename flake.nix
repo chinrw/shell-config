@@ -194,6 +194,19 @@
         };
       };
       homeConfigurations = {
+        "chin39@macos" = home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+          extraSpecialArgs = {
+            inherit inputs outputs;
+            hostname = "macos";
+            noGUI = true;
+          };
+          modules = [
+            ./home-manager/home.nix
+          ];
+        };
+      };
+      homeConfigurations = {
         "chin39@work" = home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           extraSpecialArgs = {
