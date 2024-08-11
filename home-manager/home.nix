@@ -23,7 +23,7 @@ let
       config.sops.secrets."proxy/clash".path
     else if isWork then
       ""
-      # config.sops.secrets."proxy/work".path
+    # config.sops.secrets."proxy/work".path
     else "";
 in
 {
@@ -105,7 +105,6 @@ in
         fd
         fzf
         glow
-        conda
         fastfetch
         onefetch
         genact
@@ -142,6 +141,9 @@ in
         procs # A modern replacement for ps written in Rust
         sampler # Tool for shell commands execution, visualization and alerting
         nmap # port scanner
+      ]
+      ++ lib.options (hostname != macos) [
+        conda
       ]
       ++ lib.optionals noGUI [
         cmake
