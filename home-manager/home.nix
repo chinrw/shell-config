@@ -95,7 +95,7 @@ in
       # })
     ];
     username = username;
-    homeDirectory = "/home/${username}";
+    homeDirectory = if (hostname == "macos") then "/Users/${username}" else "/home/${username}";
 
     # file = {
     #   "${config.home.homeDirectory}/.zshrc".text = builtins.readFile ./zsh/zshrc;
@@ -142,7 +142,7 @@ in
         sampler # Tool for shell commands execution, visualization and alerting
         nmap # port scanner
       ]
-      ++ lib.options (hostname != macos) [
+      ++ lib.optionals (hostname != "macos") [
         conda
       ]
       ++ lib.optionals noGUI [
