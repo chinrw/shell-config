@@ -213,12 +213,12 @@ in
 
       package = pkgs.atuin;
       settings = {
-        # auto_sync = false;
         show_preview = true;
         search_mode = "skim";
         style = "compact";
-        # sync_frequency = "1h";
-        # sync_address = "https://api.atuin.sh";
+        auto_sync = false;
+        sync_frequency = "1h";
+        sync_address = "http://10.0.0.242";
         update_check = false;
       };
     };
