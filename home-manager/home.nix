@@ -218,7 +218,7 @@ in
         style = "compact";
         auto_sync = false;
         sync_frequency = "1h";
-        sync_address = "http://10.0.0.242";
+        sync_address = "http://10.0.0.242:8881";
         update_check = false;
       };
     };
