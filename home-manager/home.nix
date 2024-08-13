@@ -216,13 +216,15 @@ in
       package = pkgs.atuin;
       settings = {
         show_preview = true;
-        search_mode = "skim";
+        search_mode = "fuzzy";
+        secrets_filter = true;
         style = "compact";
         auto_sync = false;
         sync_frequency = "1h";
         sync_address = "http://10.0.0.242:8881";
-        key_path = config.sops.secrets."atuin_key".path;
+        # key_path = config.sops.secrets.atuin_key.path;
         update_check = false;
+        filter_mode = "host";
       };
     };
 
