@@ -141,6 +141,8 @@ in
         procs # A modern replacement for ps written in Rust
         sampler # Tool for shell commands execution, visualization and alerting
         nmap # port scanner
+        circumflex # 🌿 It's Hacker News in your terminal
+        aria2 # downloader
       ]
       ++ lib.optionals (hostname != "macos") [
         conda
@@ -219,6 +221,7 @@ in
         auto_sync = false;
         sync_frequency = "1h";
         sync_address = "http://10.0.0.242:8881";
+        key_path = config.sops.secrets."atuin_key".path;
         update_check = false;
       };
     };
