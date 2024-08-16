@@ -110,7 +110,6 @@ in
         genact
         angle-grinder
         zellij
-        delta
         duf # better df
         tcpdump # monitor tcp
 
@@ -206,7 +205,6 @@ in
       enable = true;
       enableFishIntegration = true;
       enableZshIntegration = true;
-      enableBashIntegration = true;
       enableNushellIntegration = true;
 
       flags = [

@@ -11,11 +11,11 @@
       # We can change the version of the package
       extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold";
     });
-    yazi = prev.yazi.overrideAttrs (old: rec {
+    yazi = prev.yazi.overrideAttrs (old: {
       # We can change the version of the package
       extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold";
     });
-    zoxide = prev.zoxide.overrideAttrs (old: rec {
+    zoxide = prev.zoxide.overrideAttrs (old: {
       # We can change the version of the package
       extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold";
     });
