@@ -130,6 +130,7 @@ in
         nix-search-cli
         nurl # Generate Nix fetcher calls from repository URLs
         inputs.yazi.packages.${pkgs.system}.default
+        ffmpegthumbnailer # yazi deps
         zjstatus
         tailspin #  🌀 A log file highlighter 
         age # A simple, modern and secure encryption tool
