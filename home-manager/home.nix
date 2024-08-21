@@ -143,6 +143,7 @@ in
         nmap # port scanner
         circumflex # 🌿 It's Hacker News in your terminal
         aria2 # downloader
+        delta # A syntax-highlighting pager for git, diff, grep, and blame output
       ]
       ++ lib.optionals (hostname != "macos") [
         conda
