@@ -34,11 +34,12 @@ image = [
 	{ run = '/home/chin39/.local/share/flatpak/exports/bin/com.xnview.XnViewMP "$@"', orphan = true, desc = "Xnviewmp", for = "linux" },
 ]
 extract = [
-	{ run = 'unar "$1"', desc = "Extract here", for = "unix" },
-	{ run = 'unar "%1"', desc = "Extract here", for = "windows" },
+	{ run = 'ya pub extract --list "$@"', desc = "Extract here", for = "unix" },
+	{ run = 'ya pub extract --list %*', desc = "Extract here", for = "windows" },
 ]
 play = [
 	{ run = 'mpv "$@"', orphan = true, for = "unix" },
+	{ run = '/mnt/d/tools/mpv-lazy/mpv.exe "$1"', dexc = "WSL mpv", orphan = true, for = "linux" },
 	{ run = 'IINA "%1"', orphan = true, for = "macos" },
 	{ run = 'mpv "%1"', orphan = true, for = "windows" },
 	{ run = '''mediainfo "$1"; echo "Press enter to exit"; read _''', block = true, desc = "Show media info", for = "unix" },
