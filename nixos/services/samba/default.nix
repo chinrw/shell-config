@@ -22,7 +22,7 @@
     shares = {
       mounts = {
         path = "/home/chin39/mounts";
-        browseable = "no";
+        browseable = "yes";
         writeable = "yes";
         public = "no";
         "valid users" = "chin39";
