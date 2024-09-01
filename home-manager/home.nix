@@ -210,6 +210,7 @@ in
       enableFishIntegration = true;
       enableZshIntegration = true;
       enableNushellIntegration = true;
+      enableBashIntegration = false;
 
       flags = [
         "--disable-up-arrow"
