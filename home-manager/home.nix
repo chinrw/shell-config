@@ -34,7 +34,6 @@ in
     ./programs/nushell
     (import ./programs/zsh { inherit lib pkgs isDesktop noGUI proxyUrl; })
     (import ./programs/git { inherit lib pkgs isDesktop noGUI isWork isWsl proxyUrl; })
-    (import ./programs/yazi.nix { inherit config; })
     (import ./programs/zellij { inherit lib pkgs config; })
     (import ./programs/sops.nix { inherit config; })
 
@@ -45,6 +44,8 @@ in
     inputs.sops-nix.homeManagerModules.sops
   ] ++ lib.optionals isWsl [
     (import ./programs/rclone.nix { inherit config lib pkgs; })
+  ] ++ lib.optionals (!isWsl) [
+    (import ./programs/yazi.nix { inherit config; })
   ];
 
   nixpkgs = {
