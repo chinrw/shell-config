@@ -151,6 +151,9 @@ in
       ++ lib.optionals (hostname != "macos") [
         conda
       ]
+      ++ lib.optionals (!noGUI) [
+        mpv
+      ]
       ++ lib.optionals noGUI [
         cmake
         ninja

@@ -148,6 +148,7 @@
           extraSpecialArgs = {
             inherit inputs outputs;
             hostname = "desktop";
+            noGUI = false;
           };
           modules = [
             ./home-manager/home.nix
@@ -160,7 +161,7 @@
           extraSpecialArgs = {
             inherit inputs outputs;
             hostname = "wsl";
-            noGUI = true;
+            noGUI = false;
           };
           modules = [
             ./home-manager/home.nix
