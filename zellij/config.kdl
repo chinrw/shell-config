@@ -92,7 +92,7 @@ keybinds clear-defaults=true {
 		bind "d" { HalfPageScrollDown; }
 		bind "u" { HalfPageScrollUp; }
 		bind "n" { Search "down"; }
-		bind "p" { Search "up"; }
+		bind "N" { Search "up"; }
 		bind "c" { SearchToggleOption "CaseSensitivity"; }
 		bind "w" { SearchToggleOption "Wrap"; }
 		bind "o" { SearchToggleOption "WholeWord"; }
