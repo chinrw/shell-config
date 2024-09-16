@@ -177,6 +177,7 @@ in
         vim
         marksman
         aria2
+        gdb
       ];
   };
 
