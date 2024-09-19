@@ -17,7 +17,7 @@
       # isInstall = !isISO;
       # isLima = builtins.substring 0 5 hostname == "lima-";
       isWsl = builtins.substring 0 3 hostname == "wsl";
-      isWork = builtins.isString 0 4 hostname == "work";
+      isWork = builtins.substring 0 4 hostname == "work";
     in
     inputs.home-manager.lib.homeManagerConfiguration {
       pkgs = inputs.nixpkgs.legacyPackages.${platform};

@@ -7,6 +7,8 @@
 , pkgs
 , username
 , stateVersion
+, isWsl
+, isWork
 , hostname
 , noGUI
 , ...
@@ -14,8 +16,6 @@
 let
   inherit (pkgs.stdenv) isDarwin isLinux;
   isDesktop = hostname == "desktop";
-  isWork = hostname == "work";
-  isWsl = hostname == "wsl";
 
   proxyUrl =
     if (isWsl || isDesktop) then
