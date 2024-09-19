@@ -154,20 +154,14 @@
             ./home-manager/home.nix
           ];
         };
-        # "chin39@wsl" = home-manager.lib.homeManagerConfiguration {
-        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        #   extraSpecialArgs = {
-        #     inherit inputs outputs;
-        #     hostname = "wsl";
-        #     noGUI = false;
-        #   };
-        #   modules = [
-        #     ./home-manager/home.nix
-        #   ];
-        # };
         "chin39@wsl" = helpers.mkHome {
           username = "chin39";
           hostname = "wsl";
+          noGUI = false;
+        };
+        "ruowen@ringo" = helpers.mkHome {
+          username = "ruowen";
+          hostname = "gentoo";
           noGUI = false;
         };
         "chin39@archlinux" = home-manager.lib.homeManagerConfiguration {
