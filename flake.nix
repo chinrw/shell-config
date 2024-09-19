@@ -85,7 +85,6 @@
     } @ inputs:
     let
       inherit (self) outputs;
-
       systems = [
         "aarch64-linux"
         "x86_64-linux"
@@ -94,7 +93,8 @@
       # This is a function that generates an attribute by calling a function you
       # pass to it, with each system as an argument
       forAllSystems = nixpkgs.lib.genAttrs systems;
-
+      stateVersion = "24.11";
+      helpers = import ./lib { inherit inputs outputs stateVersion; };
 
     in
     flake-utils.lib.eachDefaultSystem
@@ -154,21 +154,22 @@
             ./home-manager/home.nix
           ];
         };
-      };
-      homeConfigurations = {
-        "chin39@wsl" = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs = {
-            inherit inputs outputs;
-            hostname = "wsl";
-            noGUI = false;
-          };
-          modules = [
-            ./home-manager/home.nix
-          ];
+        # "chin39@wsl" = home-manager.lib.homeManagerConfiguration {
+        #   pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        #   extraSpecialArgs = {
+        #     inherit inputs outputs;
+        #     hostname = "wsl";
+        #     noGUI = false;
+        #   };
+        #   modules = [
+        #     ./home-manager/home.nix
+        #   ];
+        # };
+        "chin39@wsl" = helpers.mkHome {
+          username = "chin39";
+          hostname = "wsl";
+          noGUI = false;
         };
-      };
-      homeConfigurations = {
         "chin39@archlinux" = home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           extraSpecialArgs = {
@@ -180,8 +181,6 @@
             ./home-manager/home.nix
           ];
         };
-      };
-      homeConfigurations = {
         "chin39@vm-gentoo" = home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.aarch64-linux;
           extraSpecialArgs = {
@@ -193,8 +192,6 @@
             ./home-manager/home.nix
           ];
         };
-      };
-      homeConfigurations = {
         "chin39@macos" = home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.aarch64-darwin;
           extraSpecialArgs = {
@@ -206,8 +203,6 @@
             ./home-manager/home.nix
           ];
         };
-      };
-      homeConfigurations = {
         "chin39@work" = home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           extraSpecialArgs = {

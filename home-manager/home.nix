@@ -5,6 +5,8 @@
 , lib
 , config
 , pkgs
+, username
+, stateVersion
 , hostname
 , noGUI
 , ...
@@ -14,7 +16,6 @@ let
   isDesktop = hostname == "desktop";
   isWork = hostname == "work";
   isWsl = hostname == "wsl";
-  username = "chin39";
 
   proxyUrl =
     if (isWsl || isDesktop) then
@@ -82,10 +83,13 @@ in
   };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-  home.stateVersion = "24.11";
 
   home = {
+    inherit stateVersion;
+    inherit username;
+
     # useGlobalPkgs = true;
+    # stateVersion = ${stateVersion};
     sessionVariables = lib.mkMerge [
       {
         _ZO_FZF_OPTS = "--preview 'eza -G -a --color auto --sort=accessed --git --icons -s type {2}'";
@@ -95,7 +99,6 @@ in
       #   https_proxy = proxyUrl;
       # })
     ];
-    username = username;
     homeDirectory = if (hostname == "macos") then "/Users/${username}" else "/home/${username}";
 
     # file = {
