@@ -164,16 +164,9 @@
           hostname = "gentoo";
           noGUI = false;
         };
-        "chin39@archlinux" = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs = {
-            inherit inputs outputs;
-            hostname = "archlinux";
-            noGUI = true;
-          };
-          modules = [
-            ./home-manager/home.nix
-          ];
+        "chin39@archlinux" = helpers.mkHome {
+          hostname = "archlinux";
+          noGUI = true;
         };
         "chin39@vm-gentoo" = home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.aarch64-linux;
