@@ -190,16 +190,9 @@
             ./home-manager/home.nix
           ];
         };
-        "chin39@work" = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs = {
-            inherit inputs outputs;
-            hostname = "work";
-            noGUI = true;
-          };
-          modules = [
-            ./home-manager/home.nix
-          ];
+        "chin39@work" = helpers.mkHome {
+          hostname = "work";
+          noGUI = true;
         };
       };
     };
