@@ -13,9 +13,6 @@
     ,
     }:
     let
-      # isISO = builtins.substring 0 4 hostname == "iso-";
-      # isInstall = !isISO;
-      # isLima = builtins.substring 0 5 hostname == "lima-";
       isWsl = builtins.substring 0 3 hostname == "wsl";
       isWork = builtins.substring 0 4 hostname == "work";
     in

@@ -159,21 +159,17 @@
         };
         "chin39@archlinux" = helpers.mkHome {
           hostname = "archlinux";
-          noGUI = true;
         };
         "chin39@vm-gentoo" = helpers.mkHome {
           hostname = "vm-gentoo";
-          noGUI = true;
           platform = "aarch64-linux";
         };
         "chin39@macos" = helpers.mkHome {
           hostname = "macos";
-          noGUI = true;
           platform = "aarch64-darwin";
         };
         "chin39@work" = helpers.mkHome {
           hostname = "work";
-          noGUI = true;
         };
       };
     };

@@ -11,6 +11,7 @@
 , isWork
 , hostname
 , noGUI
+, platform
 , ...
 }:
 let
@@ -57,10 +58,6 @@ in
       inputs.neovim-nightly-overlay.overlays.default
       # (import ../overlays/rust-overlay.nix)
 
-      outputs.overlays.additions
-      outputs.overlays.modifications
-      outputs.overlays.unstable-packages
-
 
       (final: prev: {
         zjstatus = inputs.zjstatus.packages.${prev.system}.default;
@@ -72,6 +69,13 @@ in
       #     patches = [ ./change-hello-to-hi.patch ];
       #   });
       # })
+    # ] ++ lib.optionals (builtins.isString platform && !builtins.match "aarch64" platform) [
+    ] ++ lib.optionals (!(builtins.match "aarch64.+" platform != "null")) [
+
+      outputs.overlays.additions
+      outputs.overlays.modifications
+      outputs.overlays.unstable-packages
+
     ];
     # Configure your nixpkgs instance
     config = {
