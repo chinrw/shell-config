@@ -143,16 +143,9 @@
       # Standalone home-manager configuration entrypoint
       # Available through 'home-manager --flake .#your-username@your-hostname'
       homeConfigurations = {
-        "chin39@desktop" = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux; # Home-manager requires 'pkgs' instance
-          extraSpecialArgs = {
-            inherit inputs outputs;
-            hostname = "desktop";
-            noGUI = false;
-          };
-          modules = [
-            ./home-manager/home.nix
-          ];
+        "chin39@desktop" = helpers.mkHome {
+          hostname = "desktop";
+          noGUI = false;
         };
         "chin39@wsl" = helpers.mkHome {
           username = "chin39";
@@ -168,27 +161,13 @@
           hostname = "archlinux";
           noGUI = true;
         };
-        "chin39@vm-gentoo" = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.aarch64-linux;
-          extraSpecialArgs = {
-            inherit inputs outputs;
-            hostname = "vm-gentoo";
-            noGUI = true;
-          };
-          modules = [
-            ./home-manager/home.nix
-          ];
+        "chin39@vm-gentoo" = helpers.mkHome {
+          hostname = "vm-gentoo";
+          noGUI = true;
         };
-        "chin39@macos" = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.aarch64-darwin;
-          extraSpecialArgs = {
-            inherit inputs outputs;
-            hostname = "macos";
-            noGUI = true;
-          };
-          modules = [
-            ./home-manager/home.nix
-          ];
+        "chin39@macos" = helpers.mkHome {
+          hostname = "macos";
+          noGUI = true;
         };
         "chin39@work" = helpers.mkHome {
           hostname = "work";
