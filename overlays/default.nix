@@ -7,7 +7,7 @@
   # You can change versions, add patches, set compilation flags, anything really.
   # https://nixos.wiki/wiki/Overlays
   modifications = final: prev: {
-    eza = prev.eza.overrideAttrs (old: rec {
+    eza = prev.eza.overrideAttrs (old: {
       # We can change the version of the package
       extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold";
     });
