@@ -10,6 +10,7 @@
     , username ? "chin39"
     , noGUI ? true
     , platform ? "x86_64-linux"
+    , isServer ? false
     ,
     }:
     let
@@ -29,6 +30,7 @@
           stateVersion
           isWsl
           isWork
+          isServer
           ;
       };
       modules = [ ../home-manager/home.nix ];

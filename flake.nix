@@ -156,9 +156,11 @@
           username = "ruowen";
           hostname = "gentoo";
           noGUI = false;
+          isServer = true;
         };
         "chin39@archlinux" = helpers.mkHome {
           hostname = "archlinux";
+          isServer = true;
         };
         "chin39@vm-gentoo" = helpers.mkHome {
           hostname = "vm-gentoo";

@@ -11,6 +11,7 @@
 , isWork
 , hostname
 , noGUI
+, isServer
 , platform
 , ...
 }:
@@ -37,7 +38,7 @@ in
     (import ./programs/zsh { inherit lib pkgs isDesktop noGUI proxyUrl; })
     (import ./programs/git { inherit lib pkgs isDesktop noGUI isWork isWsl proxyUrl; })
     (import ./programs/zellij { inherit lib pkgs config; })
-    (import ./programs/sops.nix { inherit config; })
+    (import ./programs/sops.nix { inherit config isServer; })
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
