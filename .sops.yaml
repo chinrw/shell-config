@@ -9,5 +9,5 @@ creation_rules:
   - path_regex: secrets/server/[^/]+\.(yaml|json|env|ini|sops|conf)$
     key_groups:
     - age:
-      - *chin39
       - *server
+      - *chin39
