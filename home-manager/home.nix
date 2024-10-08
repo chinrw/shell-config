@@ -69,7 +69,7 @@ in
       #     patches = [ ./change-hello-to-hi.patch ];
       #   });
       # })
-    # ] ++ lib.optionals (builtins.isString platform && !builtins.match "aarch64" platform) [
+      # ] ++ lib.optionals (builtins.isString platform && !builtins.match "aarch64" platform) [
     ] ++ lib.optionals (!(builtins.match "aarch64.+" platform != "null")) [
 
       outputs.overlays.additions

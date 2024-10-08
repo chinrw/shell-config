@@ -75,10 +75,9 @@
       interactive.diffFilter = "delta --color-only";
       http = {
         postBuffer = 524288000;
+      } // lib.optionalAttrs (isWsl) {
+        proxy = "http://127.0.0.1:10809";
       };
-      # //
-      # lib.optionalAttrs (isWork)
-      #   {  };
     };
   };
 }
