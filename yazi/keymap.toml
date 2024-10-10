@@ -5,7 +5,7 @@ desc = "Open the selected files interactively"
 
 [[manager.prepend_keymap]]
 on = ["S"]
-run = 'shell "$SHELL" --block --confirm'
+run = "shell zsh --block --confirm"
 desc = "Open shell here"
 
 [[manager.prepend_keymap]]
