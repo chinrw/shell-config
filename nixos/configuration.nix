@@ -119,8 +119,8 @@
     unzip
     wget
     curl
-    (hiPrio clang_18)
-    (hiPrio llvm_18)
+    (hiPrio clang)
+    (hiPrio llvm)
     gcc
     rustc
     cargo
@@ -134,7 +134,10 @@
     bpftool
   ];
   # Set the default editor to vim
-  environment.variables.EDITOR = "nvim";
+  environment.variables = {
+    EDITOR = "nvim";
+  };
+
 
   programs = {
     nix-ld = {
