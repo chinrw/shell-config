@@ -263,6 +263,9 @@ in
       nix-direnv = {
         enable = true;
       };
+      config = {
+        hide_env_diff = true;
+      };
     };
 
     eza = {
