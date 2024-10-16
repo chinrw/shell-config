@@ -156,6 +156,10 @@ in
         aria2 # downloader
         delta # A syntax-highlighting pager for git, diff, grep, and blame output
         tokei # Count your code, quickly.
+        (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
+          # select Python packages here
+          bpython
+        ]))
       ]
       ++ lib.optionals (hostname != "macos") [
         conda
