@@ -35,20 +35,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    flake-utils = {
-      url = "github:numtide/flake-utils";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    flake-utils.url = "github:numtide/flake-utils";
 
     neovim-nightly-overlay = {
       url = "github:nix-community/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    yazi = {
-      url = "github:sxyazi/yazi";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
+    yazi.url = "github:sxyazi/yazi";
     nixgl.url = "github:nix-community/nixGL";
 
     nix-index-database = {
@@ -70,9 +64,7 @@
     };
 
     # Zellij plugin
-    zjstatus = {
-      url = "github:dj95/zjstatus";
-    };
+    zjstatus.url = "github:dj95/zjstatus";
   };
 
   outputs =
