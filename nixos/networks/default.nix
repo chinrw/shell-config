@@ -36,6 +36,8 @@
         # For a client configuration, one peer entry for the server will suffice.
 
         {
+          name = "arch-synology";
+
           # Public key of the server (not a file path).
           publicKey = "iwyVuq0Q2FEqNYFjTKBEfW8buCpt+CpkUJBgwO9RLEs=";
 
