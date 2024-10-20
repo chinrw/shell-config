@@ -52,6 +52,11 @@
 
           # Send keepalives every 25 seconds. Important to keep NAT tables alive.
           persistentKeepalive = 15;
+
+
+          # When the dynamic endpoint refresh that is configured via dynamicEndpointRefreshSeconds exits (likely due to a failure),
+          # restart that service after this many seconds.
+          dynamicEndpointRefreshRestartSeconds = 30;
         }
       ];
     };
