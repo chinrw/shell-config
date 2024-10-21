@@ -25,8 +25,8 @@ let
     # "http://192.168.0.101:10809"
       config.sops.secrets."proxy/clash".path
     else if isWork then
-    # ""
-      config.sops.secrets."proxy/work".path
+      ""
+    # config.sops.secrets."proxy/work".path
     else "";
 in
 {
