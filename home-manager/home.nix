@@ -156,6 +156,7 @@ in
         aria2 # downloader
         delta # A syntax-highlighting pager for git, diff, grep, and blame output
         tokei # Count your code, quickly.
+        binsider # Analyze ELF binaries like a boss 😼🕵️‍♂️
         (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
           # select Python packages here
           bpython
