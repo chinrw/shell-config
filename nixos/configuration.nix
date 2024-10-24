@@ -131,7 +131,7 @@
     tcpdump
 
     btrfs-progs
-    bpftool
+    bpftools
   ];
   # Set the default editor to vim
   environment.variables = {
