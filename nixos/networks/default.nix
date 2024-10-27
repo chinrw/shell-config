@@ -53,7 +53,7 @@
           # https://discourse.nixos.org/t/solved-minimal-firewall-setup-for-wireguard-client/7577
 
           # Send keepalives every 25 seconds. Important to keep NAT tables alive.
-          persistentKeepalive = 15;
+          persistentKeepalive = 25;
 
 
           # When the dynamic endpoint refresh that is configured via dynamicEndpointRefreshSeconds exits (likely due to a failure),
