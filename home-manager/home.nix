@@ -157,10 +157,6 @@ in
         delta # A syntax-highlighting pager for git, diff, grep, and blame output
         tokei # Count your code, quickly.
         binsider # Analyze ELF binaries like a boss 😼🕵️‍♂️
-        (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
-          # select Python packages here
-          bpython
-        ]))
       ]
       ++ lib.optionals (hostname != "macos") [
         conda
@@ -184,6 +180,12 @@ in
       ]
       ++ lib.optionals isWork [
         mypy #  Optional static typing for Python 
+      ]
+      ++ lib.optionals (!isWork) [
+        (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
+          # select Python packages here
+          bpython
+        ]))
       ]
       ++ lib.optionals isWsl [
         # Clangd from clang-tools must come first.
