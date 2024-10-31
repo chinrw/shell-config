@@ -55,8 +55,6 @@ in
     # You can add overlays here
     overlays = [
       # If you want to use overlays exported from other flakes:
-      # neovim-overlays
-      inputs.neovim-nightly-overlay.overlays.default
       # (import ../overlays/rust-overlay.nix)
 
 
@@ -133,7 +131,6 @@ in
         (_7zz.override { enableUnfree = true; })
         ouch
         helix
-        neovim
         pyright
         cachix
         nix-search-cli
@@ -296,7 +293,7 @@ in
     neovim = {
       enable = true;
       defaultEditor = true;
-      package = pkgs.neovim;
+      package = inputs.neovim-nightly-overlay.packages.${pkgs.system}.default;
     };
 
     gitui.enable = true;
