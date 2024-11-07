@@ -56,9 +56,17 @@
           persistentKeepalive = 25;
 
 
-          # When the dynamic endpoint refresh that is configured via dynamicEndpointRefreshSeconds exits (likely due to a failure),
-          # restart that service after this many seconds.
-          dynamicEndpointRefreshRestartSeconds = 30;
+          # Warning for endpoints with changing IPs:
+          # The WireGuard kernel side cannot perform DNS resolution.
+          # Thus DNS resolution is done once by the `wg` userspace
+          # utility, when setting up WireGuard. Consequently, if the IP address
+          # behind the name changes, WireGuard will not notice.
+          # This is especially common for dynamic-DNS setups, but also applies to
+          # any other DNS-based setup.
+          # If you do not use IP endpoints, you likely want to set
+          # {option}`networking.wireguard.dynamicEndpointRefreshSeconds`
+          # to refresh the IPs periodically.
+          dynamicEndpointRefreshSeconds  = 60;
         }
       ];
     };
