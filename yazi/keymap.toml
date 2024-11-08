@@ -24,17 +24,9 @@ run = "close"
 desc = "Close the current tab, or quit if it is last tab"
 
 [[manager.prepend_keymap]]
-on = ["l"]
-run = "plugin --sync smart-enter"
+on   = "l"
+run  = "plugin smart-enter"
 desc = "Enter the child directory, or open the file"
-
-[[manager.prepend_keymap]]
-on = ["k"]
-run = "plugin --sync arrow --args=-1"
-
-[[manager.prepend_keymap]]
-on = ["j"]
-run = "plugin --sync arrow --args=1"
 
 [[tasks.prepend_keymap]]
 on = [ "q" ]
