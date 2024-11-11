@@ -158,6 +158,9 @@
           hostname = "vm-gentoo";
           platform = "aarch64-linux";
         };
+        "chin39@wsl-gentoo" = helpers.mkHome {
+          hostname = "gentoo-vm";
+        };
         "chin39@macos" = helpers.mkHome {
           hostname = "macos";
           platform = "aarch64-darwin";
