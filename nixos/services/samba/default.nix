@@ -31,6 +31,16 @@
         "create mask" = "0644";
         "directory mask" = "0755";
       };
+      "data" = {
+        path = "/mnt/";
+        browseable = "yes";
+        writeable = "yes";
+        public = "no";
+        "valid users" = "chin39";
+        "guest ok" = "no";
+        "create mask" = "0644";
+        "directory mask" = "0755";
+      };
     };
   };
 
