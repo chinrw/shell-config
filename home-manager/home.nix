@@ -187,7 +187,8 @@ in
       ]
       ++ lib.optionals isWsl [
         # Clangd from clang-tools must come first.
-        (hiPrio clang-tools_18)
+        (hiPrio clang-tools)
+        par2cmdline
         vim
         marksman
         aria2
