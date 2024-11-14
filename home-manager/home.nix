@@ -126,6 +126,7 @@ in
 
         rclone
         gitoxide
+        git-lfs
         hexyl
         dua
         (_7zz.override { enableUnfree = true; })
