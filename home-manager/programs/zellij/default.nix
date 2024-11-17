@@ -8,6 +8,9 @@
     "${config.xdg.configHome}/zellij-plugins/zjstatus.wasm" = {
       source = "${pkgs.zjstatus}/bin/zjstatus.wasm";
     };
+    "${config.xdg.configHome}/zellij-plugins/zjframes.wasm" = {
+      source = "${pkgs.zjstatus}/bin/zjframes.wasm";
+    };
   };
   # programs.zellij = {
   #

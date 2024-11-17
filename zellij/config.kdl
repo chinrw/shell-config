@@ -205,13 +205,13 @@ keybinds clear-defaults=true {
     // 	    	}
     // 		}
 	// }
-	shared_except "tmux" "locked" {
-    bind "Ctrl y" {
-        LaunchOrFocusPlugin "file:~/.config/zellij/plugins/harpoon.wasm" {
-            floating true; move_to_focused_tab true;
-        }
-    }
-	}
+	// shared_except "tmux" "locked" {
+	//    bind "Ctrl y" {
+	//        LaunchOrFocusPlugin "file:~/.config/zellij/plugins/harpoon.wasm" {
+	//            floating true; move_to_focused_tab true;
+	//        }
+	//    }
+	// }
 
 }
 
@@ -220,6 +220,14 @@ plugins {
 	status-bar { path "status-bar"; }
 	strider { path "strider"; }
 	compact-bar { path "compact-bar"; }
+}
+
+load_plugins {
+    "file:~/.config/zellij-plugins/zjframes.wasm" {
+        hide_frame_for_single_pane       "false"
+        hide_frame_except_for_search     "true"
+        hide_frame_except_for_fullscreen "true"
+    }
 }
 
 // Choose what to do when zellij receives SIGTERM, SIGINT, SIGQUIT or SIGHUP
@@ -386,7 +394,7 @@ scroll_buffer_size 100000
 
 // The folder in which Zellij will look for layouts
 //
-// layout_dir "/home/chin39/.config/zellij/layouts"
+// layout_dir "${HOME}/.config/zellij/layouts"
 
 // The folder in which Zellij will look for themes
 //

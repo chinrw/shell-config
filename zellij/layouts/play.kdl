@@ -8,6 +8,8 @@ layout {
                 format_right  "#[fg=#6C7086,bold]{command_uptime}{datetime}"
                 format_space  ""
 
+                hide_frame_for_single_pane "false"
+
                 border_enabled  "false"
                 border_char     "─"
                 border_format   "#[fg=#6C7086]{char}"
@@ -48,7 +50,7 @@ layout {
     }
     tab name="play" {}
     tab name="nvim" {}
-    tab name="portage" {}
+    tab name="upgrade" {}
     tab name="yazi" {}
     tab name="kernel" {}
 }
