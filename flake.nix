@@ -27,12 +27,10 @@
     # Home manager
     home-manager = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     _1password-shell-plugins = {
       url = "github:1Password/shell-plugins";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     flake-utils.url = "github:numtide/flake-utils";
@@ -85,7 +83,7 @@
       # This is a function that generates an attribute by calling a function you
       # pass to it, with each system as an argument
       forAllSystems = nixpkgs.lib.genAttrs systems;
-      stateVersion = "24.11";
+      stateVersion = "25.05";
       helpers = import ./lib { inherit inputs outputs stateVersion; };
 
     in
