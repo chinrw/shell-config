@@ -161,6 +161,13 @@ keybinds clear-defaults=true {
 		    SwitchToMode "Normal"
 		}
 		bind "a" { ToggleFloatingPanes; SwitchToMode "Normal"; }
+		bind "p" { 
+			LaunchOrFocusPlugin "plugin-manager" {
+            floating true
+            move_to_focused_tab true
+            };
+            SwitchToMode "Locked"; 
+		}
 		bind "e" { EditScrollback; SwitchToMode "Normal"; }
 		bind "/" { SwitchToMode "EnterSearch"; SearchInput 0; }
 	}
@@ -222,13 +229,13 @@ plugins {
 	compact-bar { path "compact-bar"; }
 }
 
-load_plugins {
-    "file:~/.config/zellij-plugins/zjframes.wasm" {
-        hide_frame_for_single_pane       "false"
-        hide_frame_except_for_search     "true"
-        hide_frame_except_for_fullscreen "true"
-    }
-}
+// load_plugins {
+//     "file:~/.config/zellij-plugins/zjframes.wasm" {
+//         hide_frame_for_single_pane       "false"
+//         hide_frame_except_for_search     "true"
+//         hide_frame_except_for_fullscreen "true"
+//     }
+// }
 
 // Choose what to do when zellij receives SIGTERM, SIGINT, SIGQUIT or SIGHUP
 // eg. when terminal window with an active zellij session is closed

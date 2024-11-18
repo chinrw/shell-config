@@ -1,9 +1,10 @@
 layout {
+    cwd "~"
     default_tab_template {
         children
         pane size=1 borderless=true {
             plugin location="file:~/.config/zellij-plugins/zjstatus.wasm" {
-                format_left   "{mode} #[fg=#89B4FA,bold]{session}{notifications}"
+                format_left   "{mode} #[fg=#89B4FA,bold]{session}{notifications}#[fg=#6C7086,bold]{command_net_speed}"
                 format_center "{tabs}"
                 format_right  "#[fg=#6C7086,bold]{command_uptime}{datetime}"
                 format_space  ""
@@ -33,9 +34,9 @@ layout {
                 command_uptime_interval    "2"
                 command_uptime_rendermode  "dynamic"
 
-                command_net_speed_command     "~/.tmux/plugins/tmux-net-speed/scripts/net_speed.sh"
+                command_net_speed_command     "bash -c \"/home/chin39/shell-config/net_speed.sh eth0\""
                 command_net_speed_format      "#[fg=blue] {stdout} "
-                command_net_speed_interval    "2"
+                command_net_speed_interval    "1"
                 command_net_speed_rendermode  "dynamic"
 
                 datetime        "#[fg=#6C7086,bold] {format} "
