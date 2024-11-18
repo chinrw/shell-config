@@ -129,6 +129,8 @@
     wireguard-tools
     ueberzugpp
     tcpdump
+    trash-cli
+
 
     btrfs-progs
     bpftools
