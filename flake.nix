@@ -62,7 +62,8 @@
     };
 
     # Zellij plugin
-    zjstatus.url = "github:dj95/zjstatus";
+    # FIX: may need to update
+    zjstatus.url = "github:dj95/zjstatus/v0.18.1";
   };
 
   outputs =
