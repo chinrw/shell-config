@@ -34,7 +34,7 @@ layout {
                 command_uptime_interval    "2"
                 command_uptime_rendermode  "dynamic"
 
-                command_net_speed_command     "bash -c \"/home/chin39/shell-config/net_speed.sh eth0\""
+                command_net_speed_command     "bash -c \"${HOME}/.config/zellij/net_speed.sh eth0\""
                 command_net_speed_format      "#[fg=blue] {stdout} "
                 command_net_speed_interval    "1"
                 command_net_speed_rendermode  "dynamic"
