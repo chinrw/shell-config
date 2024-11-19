@@ -117,6 +117,7 @@ in
         genact
         angle-grinder
         zellij
+        man-pages
         duf # better df
         tcpdump # monitor tcp
 
