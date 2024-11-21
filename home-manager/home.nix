@@ -43,6 +43,7 @@ in
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
     inputs.nix-index-database.hmModules.nix-index
+    inputs._1password-shell-plugins.hmModules.default
 
     inputs.sops-nix.homeManagerModules.sops
   ] ++ lib.optionals isWsl [
@@ -199,6 +200,15 @@ in
 
   # Enable home-manager and git
   programs.home-manager.enable = true;
+
+  programs._1password-shell-plugins = {
+    # enable 1Password shell plugins for bash, zsh, and fish shell
+    enable = true;
+    # the specified packages as well as 1Password CLI will be
+    # automatically installed and configured to use shell plugins
+    plugins = with pkgs; [ gh awscli2 ];
+  };
+
 
   programs.fish = {
     enable = true;
