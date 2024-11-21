@@ -70,11 +70,11 @@ in
       #   });
       # })
       # ] ++ lib.optionals (builtins.isString platform && !builtins.match "aarch64" platform) [
-    ] ++ lib.optionals (!(builtins.match "aarch64.+" platform != "null")) [
+    ] ++ lib.optionals (!(builtins.match "aarch64.*" platform != null)) [
 
+      outputs.overlays.unstable-packages
       outputs.overlays.additions
       outputs.overlays.modifications
-      outputs.overlays.unstable-packages
 
     ];
     # Configure your nixpkgs instance
@@ -117,7 +117,7 @@ in
         onefetch
         genact
         angle-grinder
-        zellij
+        unstable.zellij
         man-pages
         duf # better df
         tcpdump # monitor tcp

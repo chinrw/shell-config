@@ -23,6 +23,7 @@
   inputs = {
     # Nixpkgs
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs-master.url = "github:nixos/nixpkgs";
 
     # Home manager
     home-manager = {
