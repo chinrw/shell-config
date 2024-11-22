@@ -343,16 +343,80 @@ local function parse_args(args)
     return parsed_arguments
 end
 
--- Function to initialise the configuration
----@param state any
----@param opts Configuration
----@return Configuration
-local initialise_config = ya.sync(function(state, opts)
+-- Function to merge the given configuration table with the default one
+---@param config Configuration|nil The configuration table to merge
+---@return Configuration merged_config The merged configuration table
+local function merge_configuration(config)
     --
 
-    -- Merge the default configuration with the given one
+    -- If the configuration isn't given, then use the default one
+    if config == nil then return DEFAULT_CONFIG end
+
+    -- Initialise the list of invalid configuration options
+    local invalid_configuration_options = {}
+
+    -- Initialise the merged configuration
+    local merged_config = {}
+
+    -- Iterate over the default configuration table
+    for key, value in pairs(DEFAULT_CONFIG) do
+        --
+
+        -- Add the default configuration to the merged configuration
+        merged_config[key] = value
+    end
+
+    -- Iterate over the given configuration table
+    for key, value in pairs(config) do
+        --
+
+        -- If the key is not in the merged configuration
+        if merged_config[key] == nil then
+            --
+
+            -- Add the key to the list of invalid configuration options
+            table.insert(invalid_configuration_options, key)
+
+            -- Continue the loop
+            goto continue
+        end
+
+        -- Otherwise, overwrite the value in the merged configuration
+        merged_config[key] = value
+
+        -- The label to continue the loop
+        ::continue::
+    end
+
+    -- If there are no invalid configuration options,
+    -- then return the merged configuration
+    if #invalid_configuration_options <= 0 then return merged_config end
+
+    -- Otherwise, notify the user of the invalid configuration options
+    ya.notify(merge_tables(DEFAULT_NOTIFICATION_OPTIONS, {
+        content = "Invalid configuration options: "
+            .. table.concat(invalid_configuration_options, ", "),
+        level = "warn",
+    }))
+
+    -- Return the merged configuration
+    return merged_config
+end
+
+-- Function to initialise the configuration
+---@param state any
+---@param user_config Configuration|nil
+---@param additional_data any
+---@return Configuration
+local initialise_config = ya.sync(function(state, user_config, additional_data)
+    --
+
+    -- Merge the default configuration with the user given one,
+    -- as well as the additional data given,
     -- and set it to the state.
-    state.config = merge_tables(DEFAULT_CONFIG, opts)
+    state.config = merge_tables(
+        merge_configuration(user_config), additional_data
+    )
 
     -- Return the configuration object for async functions
     return state.config
@@ -424,9 +488,9 @@ local function initialise_plugin(opts)
     end
 
     -- Initialise the configuration object
-    local config = initialise_config(merge_tables({
+    local config = initialise_config(opts, {
         extractor_command = extractor_command,
-    }, opts))
+    }, opts)
 
     -- Return the configuration object
     return config
@@ -787,33 +851,6 @@ local function archive_is_encrypted(command_error_string)
     end
 end
 
--- The function to test the password on the archive
--- without actually extracting the archive
----@param archive_path string
----@param config Configuration
----@param password string
----@return CommandOutput, integer
-local function test_archive_password(archive_path, config, password)
-    --
-
-    -- Return the command to test the password on the archive
-    return Command(config.extractor_command)
-        :args({
-
-            -- Test the archive
-            "t",
-
-            -- Pass the password to the command
-            "-p" .. password,
-
-            -- The archive file to test
-            archive_path,
-        })
-        :stdout(Command.PIPED)
-        :stderr(Command.PIPED)
-        :output()
-end
-
 -- The function to handle retrying the extractor command
 --
 -- The extractor command is a function that takes
@@ -828,7 +865,6 @@ end
 ---@param extractor_command function A function that extracts the archive
 ---@param config Configuration The configuration object
 ---@param initial_password string|nil The initial password to try
----@param test_encryption boolean|nil Whether to test the encryption or not
 ---@param archive_path string|nil The path to the archive file
 ---@return boolean successful Whether the extraction was successful
 ---@return string|nil error_message An error message for unsuccessful extracts
@@ -838,7 +874,6 @@ local function retry_extractor(
     extractor_command,
     config,
     initial_password,
-    test_encryption,
     archive_path
 )
     --
@@ -847,18 +882,9 @@ local function retry_extractor(
     -- or an empty string if it's not given
     local password = initial_password or ""
 
-    -- Initialise the test encryption flag to false if it is not given
-    test_encryption = test_encryption or false
-
     -- Initialise the archive path to the given archive path
     -- or an empty string if it's not given
     archive_path = archive_path or ""
-
-    -- If the archive path is empty,
-    -- set the test encryption flag to false
-    if string.len(string_trim(archive_path)) < 1 then
-        test_encryption = false
-    end
 
     -- Initialise the error message from the archive extractor
     local error_message = ""
@@ -871,36 +897,13 @@ local function retry_extractor(
     for tries = 0, total_number_of_tries do
         --
 
-        -- Initialise the output and error to nil
-        local output, err = nil, nil
-
-        -- If the test encryption flag is true
-        if test_encryption then
-            --
-
-            -- Call the function to test the encryption of the archive
-            output, err = test_archive_password(archive_path, config, password)
-
-        -- Otherwise, execute the extractor command
-        else
-            --
-
-            -- Execute the extractor command
-            output, err = extractor_command(password, config)
-        end
+        -- Execute the extractor command
+        local output, err = extractor_command(password, config)
 
         -- If there is no output
         -- then return false, the error code as a string,
         -- nil for the output, and nil for the password
         if not output then return false, tostring(err), nil, nil end
-
-        -- If the test encryption flag is true and the output status code is 0
-        if test_encryption and output.status.code == 0 then
-            --
-
-            -- Actually execute the extractor command
-            output, err = extractor_command(password, config)
-        end
 
         -- If the output was 0, which means the extractor command was successful
         if output.status.code == 0 then
@@ -1546,7 +1549,6 @@ local function extract_archive(archive_path, config)
         extractor_command,
         config,
         correct_password,
-        false,
         archive_path
     )
 

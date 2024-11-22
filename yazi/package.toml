@@ -1,8 +1,8 @@
 [plugin]
 deps = [
 	{ use = "Reledia/hexyl", rev = "ccc0a4a" },
-	{ use = "ndtoan96/ouch", rev = "d13f7c0" },
-	{ use = "yazi-rs/plugins:git", rev = "4adba4e" }, { use = "yazi-rs/plugins:mime-ext", rev = "4adba4e" }, { use = "hankertrix/augment-command", rev = "57adf8d" },
+	{ use = "ndtoan96/ouch", rev = "db14883" },
+	{ use = "yazi-rs/plugins:git", rev = "776b160" }, { use = "yazi-rs/plugins:mime-ext", rev = "776b160" }, { use = "hankertrix/augment-command", rev = "fe145ac" },
 ]
 
 [flavor]
