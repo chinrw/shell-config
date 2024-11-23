@@ -113,6 +113,7 @@ in
         fd
         fzf
         glow
+        go
         fastfetch
         onefetch
         genact
