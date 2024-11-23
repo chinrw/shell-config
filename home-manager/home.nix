@@ -44,7 +44,6 @@ in
     # ./nvim.nix
     inputs.nix-index-database.hmModules.nix-index
     inputs._1password-shell-plugins.hmModules.default
-
     inputs.sops-nix.homeManagerModules.sops
   ] ++ lib.optionals isWsl [
     (import ./programs/rclone.nix { inherit config lib pkgs; })
@@ -63,6 +62,8 @@ in
         zjstatus = inputs.zjstatus.packages.${prev.system}.default;
       })
 
+      outputs.overlays.unstable-packages
+
       # Or define it inline, for example:
       # (final: prev: {
       #   hi = final.hello.overrideAttrs (oldAttrs: {
@@ -72,7 +73,6 @@ in
       # ] ++ lib.optionals (builtins.isString platform && !builtins.match "aarch64" platform) [
     ] ++ lib.optionals (!(builtins.match "aarch64.*" platform != null)) [
 
-      outputs.overlays.unstable-packages
       outputs.overlays.additions
       outputs.overlays.modifications
 
