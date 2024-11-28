@@ -97,10 +97,10 @@ in
         REMOTE_PATH = "/";
         RCLONE_TEMP_DIR="${config.xdg.cacheHome}/rclone";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
-        RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "4h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
         RCLONE_MOUNT_TRANSFER = "4";
         RCLONE_MOUNT_VFS_CACHE_MODE = "full";
+        RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "48h0m0s";
       })
       (rcloneService {
         name = "union-115";
@@ -109,10 +109,10 @@ in
         RCLONE_TEMP_DIR="${config.xdg.cacheHome}/rclone";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
-        RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "4h";
         RCLONE_MOUNT_TRANSFER = "6";
         RCLONE_MOUNT_VFS_CACHE_MODE = "full";
         RCLONE_MOUNT_TIMEOUT = "120m";
+        RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "48h0m0s";
       })
       (rcloneService {
         name = "115-single";
