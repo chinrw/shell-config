@@ -158,6 +158,7 @@ in
         delta # A syntax-highlighting pager for git, diff, grep, and blame output
         tokei # Count your code, quickly.
         binsider # Analyze ELF binaries like a boss 😼🕵️‍♂️
+        hyperfine # A command-line benchmarking tool
       ]
       ++ lib.optionals (hostname != "macos") [
         conda
