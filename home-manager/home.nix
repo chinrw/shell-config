@@ -159,6 +159,7 @@ in
         tokei # Count your code, quickly.
         binsider # Analyze ELF binaries like a boss 😼🕵️‍♂️
         hyperfine # A command-line benchmarking tool
+        htop
       ]
       ++ lib.optionals (hostname != "macos") [
         conda
