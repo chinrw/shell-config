@@ -85,7 +85,7 @@
       http = {
         postBuffer = 524288000;
       } // lib.optionalAttrs (isWsl) {
-        proxy = "http://127.0.0.1:10809";
+        proxy = "http://192.168.0.101:7891";
       };
     };
   };
