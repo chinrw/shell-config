@@ -2,7 +2,7 @@
 deps = [
 	{ use = "Reledia/hexyl", rev = "ccc0a4a" },
 	{ use = "ndtoan96/ouch", rev = "db14883" },
-	{ use = "yazi-rs/plugins:git", rev = "a53d544" }, { use = "yazi-rs/plugins:mime-ext", rev = "a53d544" }, { use = "hankertrix/augment-command", rev = "c2f01d7" },
+	{ use = "yazi-rs/plugins:git", rev = "ec97f88" }, { use = "yazi-rs/plugins:mime-ext", rev = "ec97f88" }, { use = "hankertrix/augment-command", rev = "011489a" },
 ]
 
 [flavor]
