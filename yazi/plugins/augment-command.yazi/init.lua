@@ -648,9 +648,9 @@ end)
 -- Function to get the current working directory
 ---@param _ any
 ---@return string current_working_directory The current working directory
-local get_current_directory = ya.sync(function(_)
-    return tostring(cx.active.current.cwd)
-end)
+local get_current_directory = ya.sync(
+    function(_) return tostring(cx.active.current.cwd) end
+)
 
 -- Function to get the path of the hovered item
 ---@param _ any
@@ -2274,8 +2274,8 @@ end
 local function handle_paste(args, config)
     --
 
-    -- If the hovered item is a directory or smart paste is not wanted
-    if hovered_item_is_dir() and not (config.smart_paste or args.smart) then
+    -- If the hovered item is not a directory or smart paste is not wanted
+    if not hovered_item_is_dir() or not (config.smart_paste or args.smart) then
         --
 
         -- Just paste the items inside the current directory
@@ -2671,12 +2671,8 @@ local function run_command_func(command, args, config)
         [Commands.Open] = handle_open,
         [Commands.Enter] = handle_enter,
         [Commands.Leave] = handle_leave,
-        [Commands.Rename] = function(_)
-            handle_yazi_command("rename", args)
-        end,
-        [Commands.Remove] = function(_)
-            handle_yazi_command("remove", args)
-        end,
+        [Commands.Rename] = function(_) handle_yazi_command("rename", args) end,
+        [Commands.Remove] = function(_) handle_yazi_command("remove", args) end,
         [Commands.Shell] = handle_shell,
         [Commands.Paste] = handle_paste,
         [Commands.TabCreate] = handle_tab_create,

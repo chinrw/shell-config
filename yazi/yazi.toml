@@ -124,6 +124,7 @@ rules = [
 	{ mime = "*", use = [
 		"open",
 		"reveal",
+		"edit",
 	] },
 ]
 
