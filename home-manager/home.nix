@@ -123,6 +123,7 @@ in
         duf # better df
         tcpdump # monitor tcp
         b4 # A tool to work with public-inbox and patch archives
+        moreutils # check errno
 
         btop # system monitor
         glances # same thing
