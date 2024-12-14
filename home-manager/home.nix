@@ -187,6 +187,8 @@ in
         mypy #  Optional static typing for Python 
       ]
       ++ lib.optionals (!isWork) [
+      ]
+      ++ lib.optionals (!(builtins.match "aarch64.*" platform != null)) [
         (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
           # select Python packages here
           bpython
