@@ -59,6 +59,12 @@ zstyle ':fzf-tab:complete:git-checkout:*' fzf-preview \\
 bindkey \"^P\" history-substring-search-up
 bindkey \"^N\" history-substring-search-down
 
+_dstask() {
+    compadd -- $(dstask _completions \"\${words[@]}\")
+}
+
+compdef _dstask dstask
+
 if [[ $TERM = dumb ]]; then
   unset zle_bracketed_paste
 fi

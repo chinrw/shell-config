@@ -124,6 +124,7 @@ in
         tcpdump # monitor tcp
         b4 # A tool to work with public-inbox and patch archives
         moreutils # check errno
+        dstask # Git powered terminal-based todo/note manager -- markdown note page per task
 
         btop # system monitor
         glances # same thing
