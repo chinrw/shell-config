@@ -35,6 +35,13 @@
       #     patches = [ ./change-hello-to-hi.patch ];
       #   });
       # })
+      (final: prev: {
+        stable = import
+          inputs.nixpkgs-stable
+          {
+            inherit (final) system;
+          };
+      })
     ];
     # Configure your nixpkgs instance
     config = {
@@ -134,7 +141,7 @@
 
     btrfs-progs
     bpftools
-    bpftrace
+    stable.bpftrace
   ];
   # Set the default editor to vim
   environment.variables = {
