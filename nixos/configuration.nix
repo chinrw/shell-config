@@ -142,6 +142,11 @@
     btrfs-progs
     bpftools
     stable.bpftrace
+
+    (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
+      # select Python packages here
+      bpython
+    ]))
   ];
   # Set the default editor to vim
   environment.variables = {
