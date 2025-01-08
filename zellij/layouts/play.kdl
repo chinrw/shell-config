@@ -9,7 +9,7 @@ layout {
                 format_right  "#[fg=#6C7086,bold]{command_uptime}{datetime}"
                 format_space  ""
 
-                hide_frame_for_single_pane "false"
+                // hide_frame_for_single_pane "true"
 
                 border_enabled  "false"
                 border_char     "─"
