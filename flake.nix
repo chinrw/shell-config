@@ -38,7 +38,7 @@
     flake-utils.url = "github:numtide/flake-utils";
 
     neovim-nightly-overlay = {
-      url = "github:nix-community/neovim-nightly-overlay";
+      url = "github:chinrw/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
