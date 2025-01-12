@@ -163,6 +163,7 @@ in
         binsider # Analyze ELF binaries like a boss 😼🕵️‍♂️
         hyperfine # A command-line benchmarking tool
         htop
+        devenv # Fast, Declarative, Reproducible, and Composable Developer Environments
       ]
       ++ lib.optionals (hostname != "macos") [
         conda
