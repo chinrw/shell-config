@@ -105,8 +105,35 @@
     useWindowsDriver = true;
   };
 
-  # enable docker
-  virtualisation.docker.enable = true;
+  virtualisation.docker = {
+    enable = true;
+    rootless = {
+      enable = true;
+      setSocketVariable = true;
+      daemon.settings = {
+        features.cdi = true;
+        cdi-spec-dirs = [ "/etc/cdi" ];
+
+      };
+    };
+    daemon.settings = {
+      features.cdi = true;
+    };
+  };
+  hardware = {
+    nvidia = {
+      modesetting.enable = true;
+      nvidiaSettings = false;
+      open = false;
+    };
+    nvidia-container-toolkit = {
+      enable = true;
+      mount-nvidia-executables = false;
+    };
+  };
+  services.xserver.videoDrivers = [ "nvidia" ];
+
+
   users.users.chin39 = {
     extraGroups = [ "docker" "wheel" ];
     shell = pkgs.zsh;
@@ -142,6 +169,7 @@
     btrfs-progs
     bpftools
     stable.bpftrace
+    nvidia-docker
 
     (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
       # select Python packages here
