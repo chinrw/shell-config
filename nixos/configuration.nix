@@ -195,6 +195,8 @@ in
     bpftools
     stable.bpftrace
     nvidia-docker
+    lsof
+    psmisc
 
     (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
       # select Python packages here
