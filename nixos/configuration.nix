@@ -2,6 +2,7 @@
 # Use this to configure your system environment (it replaces /etc/nixos/configuration.nix)
 { inputs
 , lib
+, outputs
 , config
 , pkgs
 , ...
@@ -53,6 +54,7 @@ in
     overlays = [
       # If you want to use overlays exported from other flakes:
       # neovim-nightly-overlay.overlays.default
+      outputs.overlays.unstable-packages
 
       # Or define it inline, for example:
       # (final: prev: {
@@ -106,6 +108,7 @@ in
   services = {
     ollama = {
       enable = true;
+      package = pkgs.unstable.ollama;
       acceleration = "cuda";
       host = "192.168.0.201";
       environmentVariables = {
@@ -114,6 +117,7 @@ in
     };
     open-webui = {
       enable = true;
+      package = pkgs.unstable.open-webui;
       host = "192.168.0.201";
     };
   };
