@@ -283,11 +283,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1737630279,
-        "narHash": "sha256-wJQCxyMRc4P26zDrHmZiRD5bbfcJpqPG3e2djdGG3pk=",
+        "lastModified": 1737762889,
+        "narHash": "sha256-5HGG09bh/Yx0JA8wtBMAzt0HMCL1bYZ93x4IqzVExio=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "0db5c8bfcce78583ebbde0b2abbc95ad93445f7c",
+        "rev": "daf04c5950b676f47a794300657f1d3d14c1a120",
         "type": "github"
       },
       "original": {
@@ -309,11 +309,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1737623819,
-        "narHash": "sha256-TychRI0FxV9Cb6nDWkQg8tYw6ltu3Xr82fB9NU9CKYs=",
+        "lastModified": 1737785999,
+        "narHash": "sha256-+FvWheXlyOA/OGaMCUGPFNPgRo2tMbpVf4HxeA7TUZ4=",
         "owner": "chinrw",
         "repo": "neovim-nightly-overlay",
-        "rev": "caeb0df7883f907be46573a85aaf660f51f8096a",
+        "rev": "303df2659772c2829b67b956dd7782408427dd55",
         "type": "github"
       },
       "original": {
@@ -325,11 +325,11 @@
     "neovim-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1737621740,
-        "narHash": "sha256-fqP//nfxnehjuUxYOHG1qTX3qitjMWKvEA8gx6c3lbU=",
+        "lastModified": 1737777947,
+        "narHash": "sha256-iCCKjO0kQbtcc7EANRnZIry8B6UJze2Ma4CzQWcNlik=",
         "owner": "neovim",
         "repo": "neovim",
-        "rev": "8634bd46b26f28fa26950128b0cc585560bd6a9a",
+        "rev": "851137f67905f6038e51b5b7d1490fbedea4faaa",
         "type": "github"
       },
       "original": {
@@ -415,11 +415,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1737629848,
-        "narHash": "sha256-vEjmvM+5UbEYfyG99ZgV5qXXDitceSmwwx98yEyrOdM=",
+        "lastModified": 1737787057,
+        "narHash": "sha256-6+IEqVA9mQzFXqMSTwkB5+I7TK0nuNmKqQylnv2mBSI=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "27ce43e08207e258840d064ebcfd192a1d9715c3",
+        "rev": "72579598e4e9a3205d44febb90fd6e5b05b4b342",
         "type": "github"
       },
       "original": {
@@ -493,11 +493,11 @@
     },
     "nixpkgs_5": {
       "locked": {
-        "lastModified": 1737525964,
-        "narHash": "sha256-3wFonKmNRWKq1himW9N3TllbeGIHFACI5vmLpk6moF8=",
+        "lastModified": 1737717945,
+        "narHash": "sha256-ET91TMkab3PmOZnqiJQYOtSGvSTvGeHoegAv4zcTefM=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "5757bbb8bd7c0630a0cc4bb19c47e588db30b97c",
+        "rev": "ecd26a469ac56357fd333946a99086e992452b6a",
         "type": "github"
       },
       "original": {
@@ -564,11 +564,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1737599167,
-        "narHash": "sha256-S2rHCrQWCDVp63XxL/AQbGr1g5M8Zx14C7Jooa4oM8o=",
+        "lastModified": 1737771740,
+        "narHash": "sha256-lWIdF4qke63TdCHnJ0QaUHfG8YvsDrBqzL4jiHYQd+Y=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "38374302ae9edf819eac666d1f276d62c712dd06",
+        "rev": "cfaaa1dddd280af09aca84af84612fbccd986ae2",
         "type": "github"
       },
       "original": {
@@ -727,11 +727,11 @@
         "rust-overlay": "rust-overlay_2"
       },
       "locked": {
-        "lastModified": 1737557477,
-        "narHash": "sha256-IRm8o6vfYGRhWeljLUWIUCb0Mlq3M+N4D7ZuwRpS6Vs=",
+        "lastModified": 1737735879,
+        "narHash": "sha256-7mg1KWnmnTV245v9JgpA9bz8MTFoHOJ5qss2+4hNyyA=",
         "owner": "sxyazi",
         "repo": "yazi",
-        "rev": "abb43251fa252568ef0536bdbfb1833f4243a723",
+        "rev": "a4f8e86471666959b10347f4b8907ef34638aea7",
         "type": "github"
       },
       "original": {
@@ -748,11 +748,11 @@
         "rust-overlay": "rust-overlay_3"
       },
       "locked": {
-        "lastModified": 1737191522,
-        "narHash": "sha256-P5umWkfz8qzq3cy2hOJ+YCORViUd0e59m03hnbi9JcY=",
+        "lastModified": 1737741991,
+        "narHash": "sha256-FCIlCT8HNEVEWwtiL5zwWH01XW1vHir83HWodfKeWU4=",
         "owner": "dj95",
         "repo": "zjstatus",
-        "rev": "55b6448052cf037fe0dfd801b4aefb73caf87940",
+        "rev": "8e9aa9d977ec70991c4e4cde8bcda9942dee3f5d",
         "type": "github"
       },
       "original": {
