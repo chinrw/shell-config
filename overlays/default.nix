@@ -23,26 +23,39 @@
     #   # We can change the version of the package
     #   extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold -Clinker-plugin-lto";
     # });
+    #
+    # In Nix, the rec keyword stands for “recursive attribute set.” A recursive
+    # set means that attributes defined inside can reference each other without
+    # needing to be defined beforehand
+    # rec {
+    #   version = "0.26";
+    #   src = fetchFromGitHub {
+    #     owner = "naggie";
+    #     repo  = "dstask";
+    #     rev   = "v${version}";
+    #     sha256 = "sha256-...";
+    #   };
+    # }
+    # Without rec:
+    # You can’t refer to attributes (like version) from within the same set; the
+    # interpreter doesn’t know they exist yet.
+    #
+    # With rec: The set is self-referential. This means inside the set, you can
+    # do things like rev = "v${version}" because version is also defined in
+    # that same set.
 
-    awscli2 = prev.awscli2.overrideAttrs (old: {
-      # We can change the version of the package
-      postPatch = ''
-        substituteInPlace pyproject.toml \
-          --replace-fail 'flit_core>=3.7.1,<3.9.1' 'flit_core>=3.7.1' \
-          --replace-fail 'awscrt>=0.19.18,<=0.22.0' 'awscrt>=0.22.0' \
-          --replace-fail 'cryptography>=40.0.0,<43.0.2' 'cryptography>=43.0.0' \
-          --replace-fail 'distro>=1.5.0,<1.9.0' 'distro>=1.5.0' \
-          --replace-fail 'docutils>=0.10,<0.20' 'docutils>=0.10' \
-          --replace-fail 'prompt-toolkit>=3.0.24,<3.0.39' 'prompt-toolkit>=3.0.24'
+    dstask = prev.dstask.overrideAttrs (old: {
 
-        substituteInPlace requirements-base.txt \
-          --replace-fail "wheel==0.43.0" "wheel>=0.43.0"
+      # Update the rev and sha256 accordingly
+      # src = final.fetchurl {
+      #   url = "https://github.com/naggie/dstask/archive/refs/tags/0.27.tar.gz";
+      #   hash = "sha256-hdqS61DDYR4QVPUVPcDPkP4bixIhnHfRqoamE4TEUKA=";
+      # };
 
-        # Upstream needs pip to build and install dependencies and validates this
-        # with a configure script, but we don't as we provide all of the packages
-        # through PYTHONPATH
-        sed -i '/pip>=/d' requirements/bootstrap.txt
-      '';
+      # Override the platforms
+      meta = old.meta // {
+        platforms = final.lib.platforms.unix;
+      };
     });
 
     zsh-fzf-tab = prev.zsh-fzf-tab.override (old: {

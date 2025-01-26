@@ -62,6 +62,8 @@ in
         zjstatus = inputs.zjstatus.packages.${prev.system}.default;
       })
 
+      outputs.overlays.additions
+      outputs.overlays.modifications
       outputs.overlays.unstable-packages
 
       # Or define it inline, for example:
@@ -73,8 +75,6 @@ in
       # ] ++ lib.optionals (builtins.isString platform && !builtins.match "aarch64" platform) [
     ] ++ lib.optionals (!(builtins.match "aarch64.*" platform != null)) [
 
-      outputs.overlays.additions
-      outputs.overlays.modifications
 
     ];
     # Configure your nixpkgs instance
@@ -125,6 +125,12 @@ in
         b4 # A tool to work with public-inbox and patch archives
         moreutils # check errno
         dstask # Git powered terminal-based todo/note manager -- markdown note page per task
+
+        # (pkgs.dstask.overrideAttrs ({ meta ? { }, ... }: {
+        #   meta = meta // {
+        #     platforms = pkgs.lib.platforms.unix;
+        #   };
+        # }))
 
         btop # system monitor
         glances # same thing
