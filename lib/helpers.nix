@@ -18,7 +18,7 @@
       isWork = builtins.substring 0 4 hostname == "work";
     in
     inputs.home-manager.lib.homeManagerConfiguration {
-      pkgs = inputs.nixpkgs.legacyPackages.${platform};
+      pkgs = inputs.nixpkgs-hm.legacyPackages.${platform};
       extraSpecialArgs = {
         inherit
           inputs
@@ -45,9 +45,10 @@
     ,
     }:
     let
-      isISO = builtins.substring 0 4 hostname == "iso-";
-      isInstall = !isISO;
-      isLima = builtins.substring 0 5 hostname == "lima-";
+      isWsl = builtins.substring 0 3 hostname == "wsl";
+      # isISO = builtins.substring 0 4 hostname == "iso-";
+      # isInstall = !isISO;
+      # isLima = builtins.substring 0 5 hostname == "lima-";
       isWorkstation = builtins.isString desktop;
     in
     inputs.nixpkgs.lib.nixosSystem {
@@ -60,22 +61,20 @@
           platform
           username
           stateVersion
-          isInstall
-          isLima
-          isISO
+          isWsl
           isWorkstation
           ;
       };
       # If the hostname starts with "iso-", generate an ISO image
-      modules =
-        let
-          cd-dvd =
-            if (desktop == null) then
-              inputs.nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
-            else
-              inputs.nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-graphical-calamares.nix";
-        in
-        [ ../nixos ] ++ inputs.nixpkgs.lib.optionals isISO [ cd-dvd ];
+      # modules =
+      #   let
+      #     cd-dvd =
+      #       if (desktop == null) then
+      #         inputs.nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+      #       else
+      #         inputs.nixpkgs + "/nixos/modules/installer/cd-dvd/installation-cd-graphical-calamares.nix";
+      #   in
+      #   [ ../nixos ] ++ inputs.nixpkgs.lib.optionals isISO [ cd-dvd ];
     };
 
   mkDarwin =
@@ -111,9 +110,7 @@
     };
 
   forAllSystems = inputs.nixpkgs.lib.genAttrs [
-    "aarch64-linux"
     "x86_64-linux"
     "aarch64-darwin"
-    "x86_64-darwin"
   ];
 }

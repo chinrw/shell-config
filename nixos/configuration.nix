@@ -54,6 +54,7 @@ in
     overlays = [
       # If you want to use overlays exported from other flakes:
       # neovim-nightly-overlay.overlays.default
+      outputs.overlays.stable-packages
       outputs.overlays.unstable-packages
 
       # Or define it inline, for example:
@@ -62,13 +63,6 @@ in
       #     patches = [ ./change-hello-to-hi.patch ];
       #   });
       # })
-      (final: prev: {
-        stable = import
-          inputs.nixpkgs-stable
-          {
-            inherit (final) system;
-          };
-      })
     ];
     # Configure your nixpkgs instance
     config = {
