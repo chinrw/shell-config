@@ -127,7 +127,7 @@
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
       nixosConfigurations = {
-        wsl = helpers.mkNixos {
+        "wsl" = helpers.mkNixos {
           hostname = "wsl";
           GPU = "nvidia";
         };

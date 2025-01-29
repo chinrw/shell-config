@@ -7,6 +7,8 @@
 , pkgs
 , isWsl
 , GPU
+, platform
+, username
 , ...
 }:
 let
@@ -46,10 +48,13 @@ in
     ./networks
     ./services/samba
     ./services/systemd
-    (if (GPU == "nvidia" && isWsl) then ./nvidia-wsl.nix else { })
 
     # Import your generated (nixos-generate-config) hardware configuration
     # ./hardware-configuration.nix
+  ] ++ lib.optionals (isWsl && GPU == "nvidia") [
+    ./nvidia-wsl.nix
+    ./nvidia-container.nix
+    ./ollama.nix
   ];
 
   nixpkgs = {
@@ -102,26 +107,8 @@ in
     };
 
 
-  services = {
-    ollama = {
-      enable = true;
-      package = pkgs.ollama;
-      acceleration = "cuda";
-      host = "192.168.0.201";
-      environmentVariables = {
-        LD_LIBRARY_PATH = "\${LD_LIBRARY_PATH}:/usr/lib/wsl/lib";
-      };
-    };
-    open-webui = {
-      enable = true;
-      package = pkgs.open-webui;
-      host = "192.168.0.201";
-    };
-  };
-
-
   sops = {
-    age.keyFile = "/home/chin39/.config/sops/age/keys.txt"; # must have no password!
+    age.keyFile = "/home/${username}/.config/sops/age/keys.txt"; # must have no password!
     # It's also possible to use a ssh key, but only when it has no password:
     #age.sshKeyPaths = [ "/home/user/path-to-ssh-key" ];
     defaultSopsFile = ../secrets/hosts.yaml;
@@ -150,6 +137,19 @@ in
     ];
   };
 
+  virtualisation.docker = {
+    enable = true;
+    rootless = {
+      enable = true;
+      setSocketVariable = true;
+      daemon.settings = {
+        features.cdi = true;
+      };
+    };
+    daemon.settings = {
+      features.cdi = true;
+    };
+  };
 
   environment.systemPackages = with pkgs; [
     # Flakes clones its dependencies through the git command,
@@ -219,8 +219,6 @@ in
   # zramSwap = {
   #   enable = true;
   # };
-
-
 
   fileSystems."/mnt/autofs/data" = {
     device = "10.0.0.254:/volume1/Data";

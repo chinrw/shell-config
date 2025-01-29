@@ -53,6 +53,7 @@
       isWorkstation = builtins.isString desktop;
     in
     inputs.nixpkgs.lib.nixosSystem {
+      system = platform;
       specialArgs = {
         inherit
           inputs
@@ -68,7 +69,7 @@
           ;
       };
       modules =
-        [ ../nixos ] ++ inputs.nixpkgs.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
+        [ ../nixos/configuration.nix ] ++ inputs.nixpkgs.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
     };
 
   mkDarwin =
