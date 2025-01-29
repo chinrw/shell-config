@@ -127,15 +127,9 @@
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
       nixosConfigurations = {
-        wsl = nixpkgs.lib.nixosSystem {
-          specialArgs = { inherit inputs outputs; };
-          system = "x86_64-linux";
-
-          # > Our main nixos configuration file <
-          modules = [
-            inputs.nixos-wsl.nixosModules.default
-            ./nixos/configuration.nix
-          ];
+        wsl = helpers.mkNixos {
+          hostname = "wsl";
+          GPU = "nvidia";
         };
       };
 

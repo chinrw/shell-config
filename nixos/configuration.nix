@@ -5,6 +5,8 @@
 , outputs
 , config
 , pkgs
+, isWsl
+, GPU
 , ...
 }:
 let
@@ -44,6 +46,7 @@ in
     ./networks
     ./services/samba
     ./services/systemd
+    (if (GPU == "nvidia" && isWsl) then ./nvidia-wsl.nix else { })
 
     # Import your generated (nixos-generate-config) hardware configuration
     # ./hardware-configuration.nix
@@ -138,34 +141,6 @@ in
     useWindowsDriver = true;
   };
 
-  virtualisation.docker = {
-    enable = true;
-    rootless = {
-      enable = true;
-      setSocketVariable = true;
-      daemon.settings = {
-        features.cdi = true;
-        cdi-spec-dirs = [ "/etc/cdi" ];
-
-      };
-    };
-    daemon.settings = {
-      features.cdi = true;
-    };
-  };
-  hardware = {
-    nvidia-container-toolkit = {
-      enable = true;
-      mount-nvidia-executables = true;
-    };
-    nvidia = {
-      modesetting.enable = true;
-      nvidiaSettings = false;
-      open = false;
-    };
-  };
-  services.xserver.videoDrivers = [ "nvidia" ];
-
 
   users.users.chin39 = {
     extraGroups = [ "docker" "wheel" ];
@@ -202,7 +177,6 @@ in
     btrfs-progs
     bpftools
     bpftrace
-    nvidia-docker
     lsof
     psmisc
 
