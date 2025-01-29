@@ -309,11 +309,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1738098887,
-        "narHash": "sha256-jhhE1AofN8smkMtDav3mGWrevyfj0cqSooTuSlIdOJ4=",
+        "lastModified": 1738120414,
+        "narHash": "sha256-PQ1JgEu9TLJpyGbw6hb03zR5hQO5FlmzsmYP+b0cYy4=",
         "owner": "chinrw",
         "repo": "neovim-nightly-overlay",
-        "rev": "e2efe0675f0774bd6557b689c669be42870b8627",
+        "rev": "e744ed8bd94632b41d286f5964bcc7a52f8c8579",
         "type": "github"
       },
       "original": {
