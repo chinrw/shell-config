@@ -30,10 +30,12 @@
     # Home manager
     home-manager = {
       url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     _1password-shell-plugins = {
       url = "github:1Password/shell-plugins";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     flake-utils.url = "github:numtide/flake-utils";
@@ -44,7 +46,10 @@
     };
 
     yazi.url = "github:sxyazi/yazi";
+    yazi.inputs.nixpkgs.follows = "nixpkgs";
+
     nixgl.url = "github:nix-community/nixGL";
+    nixgl.inputs.nixpkgs.follows = "nixpkgs";
 
     nix-index-database = {
       url = "github:Mic92/nix-index-database";
@@ -66,6 +71,7 @@
 
     # Zellij plugin
     zjstatus.url = "github:dj95/zjstatus";
+    zjstatus.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
