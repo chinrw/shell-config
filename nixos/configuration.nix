@@ -108,7 +108,7 @@ in
   services = {
     ollama = {
       enable = true;
-      package = pkgs.unstable.ollama;
+      package = pkgs.ollama;
       acceleration = "cuda";
       host = "192.168.0.201";
       environmentVariables = {
@@ -117,7 +117,7 @@ in
     };
     open-webui = {
       enable = true;
-      package = pkgs.unstable.open-webui;
+      package = pkgs.open-webui;
       host = "192.168.0.201";
     };
   };
@@ -207,7 +207,7 @@ in
 
     btrfs-progs
     bpftools
-    stable.bpftrace
+    bpftrace
     nvidia-docker
     lsof
     psmisc

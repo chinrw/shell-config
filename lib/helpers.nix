@@ -39,7 +39,7 @@
   # Helper function for generating NixOS configs
   mkNixos =
     { hostname
-    , username ? "martin"
+    , username ? "chin39"
     , desktop ? null
     , platform ? "x86_64-linux"
     ,
@@ -81,7 +81,7 @@
   mkDarwin =
     { desktop ? "aqua"
     , hostname
-    , username ? "martin"
+    , username ? "chin39"
     , platform ? "aarch64-darwin"
     ,
     }:
