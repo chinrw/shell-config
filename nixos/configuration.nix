@@ -8,6 +8,7 @@
 , isWsl
 , GPU
 , platform
+, hostname
 , username
 , ...
 }:
@@ -45,16 +46,21 @@ in
 
     # You can also split up your configuration and import pieces of it here:
     # ./users.nix
-    ./networks
-    ./services/samba
-    ./services/systemd
 
     # Import your generated (nixos-generate-config) hardware configuration
     # ./hardware-configuration.nix
-  ] ++ lib.optionals (isWsl && GPU == "nvidia") [
+  ] ++ lib.optionals (isWsl) [
+    ./wsl.nix
+  ] ++ lib.optionals (hostname == "wsl") [
+    ./networks/wsl.nix
+    ./services/samba/wsl-server.nix
+    ./services/systemd/proxy.nix
     ./nvidia-wsl.nix
-    ./nvidia-container.nix
-    ./ollama.nix
+    ./services/nvidia-container.nix
+    ./services/ollama.nix
+
+  ] ++ lib.optionals (hostname == "wsl-mini") [
+
   ];
 
   nixpkgs = {
@@ -120,14 +126,6 @@ in
       "ssh_pub_key" = { };
     };
   };
-
-
-  wsl = {
-    enable = true;
-    defaultUser = "chin39";
-    useWindowsDriver = true;
-  };
-
 
   users.users.chin39 = {
     extraGroups = [ "docker" "wheel" ];
