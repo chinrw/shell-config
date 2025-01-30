@@ -58,7 +58,6 @@ in
     ./nvidia-wsl.nix
     ./services/nvidia-container.nix
     ./services/ollama.nix
-
   ] ++ lib.optionals (hostname == "wsl-mini") [
 
   ];
@@ -230,7 +229,7 @@ in
     enable = true;
     ports = [ 22 23 ];
     settings = {
-      PasswordAuthentication = true;
+      PasswordAuthentication = false;
       # I'll disable this once I can connect.
       X11Forwarding = true;
     };
