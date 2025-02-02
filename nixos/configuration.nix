@@ -227,7 +227,7 @@ in
 
   services.openssh = {
     enable = true;
-    ports = [ 22 23 ];
+    ports = [ 22 ];
     settings = {
       PasswordAuthentication = false;
       # I'll disable this once I can connect.
