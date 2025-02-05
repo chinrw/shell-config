@@ -13,6 +13,10 @@
       enable = true;
       package = pkgs.open-webui;
       host = "192.168.0.201";
+      environment = {
+        http_proxy = "http://192.168.0.101:7891";
+        https_proxy = "http://192.168.0.101:7891";
+      };
     };
   };
 }

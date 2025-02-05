@@ -176,6 +176,7 @@ in
     bpftrace
     lsof
     psmisc
+    config.boot.kernelPackages.perf
 
     (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
       # select Python packages here

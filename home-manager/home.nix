@@ -204,6 +204,7 @@ in
         marksman
         aria2
         gdb
+        gef # GEF (GDB Enhanced Features) - a modern experience for GDB with advanced debugging capabilities for exploit devs & reverse engineers on Linux
       ];
   };
 
