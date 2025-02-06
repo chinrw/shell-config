@@ -133,6 +133,12 @@
         };
       };
 
+      nixosConfigurations = {
+        "wsl-mini" = helpers.mkNixos {
+          hostname = "wsl-mini";
+          GPU = "nvidia";
+        };
+      };
       # Standalone home-manager configuration entrypoint
       # Available through 'home-manager --flake .#your-username@your-hostname'
       homeConfigurations = {

@@ -49,17 +49,14 @@ in
 
     # Import your generated (nixos-generate-config) hardware configuration
     # ./hardware-configuration.nix
-  ] ++ lib.optionals (isWsl) [
-    ./wsl.nix
   ] ++ lib.optionals (hostname == "wsl") [
-    ./networks/wsl.nix
+    ./wsl.nix
     ./services/samba/wsl-server.nix
-    ./services/systemd/proxy.nix
     ./nvidia-wsl.nix
     ./services/nvidia-container.nix
     ./services/ollama.nix
   ] ++ lib.optionals (hostname == "wsl-mini") [
-
+    ./wsl-mini.nix
   ];
 
   nixpkgs = {
@@ -231,7 +228,6 @@ in
     ports = [ 22 ];
     settings = {
       PasswordAuthentication = false;
-      # I'll disable this once I can connect.
       X11Forwarding = true;
     };
   };
