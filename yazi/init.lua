@@ -23,7 +23,5 @@ require("augment-command"):setup({
 	must_have_hovered_item = true,
 	skip_single_subdirectory_on_enter = true,
 	skip_single_subdirectory_on_leave = true,
-	ignore_hidden_items = false,
 	wraparound_file_navigation = false,
-	sort_directories_first = true,
 })
