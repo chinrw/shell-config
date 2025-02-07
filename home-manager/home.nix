@@ -20,12 +20,14 @@ let
   isDesktop = hostname == "desktop";
 
   proxyUrl =
-    if (isWsl || isDesktop) then
+    if (hostname == "wsl"|| isDesktop) then
     # "http://10.0.0.242:10809"
     # "http://192.168.0.101:10809"
       config.sops.secrets."proxy/clash".path
     else if isWork then
       ""
+    else if (hostname == "wsl-mini") then
+      "10.0.0.201:7891"
     # config.sops.secrets."proxy/work".path
     else "";
 in
@@ -45,7 +47,7 @@ in
     inputs.nix-index-database.hmModules.nix-index
     inputs._1password-shell-plugins.hmModules.default
     inputs.sops-nix.homeManagerModules.sops
-  ] ++ lib.optionals isWsl [
+  ] ++ lib.optionals (hostname == "wsl") [
     (import ./programs/rclone.nix { inherit config lib pkgs; })
   ] ++ lib.optionals (!isWsl) [
     (import ./programs/yazi.nix { inherit config; })
