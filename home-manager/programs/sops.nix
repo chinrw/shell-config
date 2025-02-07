@@ -17,6 +17,7 @@
       };
       "atuin_key" = { };
       "proxy/clash" = { };
+      "proxy/clash_mini" = { };
     };
   };
 }

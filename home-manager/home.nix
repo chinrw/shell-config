@@ -27,8 +27,7 @@ let
     else if isWork then
       ""
     else if (hostname == "wsl-mini") then
-      "10.0.0.201:7891"
-    # config.sops.secrets."proxy/work".path
+      config.sops.secrets."proxy/clash_mini".path
     else "";
 in
 {
