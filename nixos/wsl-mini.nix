@@ -1,4 +1,4 @@
-{ config, ... }: {
+{ config, pkgs, ... }: {
 
   wsl = {
     enable = true;
@@ -18,7 +18,24 @@
       address = "10.0.0.1";
       interface = "eth0";
     };
+    nameservers = [ "10.0.0.1" ];
   };
+
+
+    programs.proxychains = {
+      package = pkgs.proxychains-ng;
+      enable = true;
+      quietMode = true;
+      proxies = {
+        local = {
+          enable = true;
+          type = "socks5";
+          host = "10.0.0.201";
+          port = 7891;
+        };
+      };
+    };
+
 
   networking.proxy.default = "http://10.0.0.201:7891";
   networking.enableIPv6 = false;

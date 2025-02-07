@@ -146,6 +146,11 @@
           hostname = "desktop";
           noGUI = false;
         };
+        "chin39@wsl-mini" = helpers.mkHome {
+          username = "chin39";
+          hostname = "wsl-mini";
+          noGUI = false;
+        };
         "chin39@wsl" = helpers.mkHome {
           username = "chin39";
           hostname = "wsl";

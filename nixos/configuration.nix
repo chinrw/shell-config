@@ -195,20 +195,6 @@ in
 
     zsh.enable = true;
     fuse.userAllowOther = true;
-
-    proxychains = {
-      package = pkgs.proxychains-ng;
-      enable = true;
-      quietMode = true;
-      proxies = {
-        local = {
-          enable = true;
-          type = "socks5";
-          host = "192.168.0.101";
-          port = 7891;
-        };
-      };
-    };
   };
 
   # zramSwap = {
