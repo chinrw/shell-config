@@ -36,7 +36,7 @@ in
     # inputs.nix-colors.homeManagerModule
     ./programs/nushell
     (import ./programs/zsh { inherit lib pkgs isDesktop noGUI proxyUrl; })
-    (import ./programs/git { inherit lib pkgs isDesktop noGUI isWork isWsl proxyUrl; })
+    (import ./programs/git { inherit lib pkgs isDesktop noGUI isWork hostname proxyUrl; })
     (import ./programs/zellij { inherit lib pkgs config; })
     (import ./programs/sops.nix { inherit config isServer; })
 

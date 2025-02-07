@@ -1,4 +1,4 @@
-{ lib, pkgs, isDesktop, isWsl, noGUI, isWork, proxyUrl, ... }: {
+{ lib, pkgs, isDesktop, hostname, noGUI, isWork, proxyUrl, ... }: {
 
   programs.jujutsu = {
     enable = true;
@@ -84,8 +84,10 @@
       interactive.diffFilter = "delta --color-only";
       http = {
         postBuffer = 524288000;
-      } // lib.optionalAttrs (isWsl) {
+      } // lib.optionalAttrs (hostname == "wsl") {
         proxy = "http://192.168.0.101:7891";
+      } // lib.optionalAttrs (hostname == "wsl-mini") {
+        proxy = "http://10.0.0.201:7891";
       };
     };
   };
