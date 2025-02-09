@@ -174,10 +174,12 @@ in
     lsof
     psmisc
     config.boot.kernelPackages.perf
+    llama-cpp
 
     (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
       # select Python packages here
       bpython
+      llama-cpp-python
     ]))
   ];
   # Set the default editor to vim
