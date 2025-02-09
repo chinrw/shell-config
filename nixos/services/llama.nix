@@ -5,7 +5,7 @@
       enable = true;
       package = pkgs.ollama;
       acceleration = "cuda";
-      host = "192.168.0.201";
+      host = "0.0.0.0";
       environmentVariables = {
         LD_LIBRARY_PATH = "\${LD_LIBRARY_PATH}:/usr/lib/wsl/lib";
       };
