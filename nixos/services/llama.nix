@@ -21,7 +21,7 @@
     llama-cpp = {
       enable = true;
       host = "192.168.0.201";
-      port = "8081";
+      port = 8081;
     };
   };
 }
