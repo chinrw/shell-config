@@ -48,7 +48,7 @@ in
     inputs.sops-nix.homeManagerModules.sops
   ] ++ lib.optionals (hostname == "wsl") [
     (import ./programs/rclone.nix { inherit config lib pkgs; })
-  ] ++ lib.optionals (!isWsl) [
+  ] ++ lib.optionals (hostname != "wsl") [
     (import ./programs/yazi.nix { inherit config; })
   ];
 
