@@ -18,7 +18,7 @@
       isWork = builtins.substring 0 4 hostname == "work";
     in
     inputs.home-manager.lib.homeManagerConfiguration {
-      pkgs = inputs.nixpkgs-hm.legacyPackages.${platform};
+      pkgs = inputs.nixpkgs.legacyPackages.${platform};
       extraSpecialArgs = {
         inherit
           inputs
