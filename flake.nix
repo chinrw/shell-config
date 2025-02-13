@@ -165,6 +165,10 @@
           hostname = "archlinux";
           isServer = true;
         };
+        "chin39@arch-vm" = helpers.mkHome {
+          hostname = "arch";
+          isServer = false;
+        };
         "chin39@vm-gentoo" = helpers.mkHome {
           hostname = "vm-gentoo";
           platform = "aarch64-linux";
