@@ -189,7 +189,6 @@ in
         aria2
       ]
       ++ lib.optionals (!isDesktop) [
-        mold
         rustup
       ]
       ++ lib.optionals isWork [
