@@ -178,10 +178,6 @@ in
       ++ lib.optionals (!noGUI) [
         mpv
       ]
-      ++ lib.optionals noGUI [
-        cmake
-        ninja
-      ]
       ++ lib.optionals isDesktop [
         openapi-tui
         inputs.nixgl.packages.${pkgs.system}.nixGLDefault
