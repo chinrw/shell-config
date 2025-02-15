@@ -65,6 +65,7 @@
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBJpG2pVAGes7/nqaDEH3zRUO37g67we+vwQpLEp3jwo"
         else "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMasqR2edNuMaTk0djcs46/s/OiIQo97qa6oyF/ybgih";
       signByDefault = true;
+      format = "ssh";
     };
     extraConfig = {
       core = {
