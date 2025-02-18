@@ -151,6 +151,7 @@ fi
       ll = "eza -l -g --color always --git --icons -a -s type";
       lt = "eza --color auto --icons -a -s type --tree -D -L 2 -I \${TREE_IGNORE}";
       ltt = "eza --color auto --icons -a -s type --tree -D -L 3 -I \${TREE_IGNORE}";
+      ds = "dstask";
     };
 
     oh-my-zsh = {
