@@ -142,7 +142,7 @@ in
         git-lfs
         hexyl
         dua
-        (_7zz.override { enableUnfree = true; })
+        _7zz-rar
         ouch
         helix
         pyright
