@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, hostname, ... }: {
 
 
   # enable proxy service
@@ -15,6 +15,7 @@
     enable = true;
     defaultUser = "chin39";
     useWindowsDriver = true;
+    wslConf.network.hostname = hostname;
   };
 
   networking = {
