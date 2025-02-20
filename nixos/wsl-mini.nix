@@ -1,11 +1,8 @@
 { config, pkgs, hostname, ... }: {
 
-  wsl = {
-    enable = true;
-    defaultUser = "chin39";
-    useWindowsDriver = true;
-    wslConf.network.hostname = hostname;
-  };
+  imports = [
+    ./wsl-common.nix
+  ];
 
   networking = {
     interfaces = {

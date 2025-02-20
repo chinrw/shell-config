@@ -1,5 +1,8 @@
 { config, pkgs, hostname, ... }: {
 
+  imports = [
+    ./wsl-common.nix
+  ];
 
   # enable proxy service
   systemd.services.network_proxy = {
@@ -9,13 +12,6 @@
       ExecStart = "${pkgs.bash}/bin/bash /home/chin39/Documents/scripts/run.sh";
       Type = "simple";
     };
-  };
-
-  wsl = {
-    enable = true;
-    defaultUser = "chin39";
-    useWindowsDriver = true;
-    wslConf.network.hostname = hostname;
   };
 
   networking = {

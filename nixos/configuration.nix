@@ -123,6 +123,7 @@ in
     };
   };
 
+
   users.users.chin39 = {
     extraGroups = [ "docker" "wheel" ];
     shell = pkgs.zsh;
