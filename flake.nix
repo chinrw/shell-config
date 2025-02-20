@@ -135,7 +135,7 @@
       nixosConfigurations = {
         "wsl-mini" = helpers.mkNixos {
           hostname = "wsl-mini";
-          GPU = "nvidia";
+          GPU = "amd";
         };
       };
       # Standalone home-manager configuration entrypoint
