@@ -65,6 +65,7 @@ in
 
       outputs.overlays.additions
       outputs.overlays.modifications
+      outputs.overlays.stable-packages
       outputs.overlays.unstable-packages
 
       # Or define it inline, for example:
@@ -154,7 +155,7 @@ in
         ffmpegthumbnailer # yazi deps
         exiftool
         zjstatus
-        tailspin #  🌀 A log file highlighter 
+        stable.tailspin #  🌀 A log file highlighter 
         age # A simple, modern and secure encryption tool
         sops
         yt-dlp # website video downloader
@@ -196,7 +197,6 @@ in
         # Clangd from clang-tools must come first.
         (hiPrio clang-tools)
         par2cmdline
-        vim
         marksman
         aria2
         gdb
