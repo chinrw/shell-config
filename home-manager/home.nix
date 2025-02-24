@@ -172,6 +172,7 @@ in
         hyperfine # A command-line benchmarking tool
         htop
         devenv # Fast, Declarative, Reproducible, and Composable Developer Environments
+        restic # Fast, secure, efficient backup program
       ]
       ++ lib.optionals (hostname != "macos") [
         conda
