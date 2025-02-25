@@ -1,7 +1,7 @@
 [[plugin.deps]]
 use = "Reledia/hexyl"
-rev = "39d3d4e"
-hash = "dd624cbaff94af65f39fd86bc57b340"
+rev = "228a9ef"
+hash = "cdc65cfe4e60e1bf5afe5769d074fa9c"
 
 [[plugin.deps]]
 use = "ndtoan96/ouch"
@@ -10,18 +10,18 @@ hash = "ed6c185514109d7c5463f609282b220c"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:git"
-rev = "02d18be"
-hash = "4d6a07559118975e2dee983d27474d70"
+rev = "5186af7"
+hash = "771f18427fb75fb19990ce602bb322f4"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:mime-ext"
-rev = "02d18be"
-hash = "c005b4a9820c2d5ee815bee8ffc94cab"
+rev = "5186af7"
+hash = "b03f3d80d26b6d7bb490b1380e9cb754"
 
 [[plugin.deps]]
 use = "hankertrix/augment-command"
-rev = "e1b9564"
-hash = "546658a423bc0fca667aaa15c565da8b"
+rev = "af31941"
+hash = "71c1ef899b40a54fcdf5a41f87daa967"
 
 [flavor]
 deps = []

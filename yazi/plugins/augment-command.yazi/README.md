@@ -2,7 +2,7 @@
 
 A [Yazi][yazi-link] plugin that enhances Yazi's default commands.
 This plugin is inspired by the
-[Yazi tips page](https://yazi-rs.github.io/docs/tips),
+[Yazi tips page][yazi-tips-page],
 the [bypass.yazi](https://github.com/Rolv-Apneseth/bypass.yazi) plugin
 and the [fast-enter.yazi](https://github.com/ourongxing/fast-enter.yazi)
 plugin.
@@ -20,7 +20,7 @@ plugin.
 
 ## Requirements
 
-- [Yazi](https://github.com/sxyazi/yazi) v0.4.2+
+- [Yazi][yazi-link] v25.2.7+
 - [`7z` or `7zz` command][7z-link]
 - [`file` command][file-command-link]
 
@@ -66,13 +66,12 @@ ya pack -u
 
 If you would like to use the default configuration, which is shown below,
 you don't need to add anything to your `~/.config/yazi/init.lua`
-file on Linux and macOS, or your
-`C:\Users\USERNAME\AppData\Roaming\yazi\config\init.lua`
-file on Windows, where `USERNAME` is your Windows username.
+file on Linux and macOS, or your `%AppData%\yazi\config\init.lua`
+file on Windows.
 
 ```lua
 -- ~/.config/yazi/init.lua for Linux and macOS
--- C:\Users\USERNAME\AppData\Roaming\yazi\config\init.lua for Windows
+-- %AppData%\yazi\config\init.lua for Windows
 
 -- Using the default configuration
 require("augment-command"):setup({
@@ -100,15 +99,14 @@ require("augment-command"):setup({
 However, if you would like to configure the plugin, you can add
 your desired configuration options to your `~/.config/yazi/init.lua` file
 on Linux and macOS, or your
-`C:\Users\USERNAME\AppData\Roaming\yazi\config\init.lua`
-file on Windows, where `USERNAME` is your Windows username.
+`%AppData%\yazi\config\init.lua` file on Windows.
 You can leave out configuration options that you would
 like to be left as default.
 An example configuration is shown below:
 
 ```lua
 -- ~/.config/yazi/init.lua for Linux and macOS
--- C:\Users\USERNAME\AppData\Roaming\yazi\config\init.lua for Windows
+-- %AppData%\yazi\config\init.lua for Windows
 
 -- Custom configuration
 require("augment-command"):setup({
@@ -240,8 +238,7 @@ then it will operate on the selected items.
   [`extract` openers section][yazi-yazi-toml-extract-openers]
   in [Yazi's default `yazi.toml`][yazi-yazi-toml] into your `yazi.toml`,
   which is located at `~/.config/yazi/yazi.toml` for Linux and macOS, and
-  `C:\Users\USERNAME\AppData\Roaming\yazi\config\yazi.toml`
-  file on Windows, where `USERNAME` is your Windows username.
+  `%AppData%\yazi\config\yazi.toml` file on Windows.
   Make sure that the `extract` openers are under the `opener` key in your
   `yazi.toml`. Then replace `extract` with `augmented-extract`,
   and you will be using the plugin's `extract` command instead of
@@ -251,7 +248,7 @@ then it will operate on the selected items.
 
   ```toml
   # ~/.config/yazi/yazi.toml for Linux and macOS
-  # C:\Users\USERNAME\AppData\Roaming\yazi\config\yazi.toml for Windows
+  # %AppData%\yazi\config\yazi.toml for Windows
 
   [opener]
   extract = [
@@ -264,7 +261,7 @@ then it will operate on the selected items.
 
   ```toml
   # ~/.config/yazi/yazi.toml for Linux and macOS
-  # C:\Users\USERNAME\AppData\Roaming\yazi\config\yazi.toml for Windows
+  # %AppData%\yazi\config\yazi.toml for Windows
 
   [[opener.extract]]
   run = 'ya pub augmented-extract --list "$@"'
@@ -454,16 +451,7 @@ then it will operate on the selected items.
   create directories to ensure that the path given exists.
   It also supports all the options supported by Yazi's `create` command,
   so you can pass them to the command and expect the same behaviour.
-  However, due to the
-  [`confirm` component](https://github.com/sxyazi/yazi/issues/2082)
-  currently not being exposed to plugin developers, it uses Yazi's input
-  component to prompt for a confirmation, like in Yazi v0.3.0 and below.
-  This is not ideal, but it shouldn't happen that often and
-  hopefully wouldn't be too annoying.
-  If you are using the latest version of Yazi from the main branch,
-  the `confirm` component is now exposed to plugin developers and
-  the plugin will use the `confirm` component instead.
-  However, the separator in the `confirm` component will be the text colour
+  Do note that the separator in the `confirm` component will be the text colour
   instead of your configured border colour for the `confirm` component as
   the `list` part of the `confirm` component has not been exposed to plugin
   developers, so the separator is made using text.
@@ -538,43 +526,15 @@ then it will operate on the selected items.
 - To use this command, the syntax is exactly the same as the default
   `shell` command provided by Yazi. You just provide the command you want and
   provide any Yazi shell variable, which is documented
-  [here](https://yazi-rs.github.io/docs/configuration/keymap/#manager.shell).
+  [here][yazi-shell-variables].
   The plugin will automatically replace the shell variable you give
   with the file paths for the item group before executing the command.
-- You will also need to escape the quotes when giving the shell command
-  if you use the same quotes to quote the given arguments to the plugin.
-  For example, if you pass the arguments to the plugin with double quotes,
-  i.e. `--args="shell"`, you will have to escape the double quotes with a
-  backslash character, like shown below:
 
-  ```toml
-  # ~/.config/yazi/keymap.toml on Linux and macOS
-  # C:\Users\USERNAME\AppData\Roaming\yazi\config\keymap.toml on Windows
-
-  [[manager.prepend_keymap]]
-  on = [ "o" ]
-  run = 'plugin augment-command --args="shell \"$EDITOR $@\" --block"'
-  desc = "Open the editor"
-  ```
-
-- Alternatively, you can use the triple single quote `'''` delimiter
-  for the run string and avoid the escaping the shell command altogether,
-  like the two examples below:
-
-  ```toml
-  # ~/.config/yazi/keymap.toml on Linux and macOS
-  # C:\Users\USERNAME\AppData\Roaming\yazi\config\keymap.toml on Windows
-
-  [[manager.prepend_keymap]]
-  on = [ "o" ]
-  run = '''plugin augment-command --args='shell "$EDITOR $@" --block''''
-  desc = "Open the editor"
-
-  [[manager.prepend_keymap]]
-  on = [ "i" ]
-  run = '''plugin augment-command --args="shell '$PAGER $@' --block"'''
-  desc = "Open the pager"
-  ```
+- There is no need to quote the shell variable on Linux and macOS,
+  as it is expanded by the plugin instead of the shell,
+  and the paths are already quoted using the `ya.quote` function
+  before execution, so quoting is entirely unnecessary
+  and may result in unexpected behaviour.
 
 - `--exit-if-dir` flag to stop the shell command given
   from executing if the item group consists only of directories.
@@ -588,11 +548,11 @@ then it will operate on the selected items.
 
   ```toml
   # ~/.config/yazi/keymap.toml on Linux and macOS
-  # C:\Users\USERNAME\AppData\Roaming\yazi\config\keymap.toml on Windows
+  # %AppData%\yazi\config\keymap.toml on Windows
 
   [[manager.prepend_keymap]]
-  on = [ "i" ]
-  run = '''plugin augment-command --args="shell '$PAGER $@' --block --exit-if-dir"'''
+  on = "i"
+  run = "plugin augment-command -- shell '$PAGER $@' --block --exit-if-dir"
   desc = "Open the pager"
   ```
 
@@ -603,17 +563,117 @@ then it will operate on the selected items.
 
   ```toml
   # ~/.config/yazi/keymap.toml on Linux and macOS
-  # C:\Users\USERNAME\AppData\Roaming\yazi\config\keymap.toml on Windows
+  # %AppData%\yazi\config\keymap.toml on Windows
 
   [[manager.prepend_keymap]]
-  on = [ "i" ]
-  run = '''plugin augment-command --args="shell '$EDITOR $@' --block --exit-if-dir"'''
-  desc = "Open the pager"
+  on = "o"
+  run = "plugin augment-command -- shell '$EDITOR $@' --block --exit-if-dir"
+  desc = "Open the editor"
   ```
 
   Video:
 
   [shell-exit-if-directory-video]
+
+#### Passing arguments to the `shell` command
+
+Ideally, you will want to avoid using backslashes to escape the shell command
+arguments, so here are a few ways to do it:
+
+1. Shell arguments that don't have special shell variables
+   on Linux and macOS, like `$SHELL`, or don't have special shell characters
+   like `>`, `|` or spaces, need not be quoted with double quotes `"`
+   or single quotes `'` respectively.
+   For example:
+
+   ```toml
+   # ~/.config/yazi/keymap.toml on Linux and macOS
+   # %AppData%\yazi\config\keymap.toml on Windows
+   [[manager.prepend_keymap]]
+   on = "i"
+   run = "plugin augment-command -- shell --block 'bat -p --pager less $@'"
+   desc = "Open with bat"
+   ```
+
+   Even though the `$@` argument above is considered a shell variable in Linux
+   and macOS, the plugin automatically replaces it with the full path
+   of the items in the item group, so it does not need to be quoted with
+   double quotes `"`, as it is expanded by the plugin,
+   and not meant to be expanded by the shell.
+
+2. If the arguments to the `shell` command have special shell variables
+   on Linux and macOS, like `$SHELL`, or special shell characters like
+   `>`, `|`, or spaces, use `--` to denote the end of the flags and options
+   passed to the `shell` command.
+   For example:
+
+   ```toml
+   # ~/.config/yazi/keymap.toml on Linux and macOS
+   # %AppData%\yazi\config\keymap.toml on Windows
+   [[manager.prepend_keymap]]
+   on = "<C-s>"
+   run = 'plugin augment-command -- shell --block -- sh -c "$SHELL"'
+   desc = "Open a shell inside of a shell here"
+   ```
+
+   ```toml
+   # ~/.config/yazi/keymap.toml on Linux and macOS
+   # %AppData%\yazi\config\keymap.toml on Windows
+   [[manager.prepend_keymap]]
+   on = "<C-s>"
+   run = "plugin augment-command -- shell --block -- sh -c 'echo hello'"
+   desc = "Open a shell and say hello inside the opened shell"
+   ```
+
+3. If the arguments passed to the `shell` command themselves contain arguments
+   that have special shell variables on Linux and macOS, like `$SHELL`,
+   or special shell characters like `>`, `|`, or spaces,
+   use the triple single quote `'''` delimiter for the `run` string.
+
+   ```toml
+   # ~/.config/yazi/keymap.toml on Linux and macOS
+   # %AppData%\yazi\config\keymap.toml on Windows
+   [[manager.prepend_keymap]]
+   on = "<C-s>"
+   run = '''plugin augment-command -- shell --block -- sh -c 'sh -c "$SHELL"''''
+   desc = "Open a shell inside of a shell inside of a shell here"
+   ```
+
+   ```toml
+   # ~/.config/yazi/keymap.toml on Linux and macOS
+   # %AppData%\yazi\config\keymap.toml on Windows
+   [[manager.prepend_keymap]]
+   on = "<C-s>"
+   run = '''plugin augment-command --
+       shell --block -- sh -c "$SHELL -c 'echo hello'"
+   '''
+   desc = "Open a shell inside of a shell and say hello inside the opened shell"
+   ```
+
+   A more legitimate use case for this would be something like
+   [Yazi's tip to email files using Mozilla Thunderbird][thunderbird-tip]:
+
+   ```toml
+   # ~/.config/yazi/keymap.toml on Linux and macOS
+   # %AppData%\yazi\config\keymap.toml on Windows
+   [[manager.prepend_keymap]]
+   on = "<C-e>"
+   run = '''plugin augment-command --
+       shell --
+           paths=$(for p in $@; do echo "$p"; done | paste -s -d,)
+           thunderbird -compose "attachment='$paths'"
+   '''
+   desc = "Email files using Mozilla Thunderbird"
+   ```
+
+   Once again, the `$@` variable above does not need to be quoted in double
+   quotes `"` as it is expanded by the plugin instead of the shell.
+
+If the above few methods to avoid using backslashes within your shell command
+to escape the quotes are still insufficient for your use case,
+it is probably more appropriate to write a shell script in a separate file
+and execute that instead of writing the shell command inline
+in your `keymap.toml` file.
 
 ### Paste (`paste`)
 
@@ -718,15 +778,6 @@ then it will operate on the selected items.
 - When `confirm_on_quit` is set to `true`, the plugin will prompt you for
   confirmation when there is more than 1 tab open. Otherwise, it will
   immediately quit Yazi, just like the default `quit` command.
-- Due to the
-  [`confirm` component](https://github.com/sxyazi/yazi/issues/2082)
-  currently not being exposed to plugin developers, the `quit` command uses
-  Yazi's input component to prompt for a confirmation,
-  like in Yazi v0.3.0 and below. This is not ideal, but hopefully it wouldn't
-  be too annoying.
-  If you are using the latest version of Yazi from the main branch,
-  the `confirm` component is now exposed to plugin developers and
-  the plugin will use the `confirm` component instead.
 - `--confirm` flag to get the plugin to prompt you for confirmation when
   quitting with multiple tabs open.
   This flag will cause the `quit` command to prompt you for confirmation
@@ -778,19 +829,19 @@ then it will operate on the selected items.
 
   ```toml
   # ~/.config/yazi/keymap.toml on Linux and macOS
-  # C:\Users\USERNAME\AppData\Roaming\yazi\config\keymap.toml on Windows
+  # %AppData%\yazi\config\keymap.toml on Windows
 
   # Use K to move up in the parent directory
   [[manager.prepend_keymap]]
-  on   = [ "K" ]
-  run  = [ "leave", "arrow -1", "enter" ]
+  on = "K"
+  run = ["leave", "arrow -1", "enter"]
   desc = "Move up in the parent directory"
 
 
   # Use J to move down in the parent directory
   [[manager.prepend_keymap]]
-  on   = [ "J" ]
-  run  = [ "leave", "arrow 1", "enter" ]
+  on = "J"
+  run = ["leave", "arrow 1", "enter"]
   desc = "Move down in the parent directory"
   ```
 
@@ -855,16 +906,16 @@ then it will operate on the selected items.
 
 Add the commands that you would like to use to your `keymap.toml` file,
 located at `~/.config/yazi/keymap.toml` on Linux and macOS
-and at `C:\Users\USERNAME\AppData\Roaming\yazi\config\keymap.toml`
+and at `%AppData%\yazi\config\keymap.toml`
 on Windows, in this format:
 
 ```toml
 # ~/.config/yazi/keymap.toml on Linux and macOS
-# C:\Users\USERNAME\AppData\Roaming\yazi\config\keymap.toml on Windows
+# %AppData%\yazi\config\keymap.toml on Windows
 
 [[manager.prepend_keymap]]
-on = [ "key" ]
-run = "plugin augment-command --args='command arguments --flags --options=42'"
+on = "key"
+run = "plugin augment-command -- command arguments --flags --options=42"
 desc = "Description"
 ```
 
@@ -872,11 +923,11 @@ For example, to use the augmented `enter` command:
 
 ```toml
 # ~/.config/yazi/keymap.toml on Linux and macOS
-# C:\Users\USERNAME\AppData\Roaming\yazi\config\keymap.toml on Windows
+# %AppData%\yazi\config\keymap.toml on Windows
 
 [[manager.prepend_keymap]]
-on = [ "l" ]
-run = "plugin augment-command --args='enter'"
+on = "l"
+run = "plugin augment-command -- enter"
 desc = "Enter a directory and skip directories with only a single subdirectory"
 ```
 
@@ -885,33 +936,35 @@ are also supported, for example:
 
 ```toml
 # ~/.config/yazi/keymap.toml on Linux and macOS
-# C:\Users\USERNAME\AppData\Roaming\yazi\config\keymap.toml on Windows
+# %AppData%\yazi\config\keymap.toml on Windows
 
 [[manager.prepend_keymap]]
-on   = [ "k" ]
-run  = "plugin augment-command --args='arrow -1'"
+on = "k"
+run = "plugin augment-command -- arrow -1"
 desc = "Move cursor up"
 
 [[manager.prepend_keymap]]
-on = [ "r" ]
-run = "plugin augment-command --args='rename --cursor=before_ext'"
+on = "r"
+run = "plugin augment-command -- rename --cursor=before_ext"
 desc = "Rename a file or directory"
 
 [[manager.prepend_keymap]]
-on = [ "D" ]
-run = "plugin augment-command --args='remove --permanently'"
+on = "D"
+run = "plugin augment-command -- remove --permanently"
 desc = "Permanently delete the files"
+
+[[manager.prepend_keymap]]
+on = ["g", "j"]
+run = "plugin augment-command -- parent_arrow 1"
 ```
 
 For the default descriptions of the commands, you can refer to
 [Yazi's default `keymap.toml` file][yazi-keymap-toml].
 
 Essentially, all you need to do to use this plugin
-is to wrap a Yazi command in single quotes,
-like `'enter'`,
-then add `plugin augment-command --args=`
-in front of it, which results in
-`plugin augment-command --args='enter'`.
+is to add `plugin augment-command --`, with a space at the end,
+in front of a Yazi command, such as `enter`,
+which results in `plugin augment-command -- enter'`.
 
 ### Using the `extract` command as an opener
 
@@ -934,6 +987,7 @@ You can view the full licence in the [`LICENSE`][Licence] file.
 <!-- Regular links -->
 
 [yazi-link]: https://github.com/sxyazi/yazi
+[yazi-tips-page]: https://yazi-rs.github.io/docs/tips
 [smart-paste-tip]: https://yazi-rs.github.io/docs/tips#smart-paste
 [smart-tab-tip]: https://yazi-rs.github.io/docs/tips#smart-tab
 [smart-switch-tip]: https://yazi-rs.github.io/docs/tips#smart-switch
@@ -945,6 +999,8 @@ You can view the full licence in the [`LICENSE`][Licence] file.
 [brew-link]: https://brew.sh/
 [yazi-yazi-toml-extract-openers]: https://github.com/sxyazi/yazi/blob/main/yazi-config/preset/yazi-default.toml#L51-L54
 [yazi-yazi-toml]: https://github.com/sxyazi/yazi/blob/main/yazi-config/preset/yazi-default.toml
+[yazi-shell-variables]: https://yazi-rs.github.io/docs/configuration/keymap/#manager.shell
+[thunderbird-tip]: https://yazi-rs.github.io/docs/tips#email-selected-files-using-thunderbird
 [yazi-keymap-toml]: https://github.com/sxyazi/yazi/blob/main/yazi-config/preset/keymap-default.toml
 [my-keymap-toml]: https://github.com/hankertrix/Dotfiles/blob/main/.config/yazi/keymap.toml
 [my-yazi-toml]: https://github.com/hankertrix/Dotfiles/blob/main/.config/yazi/yazi.toml
