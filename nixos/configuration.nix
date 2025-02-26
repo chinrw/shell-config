@@ -99,6 +99,9 @@ in
         nix-path = config.nix.nixPath;
 
         trusted-users = [ "chin39" ];
+        auto-optimise-store = true;
+        keep-outputs = true;
+        keep-derivations = true;
       };
       # Opinionated: disable channels
       channel.enable = false;
