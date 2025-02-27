@@ -20,8 +20,8 @@ hash = "b03f3d80d26b6d7bb490b1380e9cb754"
 
 [[plugin.deps]]
 use = "hankertrix/augment-command"
-rev = "af31941"
-hash = "71c1ef899b40a54fcdf5a41f87daa967"
+rev = "23935de"
+hash = "63ac8d0f8c64bd7563826f67c680261b"
 
 [flavor]
 deps = []
