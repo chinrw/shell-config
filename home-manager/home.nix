@@ -152,7 +152,7 @@ in
         nurl # Generate Nix fetcher calls from repository URLs
         inputs.yazi.packages.${pkgs.system}.default
         mediainfo
-        ffmpegthumbnailer # yazi deps
+        ffmpeg # yazi deps
         exiftool
         zjstatus
         stable.tailspin #  🌀 A log file highlighter 
