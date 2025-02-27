@@ -24,9 +24,9 @@ run = "close"
 desc = "Close the current tab, or quit if it is last tab"
 
 [[manager.prepend_keymap]]
-on   = "l"
-run  = "plugin smart-enter"
-desc = "Enter the child directory, or open the file"
+on   = [ "l" ]
+run  = "plugin fast-enter"
+desc = "Enter the subfolder faster, or open the file directly"
 
 [[tasks.prepend_keymap]]
 on = [ "q" ]

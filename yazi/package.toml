@@ -23,5 +23,10 @@ use = "hankertrix/augment-command"
 rev = "23935de"
 hash = "63ac8d0f8c64bd7563826f67c680261b"
 
+[[plugin.deps]]
+use = "ourongxing/fast-enter"
+rev = "1c4caeb"
+hash = "b209b5db91df69bdc6a4656cb8276cd9"
+
 [flavor]
 deps = []
