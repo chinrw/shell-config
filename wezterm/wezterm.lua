@@ -128,6 +128,6 @@ local config = {
 }
 
 -- config.webgpu_preferred_adapter = gpus[2]
-config.front_end = 'WebGpu'
+-- config.front_end = 'WebGpu'
 
 return config
