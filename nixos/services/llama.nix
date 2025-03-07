@@ -7,6 +7,8 @@
       acceleration = "cuda";
       host = "0.0.0.0";
       environmentVariables = {
+        http_proxy = "http://192.168.0.101:7891";
+        https_proxy = "http://192.168.0.101:7891";
         LD_LIBRARY_PATH = "\${LD_LIBRARY_PATH}:/usr/lib/wsl/lib";
       };
     };
