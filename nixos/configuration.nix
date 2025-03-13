@@ -102,6 +102,7 @@ in
         auto-optimise-store = true;
         keep-outputs = true;
         keep-derivations = true;
+        access-tokens = "@config.sops.secrets.path";
       };
       # Opinionated: disable channels
       channel.enable = false;
@@ -123,6 +124,7 @@ in
       "wg/privatekey" = { };
       "wg/pubkey" = { };
       "ssh_pub_key" = { };
+      "access-tokens" = { };
     };
   };
 
