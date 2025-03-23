@@ -57,6 +57,7 @@ in
     ./services/llama.nix
   ] ++ lib.optionals (hostname == "wsl-mini") [
     ./wsl-mini.nix
+    ./services/github-runners.nix
   ];
 
   nixpkgs = {
@@ -125,6 +126,7 @@ in
       "wg/pubkey" = { };
       "ssh_pub_key" = { };
       "access-tokens" = { };
+      "github-runners/midashood" = { };
     };
   };
 
