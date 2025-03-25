@@ -20,6 +20,8 @@
       url = "https://github.com/rex-rs/rex";
       extraLabels = [ "nix" ];
       user = "midashood";
+      workDir = "/var/lib/github-runner/midashood";
+      replace = true;
       extraEnvironment = {
         all_proxy = "http://10.0.0.242:10809";
       };
