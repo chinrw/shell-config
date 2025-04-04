@@ -191,6 +191,8 @@ in
       ]
       ++ lib.optionals isWork [
         mypy #  Optional static typing for Python 
+        asciinema_3
+        asciinema-agg
       ]
       ++ lib.optionals (!isWork) [
       ]
@@ -202,6 +204,8 @@ in
         aria2
         gdb
         gef # GEF (GDB Enhanced Features) - a modern experience for GDB with advanced debugging capabilities for exploit devs & reverse engineers on Linux
+        asciinema_3
+        asciinema-agg
       ];
   };
 
