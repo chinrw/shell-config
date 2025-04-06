@@ -9,7 +9,7 @@ let
     , POST_MOUNT_SCRIPT ? ''""''
     , RCLONE_RC_ON ? "false"
     , RCLONE_TEMP_DIR ? "/tmp/rclone/%u/${name}"
-    , RCLONE_TPSLIMIT ? "0"
+    , RCLONE_TPSLIMIT ? "5"
     , RCLONE_BWLIMIT ? "0"
     , RCLONE_MOUNT_DAEMON_TIMEOUT ? "0"
     , RCLONE_MOUNT_MULTI_THREAD_STREAMS ? "4"
