@@ -10,6 +10,7 @@ let
     , RCLONE_RC_ON ? "false"
     , RCLONE_TEMP_DIR ? "/tmp/rclone/%u/${name}"
     , RCLONE_TPSLIMIT ? "3"
+    , RCLONE_TPSLIMIT_BURST ? "3"
     , RCLONE_BWLIMIT ? "0"
     , RCLONE_MOUNT_DAEMON_TIMEOUT ? "0"
     , RCLONE_MOUNT_MULTI_THREAD_STREAMS ? "4"
@@ -52,6 +53,7 @@ let
             --cache-dir=${RCLONE_TEMP_DIR}/vfs \
             --cache-db-path=${RCLONE_TEMP_DIR}/db \
             --tpslimit=${RCLONE_TPSLIMIT} \
+            --tpslimit-burst=${RCLONE_TPSLIMIT_BURST} \
             --multi-thread-streams=${RCLONE_MOUNT_MULTI_THREAD_STREAMS} \
             --no-modtime \
             --drive-use-trash \
