@@ -5,28 +5,23 @@ hash = "cdc65cfe4e60e1bf5afe5769d074fa9c"
 
 [[plugin.deps]]
 use = "ndtoan96/ouch"
-rev = "ce6fb75"
-hash = "ed6c185514109d7c5463f609282b220c"
+rev = "558188d"
+hash = "2d0afef7b50747c543c4304004a72cec"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:git"
-rev = "5186af7"
-hash = "771f18427fb75fb19990ce602bb322f4"
+rev = "9a09505"
+hash = "e0ada736ea676c2bbb3ec705a49526ef"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:mime-ext"
-rev = "5186af7"
-hash = "b03f3d80d26b6d7bb490b1380e9cb754"
+rev = "9a09505"
+hash = "5e24c167e9ae9a203a48f2a438b8c705"
 
 [[plugin.deps]]
 use = "hankertrix/augment-command"
-rev = "23935de"
-hash = "63ac8d0f8c64bd7563826f67c680261b"
-
-[[plugin.deps]]
-use = "ourongxing/fast-enter"
-rev = "1c4caeb"
-hash = "b209b5db91df69bdc6a4656cb8276cd9"
+rev = "269e3cf"
+hash = "f8c8ddd15b2227340fa7f585df71580"
 
 [flavor]
 deps = []

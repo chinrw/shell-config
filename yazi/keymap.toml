@@ -23,13 +23,12 @@ on = ["q"]
 run = "close"
 desc = "Close the current tab, or quit if it is last tab"
 
-[[manager.prepend_keymap]]
-on   = [ "l" ]
-run  = "plugin fast-enter"
-desc = "Enter the subfolder faster, or open the file directly"
+# [[manager.prepend_keymap]]
+# on = ["l"]
+# run = "plugin bypass --args=smart_enter"
+# desc = "Open a file, or recursively enter child directory, skipping children with only a single subdirectory"
 
 [[tasks.prepend_keymap]]
-on = [ "q" ]
+on = ["q"]
 run = "close"
 desc = "Hide the task manager"
-
