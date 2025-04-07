@@ -34,12 +34,13 @@
     # =========================[ Line #1 ]=========================
     os_icon                 # os identifier
     dir                     # current directory
+    shell_level
+    nix_dev_shell_name
     vcs                     # git status
     # =========================[ Line #2 ]=========================
     newline                 # \n
     prompt_char             # prompt symbol
     yazi
-    in_nix_shell
   )
 
   # The list of segments shown on the right. Fill it with less important segments.
@@ -1570,22 +1571,28 @@
   }
 
   function prompt_shell_level() {
-    if [[ $SHLVL -gt 1 ]]; then
+    if [[ $SHLVL -gt 2 ]]; then
       p10k segment -i '⚡' -f yellow -t "$SHLVL"
     fi
   }
 
   # Show If In Nix Shell
-  function prompt_in_nix_shell() {
-    if echo "$PATH" | grep -qc '/nix/store'; then
-      p10k segment -i '' -f "#7EBAE4" -t "nix"
-    fi
-  }
+  # function prompt_in_nix_shell() {
+  #   if echo "$PATH" | grep -qc '/nix/store'; then
+  #     p10k segment -i '' -f "#7EBAE4" -t "nix"
+  #   fi
+  # }
 
   # Show Nix Development Shell Name
   function prompt_nix_dev_shell_name() {
-    if [[ -n $IN_NIX_SHELL ]]; then
-      p10k segment -i '📦' -f yellow -t $name
+    if [[ -n "$IN_NIX_SHELL" ]]; then
+      p10k segment -i '' -f "#7EBAE4" -t "$name"
+    fi
+  }
+
+  function prompt_yazi() {
+    if [ -n "$YAZI_LEVEL" ]; then
+      p10k segment -f 006 -i '' -t 'Yazi'
     fi
   }
 
@@ -1648,11 +1655,6 @@
 
   # If p10k is already loaded, reload configuration.
   # This works even with POWERLEVEL9K_DISABLE_HOT_RELOAD=true.
-  function prompt_yazi() {
-	if [ -n "$YAZI_LEVEL" ]; then
-		p10k segment -f 006 -i '' -t 'Yazi'
-	fi
-  }
   (( ! $+functions[p10k] )) || p10k reload
 }
 
