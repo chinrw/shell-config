@@ -34,9 +34,8 @@
     # =========================[ Line #1 ]=========================
     os_icon                 # os identifier
     dir                     # current directory
-    shell_level
-    nix_dev_shell_name
     vcs                     # git status
+    shell_level
     # =========================[ Line #2 ]=========================
     newline                 # \n
     prompt_char             # prompt symbol
@@ -95,6 +94,7 @@
     # xplr                    # xplr shell (https://github.com/sayanarijit/xplr)
     vim_shell               # vim shell indicator (:sh)
     midnight_commander      # midnight commander shell (https://midnight-commander.org/)
+    nix_dev_shell_name
     nix_shell               # nix shell (https://nixos.org/nixos/nix-pills/developing-with-nix-shell.html)
     # vpn_ip                # virtual private network indicator
     load                  # CPU load
@@ -1572,7 +1572,7 @@
 
   function prompt_shell_level() {
     if [[ $SHLVL -gt 2 ]]; then
-      p10k segment -i '⚡' -f yellow -t "$SHLVL"
+      p10k segment -i '' -f yellow -t "$SHLVL"
     fi
   }
 
