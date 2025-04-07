@@ -9,8 +9,8 @@ let
     , POST_MOUNT_SCRIPT ? ''""''
     , RCLONE_RC_ON ? "false"
     , RCLONE_TEMP_DIR ? "/tmp/rclone/%u/${name}"
-    , RCLONE_TPSLIMIT ? "3"
-    , RCLONE_TPSLIMIT_BURST ? "3"
+    , RCLONE_TPSLIMIT ? "2.5"
+    , RCLONE_TPSLIMIT_BURST ? "1"
     , RCLONE_BWLIMIT ? "0"
     , RCLONE_MOUNT_DAEMON_TIMEOUT ? "0"
     , RCLONE_MOUNT_MULTI_THREAD_STREAMS ? "4"
@@ -26,6 +26,8 @@ let
     , RCLONE_MOUNT_VFS_CACHE_POLL_INTERVAL ? "1m0s"
     , RCLONE_MOUNT_VFS_READ_CHUNK_SIZE ? "128M"
     , RCLONE_MOUNT_VFS_READ_CHUNK_SIZE_LIMIT ? "off"
+    , RCLONE_MOUNT_VFS_WRITE_BACK ? "1m"
+    , RCLONE_MOUNT_VFS_WRITE_WAIT ? "30s"
     }: {
       "rclone-${name}" = {
         Unit = {
@@ -72,6 +74,8 @@ let
             --max-read-ahead=${RCLONE_MOUNT_MAX_READ_AHEAD} \
             --poll-interval=${RCLONE_MOUNT_POLL_INTERVAL} \
             --umask=${RCLONE_MOUNT_UMASK} \
+            --vfs-write-back=${RCLONE_MOUNT_VFS_WRITE_BACK} \
+            --vfs-write-wait=${RCLONE_MOUNT_VFS_WRITE_WAIT} \
             --vfs-cache-max-age=${RCLONE_MOUNT_VFS_CACHE_MAX_AGE} \
             --vfs-cache-max-size=${RCLONE_MOUNT_VFS_CACHE_MAX_SIZE} \
             --vfs-cache-mode=${RCLONE_MOUNT_VFS_CACHE_MODE} \
@@ -97,7 +101,7 @@ in
         name = "alist";
         REMOTE_NAME = "alist";
         REMOTE_PATH = "/";
-        RCLONE_TEMP_DIR="${config.xdg.cacheHome}/rclone";
+        RCLONE_TEMP_DIR = "${config.xdg.cacheHome}/rclone";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
         RCLONE_MOUNT_TRANSFER = "4";
@@ -108,7 +112,7 @@ in
         name = "union-115";
         REMOTE_NAME = "union-115";
         REMOTE_PATH = "/";
-        RCLONE_TEMP_DIR="${config.xdg.cacheHome}/rclone";
+        RCLONE_TEMP_DIR = "${config.xdg.cacheHome}/rclone";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
         RCLONE_MOUNT_TRANSFER = "6";
@@ -120,7 +124,7 @@ in
         name = "115-single";
         REMOTE_NAME = "encrypted-115-single";
         REMOTE_PATH = "/";
-        RCLONE_TEMP_DIR="${config.xdg.cacheHome}/rclone";
+        RCLONE_TEMP_DIR = "${config.xdg.cacheHome}/rclone";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
         RCLONE_MOUNT_TRANSFER = "4";
@@ -131,7 +135,7 @@ in
         name = "bk-meta";
         REMOTE_NAME = "115-onlyfilename";
         REMOTE_PATH = "/";
-        RCLONE_TEMP_DIR="${config.xdg.cacheHome}/rclone";
+        RCLONE_TEMP_DIR = "${config.xdg.cacheHome}/rclone";
         RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
         RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "4h";
         RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
