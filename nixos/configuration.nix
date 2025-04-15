@@ -54,7 +54,7 @@ in
     ./services/samba/wsl-server.nix
     ./nvidia-wsl.nix
     ./services/nvidia-container.nix
-    ./services/llama.nix
+    ./services/llm.nix
   ] ++ lib.optionals (hostname == "wsl-mini") [
     ./wsl-mini.nix
     ./services/github-runners.nix
