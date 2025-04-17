@@ -120,7 +120,7 @@ in
         onefetch
         genact
         angle-grinder
-        zellij
+        unstable.zellij
         man-pages
         duf # better df
         tcpdump # monitor tcp
