@@ -77,7 +77,10 @@
         packSizeLimit = "2047m";
         windowMemory = "2047m";
       };
-
+      pretty = {
+        fixes = "Fixes: %h (\"%s\")";
+        merge = " - %s";
+      };
 
       gpg.format = "ssh";
       pull.rebase = true;
