@@ -282,7 +282,7 @@ in
       extraPackages = with pkgs.bat-extras; [
         # batgrep
         # batwatch
-        # prettybat
+        prettybat
       ];
     };
 
