@@ -1,4 +1,4 @@
-{ config, isServer, ... }:
+{ config, lib, isServer, ... }:
 {
   sops = {
     age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt"; # must have no password!
@@ -17,7 +17,9 @@
       };
       "atuin_key" = { };
       "proxy/clash" = { };
-      "proxy/clash_mini" = { };
-    };
+    } // lib.optionalAttrs (!isServer)
+      {
+        "proxy/clash_mini" = { };
+      };
   };
 }
