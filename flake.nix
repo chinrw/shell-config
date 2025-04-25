@@ -164,6 +164,7 @@
         "chin39@archlinux" = helpers.mkHome {
           hostname = "archlinux";
           isServer = true;
+          smallNode = true;
         };
         "chin39@arch-vm" = helpers.mkHome {
           hostname = "arch";

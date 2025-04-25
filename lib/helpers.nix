@@ -11,6 +11,7 @@
     , noGUI ? true
     , platform ? "x86_64-linux"
     , isServer ? false
+    , smallNode ? false
     ,
     }:
     let
@@ -28,6 +29,7 @@
           platform
           username
           stateVersion
+          smallNode
           isWsl
           isWork
           isServer

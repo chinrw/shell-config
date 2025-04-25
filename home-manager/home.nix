@@ -9,6 +9,7 @@
 , stateVersion
 , isWsl
 , isWork
+, smallNode
 , hostname
 , noGUI
 , isServer
@@ -114,19 +115,11 @@ in
       [
         fd
         fzf
-        glow
-        go
-        fastfetch
-        onefetch
         genact
-        angle-grinder
         unstable.zellij
         man-pages
         duf # better df
         tcpdump # monitor tcp
-        b4 # A tool to work with public-inbox and patch archives
-        moreutils # check errno
-        dstask # Git powered terminal-based todo/note manager -- markdown note page per task
 
         # (pkgs.dstask.overrideAttrs ({ meta ? { }, ... }: {
         #   meta = meta // {
@@ -135,42 +128,51 @@ in
         # }))
 
         btop # system monitor
+        htop
         glances # same thing
         fq # jq for binary formats - tool, language and decoders for working with binary and text formats
 
         rclone
-        gitoxide
-        git-lfs
-        hexyl
         dua
-        _7zz-rar
-        ouch
-        helix
-        pyright
         cachix
         nix-search-cli
-        nurl # Generate Nix fetcher calls from repository URLs
         inputs.yazi.packages.${pkgs.system}.default
-        mediainfo
-        ffmpeg # yazi deps
-        exiftool
         zjstatus
         stable.tailspin #  🌀 A log file highlighter 
         age # A simple, modern and secure encryption tool
         sops
-        yt-dlp # website video downloader
-        ueberzugpp # terminal image preview
         gh # github shell
         procs # A modern replacement for ps written in Rust
+        delta # A syntax-highlighting pager for git, diff, grep, and blame output
+        tokei # Count your code, quickly.
+      ] ++ lib.optionals (!smallNode) [
+
+        basedpyright
+        glow
+        go
+        fastfetch
+        onefetch
+        b4 # A tool to work with public-inbox and patch archives
+        moreutils # check errno
+        dstask # Git powered terminal-based todo/note manager -- markdown note page per task
+        gitoxide
+        git-lfs
+        hexyl
+        _7zz-rar
+        ouch
+        helix
+        nurl # Generate Nix fetcher calls from repository URLs
+        mediainfo
+        ffmpeg # yazi deps
+        exiftool
+        yt-dlp # website video downloader
+        ueberzugpp # terminal image preview
         sampler # Tool for shell commands execution, visualization and alerting
         nmap # port scanner
         circumflex # 🌿 It's Hacker News in your terminal
         aria2 # downloader
-        delta # A syntax-highlighting pager for git, diff, grep, and blame output
-        tokei # Count your code, quickly.
         binsider # Analyze ELF binaries like a boss 😼🕵️‍♂️
         hyperfine # A command-line benchmarking tool
-        htop
         devenv # Fast, Declarative, Reproducible, and Composable Developer Environments
         restic # Fast, secure, efficient backup program
       ]
