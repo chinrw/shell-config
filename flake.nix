@@ -178,8 +178,9 @@
           hostname = "work";
           platform = "aarch64-linux";
         };
-        "chin39@wsl-gentoo" = helpers.mkHome {
-          hostname = "gentoo-vm";
+        "chin39@gentoo-server" = helpers.mkHome {
+          hostname = "gentoo-server";
+          isServer = true;
         };
         "chin39@macos" = helpers.mkHome {
           hostname = "macos";
