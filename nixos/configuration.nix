@@ -1,16 +1,17 @@
 # This is your system's configuration file.
 # Use this to configure your system environment (it replaces /etc/nixos/configuration.nix)
-{ inputs
-, lib
-, outputs
-, config
-, pkgs
-, isWsl
-, GPU
-, platform
-, hostname
-, username
-, ...
+{
+  inputs,
+  lib,
+  outputs,
+  config,
+  pkgs,
+  isWsl,
+  GPU,
+  platform,
+  hostname,
+  username,
+  ...
 }:
 let
   wsl-lib = pkgs.runCommand "wsl-lib" { } ''
@@ -38,27 +39,30 @@ let
 in
 {
   # You can import other NixOS modules here
-  imports = [
-    # If you want to use modules from other flakes (such as nixos-hardware):
-    # inputs.hardware.nixosModules.common-cpu-amd
-    # inputs.hardware.nixosModules.common-ssd
-    inputs.sops-nix.nixosModules.sops
+  imports =
+    [
+      # If you want to use modules from other flakes (such as nixos-hardware):
+      # inputs.hardware.nixosModules.common-cpu-amd
+      # inputs.hardware.nixosModules.common-ssd
+      inputs.sops-nix.nixosModules.sops
 
-    # You can also split up your configuration and import pieces of it here:
-    # ./users.nix
+      # You can also split up your configuration and import pieces of it here:
+      # ./users.nix
 
-    # Import your generated (nixos-generate-config) hardware configuration
-    # ./hardware-configuration.nix
-  ] ++ lib.optionals (hostname == "wsl") [
-    ./wsl.nix
-    ./services/samba/wsl-server.nix
-    ./nvidia-wsl.nix
-    ./services/nvidia-container.nix
-    ./services/llm.nix
-  ] ++ lib.optionals (hostname == "wsl-mini") [
-    ./wsl-mini.nix
-    ./services/github-runners.nix
-  ];
+      # Import your generated (nixos-generate-config) hardware configuration
+      # ./hardware-configuration.nix
+    ]
+    ++ lib.optionals (hostname == "wsl") [
+      ./wsl.nix
+      ./services/samba/wsl-server.nix
+      ./nvidia-wsl.nix
+      ./services/nvidia-container.nix
+      ./services/llm.nix
+    ]
+    ++ lib.optionals (hostname == "wsl-mini") [
+      ./wsl-mini.nix
+      ./services/github-runners.nix
+    ];
 
   nixpkgs = {
     # You can add overlays here
@@ -81,8 +85,6 @@ in
       allowUnfree = true;
     };
   };
-
-
 
   nix =
     let
@@ -113,7 +115,6 @@ in
       nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
     };
 
-
   sops = {
     age.keyFile = "/home/${username}/.config/sops/age/keys.txt"; # must have no password!
     # It's also possible to use a ssh key, but only when it has no password:
@@ -130,13 +131,13 @@ in
     };
   };
 
-
   users.users.chin39 = {
-    extraGroups = [ "docker" "wheel" ];
-    shell = pkgs.zsh;
-    openssh.authorizedKeys.keys = [
-      config.sops.secrets.ssh_pub_key.path
+    extraGroups = [
+      "docker"
+      "wheel"
     ];
+    shell = pkgs.zsh;
+    openssh.authorizedKeys.keys = [ config.sops.secrets.ssh_pub_key.path ];
   };
 
   virtualisation.docker = {
@@ -159,7 +160,6 @@ in
     git
     tzdata
     nodejs
-    neovim
     unzip
     wget
     curl
@@ -174,7 +174,7 @@ in
     ueberzugpp
     tcpdump
     trash-cli
-
+    gnumake
 
     btrfs-progs
     bpftools
@@ -184,23 +184,30 @@ in
     config.boot.kernelPackages.perf
     llama-cpp
 
-    (pkgs.python3.withPackages (python-pkgs: with python-pkgs; [
-      # select Python packages here
-      bpython
-      llama-cpp-python
-    ]))
+    (pkgs.python3.withPackages (
+      python-pkgs: with python-pkgs; [
+        # select Python packages here
+        bpython
+        llama-cpp-python
+      ]
+    ))
   ];
   # Set the default editor to vim
   environment.variables = {
     EDITOR = "nvim";
   };
 
-
   programs = {
     nix-ld = {
       enable = true;
       package = pkgs.nix-ld-rs;
       libraries = [ wsl-lib ];
+    };
+
+    neovim = {
+      enable = true;
+      defaultEditor = true;
+      package = inputs.neovim-nightly-overlay.packages.${pkgs.system}.default;
     };
 
     zsh.enable = true;
@@ -214,10 +221,13 @@ in
   fileSystems."/mnt/autofs/data" = {
     device = "10.0.0.254:/volume1/Data";
     fsType = "nfs4";
-    options = [ "noauto" "x-systemd.automount" "x-systemd.idle-timeout=1h" ];
+    options = [
+      "noauto"
+      "x-systemd.automount"
+      "x-systemd.idle-timeout=1h"
+    ];
   };
   time.timeZone = "Asia/Shanghai";
-
 
   services.openssh = {
     enable = true;
