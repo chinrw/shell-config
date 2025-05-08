@@ -168,7 +168,6 @@ in
     gcc
     rustc
     cargo
-    python3
     mold
     wireguard-tools
     ueberzugpp
