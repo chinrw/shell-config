@@ -1,4 +1,14 @@
-{ lib, pkgs, isDesktop, hostname, noGUI, isWork, proxyUrl, ... }: {
+{
+  lib,
+  pkgs,
+  isDesktop,
+  hostname,
+  noGUI,
+  isWork,
+  proxyUrl,
+  ...
+}:
+{
 
   programs.jujutsu = {
     enable = true;
@@ -13,19 +23,18 @@
 
   programs.git = {
     enable = true;
-    aliases =
-      {
-        co = "checkout";
-        lg = "lg1";
-        lg1 = "lg1-specific --all";
-        lg2 = "lg2-specific --all";
-        lg3 = "lg3-specific --all";
+    aliases = {
+      co = "checkout";
+      lg = "lg1";
+      lg1 = "lg1-specific --all";
+      lg2 = "lg2-specific --all";
+      lg3 = "lg3-specific --all";
 
-        lg1-specific = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)'";
-        lg2-specific = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(auto)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)'";
-        lg3-specific = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset) %C(bold cyan)(committed: %cD)%C(reset) %C(auto)%d%C(reset)%n''          %C(white)%s%C(reset)%n''          %C(dim white)- %an <%ae> %C(reset) %C(dim white)(committer: %cn <%ce>)%C(reset)'";
+      lg1-specific = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)'";
+      lg2-specific = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(auto)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)'";
+      lg3-specific = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset) %C(bold cyan)(committed: %cD)%C(reset) %C(auto)%d%C(reset)%n''          %C(white)%s%C(reset)%n''          %C(dim white)- %an <%ae> %C(reset) %C(dim white)(committer: %cn <%ce>)%C(reset)'";
 
-      };
+    };
     delta.enable = false;
     delta.options = {
       decorations = {
@@ -55,7 +64,6 @@
     };
     difftastic.enable = true;
 
-
     userName = "Ruowen Qin";
     userEmail = if (!isWork) then "chinqrw@gmail.com" else "ruqin@redhat.com";
 
@@ -63,7 +71,8 @@
       key =
         if (hostname == "wsl-mini") then
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBJpG2pVAGes7/nqaDEH3zRUO37g67we+vwQpLEp3jwo"
-        else "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMasqR2edNuMaTk0djcs46/s/OiIQo97qa6oyF/ybgih";
+        else
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMasqR2edNuMaTk0djcs46/s/OiIQo97qa6oyF/ybgih";
       signByDefault = true;
       format = "ssh";
     };
@@ -89,13 +98,16 @@
       merge.conflictstyle = "zdiff3";
       init.defaultBranch = "main";
       interactive.diffFilter = "delta --color-only";
-      http = {
-        postBuffer = 524288000;
-      } // lib.optionalAttrs (hostname == "wsl") {
-        proxy = "http://192.168.0.101:7891";
-      } // lib.optionalAttrs (hostname == "wsl-mini") {
-        proxy = "http://10.0.0.201:7891";
-      };
+      http =
+        {
+          postBuffer = 524288000;
+        }
+        // lib.optionalAttrs (hostname == "wsl") {
+          proxy = "http://192.168.0.101:7891";
+        }
+        // lib.optionalAttrs (hostname == "wsl-mini") {
+          proxy = "http://10.0.0.201:7891";
+        };
     };
   };
 }

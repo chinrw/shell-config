@@ -1,4 +1,12 @@
-{ lib, pkgs, isDesktop, noGUI, proxyUrl, ... }: {
+{
+  lib,
+  pkgs,
+  isDesktop,
+  noGUI,
+  proxyUrl,
+  ...
+}:
+{
 
   programs.zsh = {
     enable = true;
@@ -8,7 +16,8 @@
       TREE_IGNORE = [ "cache|log|logs|node_modules|vendor" ];
     };
 
-    initContent = "
+    initContent =
+      "
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -16,12 +25,14 @@ if [[ -r \"\${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-\${(%):-%n}.zsh\
   source \"\${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-\${(%):-%n}.zsh\"
 fi
 
-" + lib.optionalString (proxyUrl != "")
-      "
+"
+      + lib.optionalString (
+        proxyUrl != ""
+      ) "
 export http_proxy=$(cat ${proxyUrl})
 export https_proxy=$(cat ${proxyUrl})
-" +
-    "
+"
+      + "
 # Uncomment the following line to use hyphen-insensitive completion.
 # Case-sensitive completion must be off. _ and - will be interchangeable.
 HYPHEN_INSENSITIVE=\"true\"
@@ -72,13 +83,12 @@ fi
 bindkey \^U backward-kill-line
 bindkey '^r' _atuin_search_widget
 
-" + lib.optionalString noGUI
-      "
+"
+      + lib.optionalString noGUI "
 # for single user mode
 if [ -e /home/chin39/.nix-profile/etc/profile.d/nix.sh ]; then . /home/chin39/.nix-profile/etc/profile.d/nix.sh; fi 
 "
-    + lib.optionalString isDesktop
-      "
+      + lib.optionalString isDesktop "
 alias_flatpak_exports() {
   zmodload zsh/parameter
 	local item
@@ -175,4 +185,3 @@ fi
 
   };
 }
-

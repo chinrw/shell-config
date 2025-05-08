@@ -1,4 +1,10 @@
-{ config, pkgs, hostname, ... }: {
+{
+  config,
+  pkgs,
+  hostname,
+  ...
+}:
+{
 
   imports = [
     ./wsl-common.nix
@@ -24,14 +30,15 @@
     nerd-fonts.fira-code
   ];
 
-
   networking = {
     interfaces = {
       eth0.useDHCP = false;
-      eth0.ipv4.addresses = [{
-        address = "192.168.0.201";
-        prefixLength = 24;
-      }];
+      eth0.ipv4.addresses = [
+        {
+          address = "192.168.0.201";
+          prefixLength = 24;
+        }
+      ];
     };
     defaultGateway = {
       address = "192.168.0.1";
@@ -70,7 +77,10 @@
           #allowedIPs = [ "0.0.0.0/0" ];
           # Or forward only particular subnets
           #allowedIPs = [ "10.100.0.1" "91.108.12.0/22" ];
-          allowedIPs = [ " 10.0.0.0/24" "10.10.0.0/24" ];
+          allowedIPs = [
+            " 10.0.0.0/24"
+            "10.10.0.0/24"
+          ];
 
           # Set this to the server IP and port.
           endpoint = "chin39.synology.me:7891";
@@ -79,7 +89,6 @@
 
           # Send keepalives every 25 seconds. Important to keep NAT tables alive.
           persistentKeepalive = 25;
-
 
           # Warning for endpoints with changing IPs:
           # The WireGuard kernel side cannot perform DNS resolution.

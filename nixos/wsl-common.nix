@@ -1,4 +1,5 @@
-{ hostname, ... }: {
+{ hostname, ... }:
+{
   wsl = {
     enable = true;
     defaultUser = "chin39";

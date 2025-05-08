@@ -1,20 +1,21 @@
 # This is your home-manager configuration file
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
-{ inputs
-, outputs
-, lib
-, config
-, pkgs
-, username
-, stateVersion
-, isWsl
-, isWork
-, smallNode
-, hostname
-, noGUI
-, isServer
-, platform
-, ...
+{
+  inputs,
+  outputs,
+  lib,
+  config,
+  pkgs,
+  username,
+  stateVersion,
+  isWsl,
+  isWork,
+  smallNode,
+  hostname,
+  noGUI,
+  isServer,
+  platform,
+  ...
 }:
 let
   inherit (pkgs.stdenv) isDarwin isLinux;
@@ -22,64 +23,86 @@ let
 
   proxyUrl =
     if (hostname == "wsl" || isDesktop) then
-    # "http://10.0.0.242:10809"
-    # "http://192.168.0.101:10809"
+      # "http://10.0.0.242:10809"
+      # "http://192.168.0.101:10809"
       config.sops.secrets."proxy/clash".path
     else if isWork then
       ""
     else if (hostname == "wsl-mini") then
       config.sops.secrets."proxy/clash_mini".path
-    else "";
+    else
+      "";
 in
 {
   # You can import other home-manager modules here
-  imports = [
-    # If you want to use home-manager modules from other flakes (such as nix-colors):
-    # inputs.nix-colors.homeManagerModule
-    ./programs/nushell
-    (import ./programs/zsh { inherit lib pkgs isDesktop noGUI proxyUrl; })
-    (import ./programs/git { inherit lib pkgs isDesktop noGUI isWork hostname proxyUrl; })
-    (import ./programs/zellij { inherit lib pkgs config; })
-    (import ./programs/sops.nix { inherit lib config isServer; })
+  imports =
+    [
+      # If you want to use home-manager modules from other flakes (such as nix-colors):
+      # inputs.nix-colors.homeManagerModule
+      ./programs/nushell
+      (import ./programs/zsh {
+        inherit
+          lib
+          pkgs
+          isDesktop
+          noGUI
+          proxyUrl
+          ;
+      })
+      (import ./programs/git {
+        inherit
+          lib
+          pkgs
+          isDesktop
+          noGUI
+          isWork
+          hostname
+          proxyUrl
+          ;
+      })
+      (import ./programs/zellij { inherit lib pkgs config; })
+      (import ./programs/sops.nix { inherit lib config isServer; })
 
-    # You can also split up your configuration and import pieces of it here:
-    # ./nvim.nix
-    inputs.nix-index-database.hmModules.nix-index
-    inputs._1password-shell-plugins.hmModules.default
-    inputs.sops-nix.homeManagerModules.sops
-  ] ++ lib.optionals (hostname == "wsl") [
-    (import ./programs/rclone.nix { inherit config lib pkgs; })
-  ] ++ lib.optionals (hostname != "wsl") [
-    (import ./programs/yazi.nix { inherit config; })
-  ];
+      # You can also split up your configuration and import pieces of it here:
+      # ./nvim.nix
+      inputs.nix-index-database.hmModules.nix-index
+      inputs._1password-shell-plugins.hmModules.default
+      inputs.sops-nix.homeManagerModules.sops
+    ]
+    ++ lib.optionals (hostname == "wsl") [
+      (import ./programs/rclone.nix { inherit config lib pkgs; })
+    ]
+    ++ lib.optionals (hostname != "wsl") [
+      (import ./programs/yazi.nix { inherit config; })
+    ];
 
   nixpkgs = {
     # You can add overlays here
-    overlays = [
-      # If you want to use overlays exported from other flakes:
-      # (import ../overlays/rust-overlay.nix)
+    overlays =
+      [
+        # If you want to use overlays exported from other flakes:
+        # (import ../overlays/rust-overlay.nix)
 
+        (final: prev: {
+          zjstatus = inputs.zjstatus.packages.${prev.system}.default;
+        })
 
-      (final: prev: {
-        zjstatus = inputs.zjstatus.packages.${prev.system}.default;
-      })
+        outputs.overlays.additions
+        outputs.overlays.modifications
+        outputs.overlays.stable-packages
+        outputs.overlays.unstable-packages
 
-      outputs.overlays.additions
-      outputs.overlays.modifications
-      outputs.overlays.stable-packages
-      outputs.overlays.unstable-packages
+        # Or define it inline, for example:
+        # (final: prev: {
+        #   hi = final.hello.overrideAttrs (oldAttrs: {
+        #     patches = [ ./change-hello-to-hi.patch ];
+        #   });
+        # })
+        # ] ++ lib.optionals (builtins.isString platform && !builtins.match "aarch64" platform) [
+      ]
+      ++ lib.optionals (!(builtins.match "aarch64.*" platform != null)) [
 
-      # Or define it inline, for example:
-      # (final: prev: {
-      #   hi = final.hello.overrideAttrs (oldAttrs: {
-      #     patches = [ ./change-hello-to-hi.patch ];
-      #   });
-      # })
-      # ] ++ lib.optionals (builtins.isString platform && !builtins.match "aarch64" platform) [
-    ] ++ lib.optionals (!(builtins.match "aarch64.*" platform != null)) [
-
-
-    ];
+      ];
     # Configure your nixpkgs instance
     config = {
       # Disable if you don't want unfree packages
@@ -111,7 +134,8 @@ in
     # file = {
     #   "${config.home.homeDirectory}/.zshrc".text = builtins.readFile ./zsh/zshrc;
     # };
-    packages = with pkgs;
+    packages =
+      with pkgs;
       [
         fd
         fzf
@@ -138,14 +162,15 @@ in
         nix-search-cli
         inputs.yazi.packages.${pkgs.system}.default
         zjstatus
-        stable.tailspin #  🌀 A log file highlighter 
+        stable.tailspin # 🌀 A log file highlighter
         age # A simple, modern and secure encryption tool
         sops
         gh # github shell
         procs # A modern replacement for ps written in Rust
         delta # A syntax-highlighting pager for git, diff, grep, and blame output
         tokei # Count your code, quickly.
-      ] ++ lib.optionals (!smallNode) [
+      ]
+      ++ lib.optionals (!smallNode) [
 
         basedpyright
         glow
@@ -192,7 +217,7 @@ in
         rustup
       ]
       ++ lib.optionals isWork [
-        mypy #  Optional static typing for Python 
+        mypy # Optional static typing for Python
         asciinema_3
         asciinema-agg
       ]
@@ -221,7 +246,6 @@ in
     # automatically installed and configured to use shell plugins
     # plugins = with pkgs; [ gh awscli2 cachix ];
   };
-
 
   programs.fish = {
     enable = true;
@@ -262,16 +286,16 @@ in
       ];
 
       package = pkgs.atuin;
-      settings = {
-        show_preview = true;
-        search_mode = "fuzzy";
-        secrets_filter = true;
-        style = "compact";
-        update_check = false;
-        filter_mode = "host";
-      } // lib.optionalAttrs
-        (builtins.match "^(wsl|wsl-mini|archlinux|macos)$" hostname != null)
+      settings =
         {
+          show_preview = true;
+          search_mode = "fuzzy";
+          secrets_filter = true;
+          style = "compact";
+          update_check = false;
+          filter_mode = "host";
+        }
+        // lib.optionalAttrs (builtins.match "^(wsl|wsl-mini|archlinux|macos)$" hostname != null) {
           sync_address = "http://10.0.0.242:8881";
           key_path = config.sops.secrets.atuin_key.path;
           auto_sync = true;
@@ -342,7 +366,6 @@ in
       };
     };
   };
-
 
   xdg = {
     enable = isLinux;

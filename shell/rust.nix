@@ -23,9 +23,11 @@ pkgs.mkShell {
     pkgs.bashInteractive
   ];
 
-  buildInputs = with pkgs;
-    lib.optionals stdenv.isDarwin
-      (with darwin.apple_sdk.frameworks; [ Foundation ]);
+  buildInputs =
+    with pkgs;
+    lib.optionals stdenv.isDarwin (with darwin.apple_sdk.frameworks; [ Foundation ]);
 
-  env = { RUST_BACKTRACE = "1"; };
+  env = {
+    RUST_BACKTRACE = "1";
+  };
 }

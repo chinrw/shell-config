@@ -1,4 +1,10 @@
-{ lib, pkgs, config, ... }: {
+{
+  lib,
+  pkgs,
+  config,
+  ...
+}:
+{
 
   home.file = {
     "${config.xdg.configHome}/zellij" = {
@@ -25,4 +31,3 @@
   #
   # };
 }
-

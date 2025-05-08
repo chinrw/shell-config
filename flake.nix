@@ -74,13 +74,14 @@
   };
 
   outputs =
-    { self
-    , nixpkgs
-    , home-manager
-    , flake-utils
-    , rust-overlay
-    , ...
-    } @ inputs:
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      flake-utils,
+      rust-overlay,
+      ...
+    }@inputs:
     let
       inherit (self) outputs;
       systems = [
@@ -95,8 +96,8 @@
       helpers = import ./lib { inherit inputs outputs stateVersion; };
 
     in
-    flake-utils.lib.eachDefaultSystem
-      (system:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         overlays = [ (import rust-overlay) ];
         pkgs = import nixpkgs {
@@ -104,9 +105,14 @@
         };
       in
       {
-        devShells.rust = import ./shell/rust.nix { inherit pkgs inputs; };
-        devShells.hm = import ./shell/home-manager.nix { inherit pkgs inputs; };
-      })
+        devShells = {
+          rust = import ./shell/rust.nix { inherit pkgs inputs; };
+          hm = import ./shell/home-manager.nix { inherit pkgs inputs; };
+        };
+        # formatter used by `nix fmt`
+        formatter = pkgs.nixfmt-tree;
+      }
+    )
     // {
       # Your custom packages
       # Accessible through 'nix build', 'nix shell', etc

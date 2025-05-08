@@ -1,4 +1,10 @@
-{ config, pkgs, hostname, ... }: {
+{
+  config,
+  pkgs,
+  hostname,
+  ...
+}:
+{
 
   imports = [
     ./wsl-common.nix
@@ -7,10 +13,12 @@
   networking = {
     interfaces = {
       eth0.useDHCP = false;
-      eth0.ipv4.addresses = [{
-        address = "10.0.0.202";
-        prefixLength = 24;
-      }];
+      eth0.ipv4.addresses = [
+        {
+          address = "10.0.0.202";
+          prefixLength = 24;
+        }
+      ];
     };
     defaultGateway = {
       address = "10.0.0.1";
@@ -18,7 +26,6 @@
     };
     nameservers = [ "10.0.0.1" ];
   };
-
 
   programs.proxychains = {
     package = pkgs.proxychains-ng;
@@ -33,7 +40,6 @@
       };
     };
   };
-
 
   networking.proxy.default = "http://10.0.0.201:7891";
   networking.enableIPv6 = false;

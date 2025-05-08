@@ -1,5 +1,6 @@
 # This file defines overlays
-{ inputs, ... }: {
+{ inputs, ... }:
+{
   # This one brings our custom packages from the 'pkgs' directory
   additions = final: _prev: import ../pkgs final.pkgs;
 
@@ -62,11 +63,12 @@
       stdenv = final.clangStdenv;
     });
 
-
     buildRustPackage = prev.buildRustPackage.overrideAttrs (old: {
-      postBuild = old.postBuild or "" + ''
-        export RUSTFLAGS="$RUSTFLAGS -C target-cpu=native -C link-arg=-fuse-ld=mold"
-      '';
+      postBuild =
+        old.postBuild or ""
+        + ''
+          export RUSTFLAGS="$RUSTFLAGS -C target-cpu=native -C link-arg=-fuse-ld=mold"
+        '';
     });
   };
 

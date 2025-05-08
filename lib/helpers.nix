@@ -1,18 +1,19 @@
-{ inputs
-, outputs
-, stateVersion
-, ...
+{
+  inputs,
+  outputs,
+  stateVersion,
+  ...
 }:
 {
   # Helper function for generating home-manager configs
   mkHome =
-    { hostname
-    , username ? "chin39"
-    , noGUI ? true
-    , platform ? "x86_64-linux"
-    , isServer ? false
-    , smallNode ? false
-    ,
+    {
+      hostname,
+      username ? "chin39",
+      noGUI ? true,
+      platform ? "x86_64-linux",
+      isServer ? false,
+      smallNode ? false,
     }:
     let
       isWsl = builtins.substring 0 3 hostname == "wsl";
@@ -40,12 +41,12 @@
 
   # Helper function for generating NixOS configs
   mkNixos =
-    { hostname
-    , username ? "chin39"
-    , desktop ? null
-    , GPU ? null
-    , platform ? "x86_64-linux"
-    ,
+    {
+      hostname,
+      username ? "chin39",
+      desktop ? null,
+      GPU ? null,
+      platform ? "x86_64-linux",
     }:
     let
       isWsl = builtins.substring 0 3 hostname == "wsl";
@@ -70,16 +71,17 @@
           isWorkstation
           ;
       };
-      modules =
-        [ ../nixos/configuration.nix ] ++ inputs.nixpkgs.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
+      modules = [
+        ../nixos/configuration.nix
+      ] ++ inputs.nixpkgs.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
     };
 
   mkDarwin =
-    { desktop ? "aqua"
-    , hostname
-    , username ? "chin39"
-    , platform ? "aarch64-darwin"
-    ,
+    {
+      desktop ? "aqua",
+      hostname,
+      username ? "chin39",
+      platform ? "aarch64-darwin",
     }:
     let
       isISO = false;
