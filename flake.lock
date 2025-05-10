@@ -258,6 +258,21 @@
         "type": "github"
       }
     },
+    "hardware": {
+      "locked": {
+        "lastModified": 1746814339,
+        "narHash": "sha256-hf2lICJzwACWuzHCmZn5NI6LUAOgGdR1yh8ip+duyhk=",
+        "owner": "NixOS",
+        "repo": "nixos-hardware",
+        "rev": "3c5e12673265dfb0de3d9121420c0c2153bf21e0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixos-hardware",
+        "type": "github"
+      }
+    },
     "hercules-ci-effects": {
       "inputs": {
         "flake-parts": "flake-parts_2",
@@ -470,6 +485,7 @@
       "inputs": {
         "_1password-shell-plugins": "_1password-shell-plugins",
         "flake-utils": "flake-utils_2",
+        "hardware": "hardware",
         "home-manager": "home-manager",
         "neovim-nightly-overlay": "neovim-nightly-overlay",
         "nix-index-database": "nix-index-database",

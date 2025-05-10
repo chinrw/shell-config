@@ -38,6 +38,10 @@
     ++ lib.optionals (hostname == "wsl-mini") [
       ./wsl-mini.nix
       ./services/github-runners.nix
+    ]
+    ++ lib.optionals (hostname == "proxmox-vm") [
+      inputs.hardware.nixosModules.common-cpu-amd
+      ./nix-proxmox-vm.nix
     ];
 
   nixpkgs = {
