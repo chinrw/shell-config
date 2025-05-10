@@ -40,8 +40,8 @@
     };
     hostName = hostname;
     networkmanager.enable = true;
-    proxy.default = "http://192.168.0.101:7891";
-    nameservers = ["192.168.0.1"];
+    proxy.default = "http://192.168.0.240:10809";
+    nameservers = [ "192.168.0.1" ];
   };
 
   boot.loader.systemd-boot.enable = true;
@@ -69,5 +69,16 @@
   services.xserver.xkb = {
     layout = "us";
     variant = "";
+  };
+  sops.secrets."xray" = {
+    owner = "root";
+    sopsFile = ../../secrets/xray.conf;
+    path = "/etc/xray/xray_client.conf";
+    format = "binary";
+  };
+
+  services.xray = {
+    enable = true;
+    settingsFile = "/etc/xray/xray_client.conf";
   };
 }
