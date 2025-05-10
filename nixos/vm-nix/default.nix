@@ -21,11 +21,30 @@
     packages = with pkgs; [ ];
   };
 
+  networking = {
+    interfaces = {
+      enp6s18 = {
+        useDHCP = false;
+        ipv4.addresses = [
+          {
+            address = "192.168.0.240";
+            prefixLength = 24;
+          }
+        ];
+        dns = "192.168.0.1";
+      };
+    };
+    defaultGateway = {
+      address = "192.168.0.1";
+      interface = "eth0";
+    };
+    hostName = hostname;
+    networkmanager.enable = true;
+    proxy.default = "http://192.168.0.101:7891";
+  };
+
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  networking.hostName = hostname;
-  networking.networkmanager.enable = true;
 
   # Set your time zone.
   time.timeZone = "Asia/Shanghai";
