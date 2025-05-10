@@ -145,6 +145,12 @@
           GPU = "amd";
         };
       };
+      nixosConfigurations = {
+        "vm-nix" = helpers.mkNixos {
+          hostname = "vm-nix";
+          GPU = "amd";
+        };
+      };
       # Standalone home-manager configuration entrypoint
       # Available through 'home-manager --flake .#your-username@your-hostname'
       homeConfigurations = {
@@ -188,6 +194,11 @@
         "chin39@gentoo-server" = helpers.mkHome {
           hostname = "gentoo-server";
           isServer = true;
+        };
+        "chin39@vm-nix" = helpers.mkHome {
+          hostname = "vm-nix";
+          isServer = true;
+          noGUI = true;
         };
         "chin39@macos" = helpers.mkHome {
           hostname = "macos";
