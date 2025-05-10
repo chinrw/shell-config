@@ -8,7 +8,7 @@
 {
   imports = [
     inputs.hardware.nixosModules.common-cpu-amd
-    ./wsl-common.nix
+    ./hardware.nix
   ];
 
   users.users.chin39 = {
