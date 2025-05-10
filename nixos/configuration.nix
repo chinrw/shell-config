@@ -111,15 +111,6 @@
     };
   };
 
-  users.users.chin39 = {
-    extraGroups = [
-      "docker"
-      "wheel"
-    ];
-    shell = pkgs.zsh;
-    openssh.authorizedKeys.keys = [ config.sops.secrets.ssh_pub_key.path ];
-  };
-
   virtualisation.docker = {
     enable = true;
     rootless = {

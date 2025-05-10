@@ -1,5 +1,14 @@
-{ hostname, ... }:
+{ config, pkgs, hostname, ... }:
 {
+  users.users.chin39 = {
+    extraGroups = [
+      "docker"
+      "wheel"
+    ];
+    shell = pkgs.zsh;
+    openssh.authorizedKeys.keys = [ config.sops.secrets.ssh_pub_key.path ];
+  };
+
   wsl = {
     enable = true;
     defaultUser = "chin39";

@@ -14,6 +14,14 @@
     (modulesPath + "/profiles/qemu-guest.nix")
   ];
 
+
+  users.users.chin39 = {
+    isNormalUser = true;
+    description = "chin39";
+    extraGroups = [ "networkmanager" "wheel" ];
+    packages = with pkgs; [];
+  };
+
   boot.initrd.availableKernelModules = [
     "uhci_hcd"
     "ehci_pci"
