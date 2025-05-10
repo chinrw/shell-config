@@ -139,9 +139,7 @@ in
       [
         fd
         fzf
-        genact
         unstable.zellij
-        man-pages
         duf # better df
         tcpdump # monitor tcp
 
@@ -154,7 +152,6 @@ in
         btop # system monitor
         htop
         glances # same thing
-        fq # jq for binary formats - tool, language and decoders for working with binary and text formats
 
         rclone
         dua
@@ -162,17 +159,21 @@ in
         nix-search-cli
         inputs.yazi.packages.${pkgs.system}.default
         zjstatus
-        stable.tailspin # 🌀 A log file highlighter
         age # A simple, modern and secure encryption tool
         sops
-        gh # github shell
-        procs # A modern replacement for ps written in Rust
         delta # A syntax-highlighting pager for git, diff, grep, and blame output
-        tokei # Count your code, quickly.
       ]
       ++ lib.optionals (!smallNode) [
 
+        gh # github shell
+        procs # A modern replacement for ps written in Rust
+        tokei # Count your code, quickly.
+        fq # jq for binary formats - tool, language and decoders for working with binary and text formats
+        genact
+        man-pages
         basedpyright
+        stable.tailspin # 🌀 A log file highlighter
+
         glow
         go
         fastfetch
