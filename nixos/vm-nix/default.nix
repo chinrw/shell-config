@@ -9,6 +9,7 @@
   imports = [
     inputs.hardware.nixosModules.common-cpu-amd
     ./hardware.nix
+    ./proxy.nix
   ];
 
   users.users.chin39 = {
