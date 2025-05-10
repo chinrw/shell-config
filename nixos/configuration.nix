@@ -40,8 +40,7 @@
       ./services/github-runners.nix
     ]
     ++ lib.optionals (hostname == "vm-nix") [
-      inputs.hardware.nixosModules.common-cpu-amd
-      ./nix-proxmox-vm.nix
+      ./vm-nix
     ];
 
   nixpkgs = {

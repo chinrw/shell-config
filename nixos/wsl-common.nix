@@ -1,4 +1,9 @@
-{ config, pkgs, hostname, ... }:
+{
+  config,
+  pkgs,
+  hostname,
+  ...
+}:
 {
   users.users.chin39 = {
     extraGroups = [
