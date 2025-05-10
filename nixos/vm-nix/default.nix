@@ -2,6 +2,7 @@
   inputs,
   config,
   pkgs,
+  hostname,
   ...
 }:
 {
@@ -23,7 +24,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "vm-nix"; # Define your hostname.
+  networking.hostName = hostname;
   networking.networkmanager.enable = true;
 
   # Set your time zone.
