@@ -32,16 +32,16 @@
             prefixLength = 24;
           }
         ];
-        dns = "192.168.0.1";
       };
     };
     defaultGateway = {
       address = "192.168.0.1";
-      interface = "eth0";
+      interface = "enp6s18";
     };
     hostName = hostname;
     networkmanager.enable = true;
     proxy.default = "http://192.168.0.101:7891";
+    nameservers = ["192.168.0.1"];
   };
 
   boot.loader.systemd-boot.enable = true;
