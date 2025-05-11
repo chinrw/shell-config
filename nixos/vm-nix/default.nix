@@ -3,6 +3,7 @@
   config,
   pkgs,
   hostname,
+  username,
   ...
 }:
 {
@@ -79,6 +80,21 @@
     LC_PAPER = "C.UTF-8";
     LC_TELEPHONE = "C.UTF-8";
     LC_TIME = "C.UTF-8";
+  };
+
+
+  sops = {
+    age.keyFile = "/home/${username}/.config/sops/age/keys.txt"; # must have no password!
+    # It's also possible to use a ssh key, but only when it has no password:
+    #age.sshKeyPaths = [ "/home/user/path-to-ssh-key" ];
+    defaultSopsFile = ../../secrets/hosts.yaml;
+    defaultSopsFormat = "yaml";
+
+    secrets = {
+      "wg-vm-nix/privatekey" = { };
+      "ssh_pub_key" = { };
+      "access-tokens" = { };
+    };
   };
 
   # Configure keymap in X11
