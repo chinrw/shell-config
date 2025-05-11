@@ -9,6 +9,7 @@
   imports = [
     inputs.hardware.nixosModules.common-cpu-amd
     ./hardware.nix
+    ./wireguard.nix
     # ./proxy.nix
   ];
 
