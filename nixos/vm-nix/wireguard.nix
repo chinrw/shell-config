@@ -3,7 +3,7 @@
   ...
 }:
 {
-# Enable WireGuard
+  # Enable WireGuard
   networking.wireguard.interfaces = {
     # "wg0" is the network interface name. You can name the interface arbitrarily.
     wg0 = {

@@ -24,4 +24,20 @@
       hostname = hostname;
     };
   };
+
+  sops = {
+    age.keyFile = "/home/${username}/.config/sops/age/keys.txt"; # must have no password!
+    # It's also possible to use a ssh key, but only when it has no password:
+    #age.sshKeyPaths = [ "/home/user/path-to-ssh-key" ];
+    defaultSopsFile = ../secrets/hosts.yaml;
+    defaultSopsFormat = "yaml";
+
+    secrets = {
+      "wg/privatekey" = { };
+      "wg/pubkey" = { };
+      "ssh_pub_key" = { };
+      "access-tokens" = { };
+      "github-runners/midashood" = { };
+    };
+  };
 }

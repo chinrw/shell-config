@@ -94,7 +94,6 @@
       nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
     };
 
-
   virtualisation.docker = {
     enable = true;
     rootless = {

@@ -11,6 +11,7 @@
     inputs.hardware.nixosModules.common-cpu-amd
     ./hardware.nix
     ./wireguard.nix
+    ../services/github-runners.nix
     # ./proxy.nix
   ];
 
@@ -84,7 +85,6 @@
     LC_TIME = "C.UTF-8";
   };
 
-
   sops = {
     age.keyFile = "/home/${username}/.config/sops/age/keys.txt"; # must have no password!
     # It's also possible to use a ssh key, but only when it has no password:
@@ -96,6 +96,7 @@
       "wg-vm-nix/privatekey" = { };
       "ssh_pub_key" = { };
       "access-tokens" = { };
+      "github-runners/Constantinople" = { };
     };
   };
 
