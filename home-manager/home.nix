@@ -296,7 +296,7 @@ in
           update_check = false;
           filter_mode = "host";
         }
-        // lib.optionalAttrs (builtins.match "^(wsl|wsl-mini|archlinux|macos)$" hostname != null) {
+        // lib.optionalAttrs (builtins.match "^(wsl|wsl-mini|archlinux|macos|vm-nix)$" hostname != null) {
           sync_address = "http://10.0.0.242:8881";
           key_path = config.sops.secrets.atuin_key.path;
           auto_sync = true;
