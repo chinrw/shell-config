@@ -44,15 +44,17 @@
     hostName = hostname;
     networkmanager.enable = true;
     proxy.default = "http://192.168.0.240:10809";
+    proxy.noProxy = "10.0.0.0/24,192.168.0.0/24,127.0.0.1,localhost,.localdomain";
     nameservers = [ "192.168.0.1" ];
   };
 
   networking.firewall = {
     enable = true;
     allowedTCPPorts = [
+      5244
+      8096
       10808
       10809
-      12346
     ];
     # allowedUDPPortRanges = [
     #   { from = 4000; to = 4007; }
