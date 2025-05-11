@@ -1,8 +1,7 @@
 { config, pkgs, ... }:
-
 let
-  lanIf = "enp6s18";   # faces your local network – clients use this as GW
-  wanIf = "enp6s18";   # faces the Internet
+  lanIf = "ens18"; # faces your local network – clients use this as GW
+  wanIf = "ens18"; # faces the Internet
 in
 {
   # ── Kernel routing ───────────────────────────────────────────────────
@@ -12,62 +11,55 @@ in
   };
   # ── SOCKS bridge ─────────────────────────────────────────────────────
   services.redsocks.enable = true;
-  services.redsocks.redsocks = [{
-    ip   = "0.0.0.0";
-    port = 12346;              # local port redsocks binds to
-    type = "socks5";
-    proxy = "127.0.0.1:10808"; # your existing SOCKS5 daemon
-    redirectCondition = true;
-    doNotRedirect = [
-      "-d 0.0.0.0/8" "-d 10.0.0.0/8" "-d 127.0.0.0/8"
-      "-d 169.254.0.0/16" "-d 172.16.0.0/12" "-d 192.168.0.0/16"
-      "-d ::1/128" "-d fc00::/7" "-d fe80::/10"
-    ];
-  }];
+  services.redsocks.redsocks = [
+    {
+      ip = "0.0.0.0";
+      port = 12346; # local port redsocks binds to
+      type = "socks5";
+      proxy = "192.168.0.201:10808"; # your existing SOCKS5 daemon
+      redirectCondition = true;
+      doNotRedirect = [
+        "-d 0.0.0.0/8"
+        "-d 10.0.0.0/8"
+        "-d 127.0.0.0/8"
+        "-d 169.254.0.0/16"
+        "-d 172.16.0.0/12"
+        "-d 192.168.0.0/16"
+        "-d ::1/128"
+        "-d fc00::/7"
+        "-d fe80::/10"
+      ];
+    }
+  ];
 
-    networking.nftables.enable  = true;
+  networking.firewall.trustedInterfaces = [ lanIf ];
 
-  networking.nftables.tables = {
+  networking.firewall.extraCommands = ''
+    # Fresh REDSOCKS chain
+    iptables -t nat -N REDSOCKS 2>/dev/null || true
+    iptables -t nat -F REDSOCKS
 
-    # === IPv4 NAT table =================================================
-    nat4 = {
-      family  = "ip";
-      content = ''
-        table ip nat4 {
+    # Exempt RFC-1918, multicast, loopback (same list as doNotRedirect)
+    ip46tables="iptables -t nat"
+    $ip46tables -A REDSOCKS -d 0.0.0.0/8      -j RETURN
+    $ip46tables -A REDSOCKS -d 10.0.0.0/8     -j RETURN
+    $ip46tables -A REDSOCKS -d 127.0.0.0/8    -j RETURN
+    $ip46tables -A REDSOCKS -d 169.254.0.0/16 -j RETURN
+    $ip46tables -A REDSOCKS -d 172.16.0.0/12  -j RETURN
+    $ip46tables -A REDSOCKS -d 192.168.0.0/16 -j RETURN
+    $ip46tables -A REDSOCKS -d 224.0.0.0/4    -j RETURN
+    $ip46tables -A REDSOCKS -d 240.0.0.0/4    -j RETURN
 
-          chain prerouting {
-            type nat hook prerouting priority dstnat; policy accept;
+    # Everything else → redsocks
+    $ip46tables -A REDSOCKS -p tcp -j REDIRECT --to-ports 12346
 
-            # only packets *from* the LAN interface enter here
-            iifname "${lanIf}" ip daddr {
-              0.0.0.0/8, 10.0.0.0/8, 127.0.0.0/8,
-              169.254.0.0/16, 172.16.0.0/12, 192.168.0.0/16,
-              224.0.0.0/4, 240.0.0.0/4
-            } return
+    # Hook chain for LAN-originating packets **before routing**
+    iptables -t nat -D PREROUTING -i ${lanIf} -p tcp -j REDSOCKS 2>/dev/null || true
+    iptables -t nat -A PREROUTING -i ${lanIf} -p tcp -j REDSOCKS   # :contentReference[oaicite:2]{index=2}
 
-            iifname "${lanIf}" tcp redirect to :12346
-          }
-
-          chain output {
-            type nat hook output priority -100; policy accept;
-
-            # exempt local / RFC-1918 for traffic generated *by this host*
-            ip daddr {
-              0.0.0.0/8, 10.0.0.0/8, 127.0.0.0/8,
-              169.254.0.0/16, 172.16.0.0/12, 192.168.0.0/16,
-              224.0.0.0/4, 240.0.0.0/4
-            } return
-
-            tcp redirect to :12346
-          }
-
-          chain postrouting {
-            type nat hook postrouting priority srcnat; policy accept;
-            oifname "${wanIf}" masquerade
-          }
-        }
-      '';
-    };
-
+    # …and (optionally) local applications too
+    iptables -t nat -D OUTPUT -p tcp -j REDSOCKS 2>/dev/null || true
+    iptables -t nat -A OUTPUT -p tcp -j REDSOCKS
+  '';
 
 }

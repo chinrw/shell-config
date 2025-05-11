@@ -9,7 +9,7 @@
   imports = [
     inputs.hardware.nixosModules.common-cpu-amd
     ./hardware.nix
-    ./proxy.nix
+    # ./proxy.nix
   ];
 
   users.users.chin39 = {
@@ -25,7 +25,7 @@
 
   networking = {
     interfaces = {
-      enp6s18 = {
+      ens18 = {
         useDHCP = false;
         ipv4.addresses = [
           {
@@ -37,7 +37,7 @@
     };
     defaultGateway = {
       address = "192.168.0.1";
-      interface = "enp6s18";
+      interface = "ens18";
     };
     hostName = hostname;
     networkmanager.enable = true;
@@ -50,6 +50,7 @@
     allowedTCPPorts = [
       10808
       10809
+      12346
     ];
     # allowedUDPPortRanges = [
     #   { from = 4000; to = 4007; }
