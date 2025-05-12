@@ -12,6 +12,7 @@
     ./hardware.nix
     ./wireguard.nix
     ../services/github-runners.nix
+    ../services/samba/wsl-server.nix
     # ./proxy.nix
   ];
 
@@ -57,6 +58,10 @@
       5244
       5246
       5432
+
+      8080 # open-webui
+      # kik
+      8888
 
       8096
       10808
@@ -125,11 +130,22 @@
     settingsFile = "/etc/xray/xray_client.conf";
   };
 
-  services.adguardhome = {
-    enable = true;
-    openFirewall = true;
-    settings = {
-      http_proxy = "http://127.0.0.1:10809";
+  services = {
+    adguardhome = {
+      enable = true;
+      openFirewall = true;
+      settings = {
+        http_proxy = "http://127.0.0.1:10809";
+      };
+    };
+    open-webui = {
+      enable = true;
+      package = pkgs.unstable.open-webui;
+      host = "192.168.0.240";
+      environment = {
+        http_proxy = "http://192.168.0.240:10809";
+        https_proxy = "http://192.168.0.240:10809";
+      };
     };
   };
 }
