@@ -22,14 +22,15 @@ let
       RCLONE_MOUNT_MULTI_THREAD_STREAMS ? "4",
       RCLONE_MOUNT_TIMEOUT ? "10m",
       RCLONE_MOUNT_TRANSFER ? "4",
-      RCLONE_MOUNT_DIR_CACHE_TIME ? "60m",
+      RCLONE_MOUNT_DIR_CACHE_TIME ? "5m",
       RCLONE_MOUNT_MAX_READ_AHEAD ? "256k",
-      RCLONE_MOUNT_POLL_INTERVAL ? "30s",
+      RCLONE_MOUNT_POLL_INTERVAL ? "1m0s",
+      RCLONE_MOUNT_ATTR_TIMEOUT ? "15s",
       RCLONE_MOUNT_UMASK ? "022",
       RCLONE_MOUNT_VFS_CACHE_MAX_AGE ? "1h0m0s",
       RCLONE_MOUNT_VFS_CACHE_MAX_SIZE ? "128G",
       RCLONE_MOUNT_VFS_CACHE_MODE ? "writes",
-      RCLONE_MOUNT_VFS_CACHE_POLL_INTERVAL ? "1m0s",
+      RCLONE_MOUNT_VFS_CACHE_POLL_INTERVAL ? "1m30s",
       RCLONE_MOUNT_VFS_READ_CHUNK_SIZE ? "128M",
       RCLONE_MOUNT_VFS_READ_CHUNK_SIZE_LIMIT ? "off",
       RCLONE_MOUNT_VFS_WRITE_BACK ? "1m",
@@ -71,7 +72,7 @@ let
                         --checkers=16 \
                         --bwlimit=${RCLONE_BWLIMIT} \
                         --cache-info-age=60m \
-                        --attr-timeout=1s \
+                        --attr-timeout=${RCLONE_MOUNT_ATTR_TIMEOUT} \
                         --timeout=${RCLONE_MOUNT_TIMEOUT} \
                         --daemon-timeout=${RCLONE_MOUNT_DAEMON_TIMEOUT} \
                         --dir-cache-time=${RCLONE_MOUNT_DIR_CACHE_TIME} \
@@ -90,6 +91,7 @@ let
                         --vfs-cache-poll-interval=${RCLONE_MOUNT_VFS_CACHE_POLL_INTERVAL} \
                         --vfs-read-chunk-size=${RCLONE_MOUNT_VFS_READ_CHUNK_SIZE} \
                         --vfs-read-chunk-size-limit=${RCLONE_MOUNT_VFS_READ_CHUNK_SIZE_LIMIT} \
+                        --write-back-cache \
                         ${REMOTE_NAME}:${REMOTE_PATH} ${MOUNT_DIR}
           '';
           ExecStartPost = "${pkgs.bash}/bin/bash -c ${POST_MOUNT_SCRIPT}";
