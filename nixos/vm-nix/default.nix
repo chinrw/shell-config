@@ -52,7 +52,7 @@
   networking.firewall = {
     enable = true;
     allowedTCPPorts = [
-      
+
       # Alist firewall port
       5244
       5246
