@@ -62,10 +62,13 @@
       10808
       10809
     ];
-    # allowedUDPPortRanges = [
-    #   { from = 4000; to = 4007; }
-    #   { from = 8000; to = 8010; }
-    # ];
+    allowedUDPPorts = [
+      53
+    ];
+    allowedUDPPortRanges = [
+      # { from = 4000; to = 4007; }
+      # { from = 8000; to = 8010; }
+    ];
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
@@ -120,5 +123,13 @@
   services.xray = {
     enable = true;
     settingsFile = "/etc/xray/xray_client.conf";
+  };
+
+  services.adguardhome = {
+    enable = true;
+    openFirewall = true;
+    settings = {
+      http_proxy = "http://127.0.0.1:10809";
+    };
   };
 }
