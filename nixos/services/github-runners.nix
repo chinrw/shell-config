@@ -15,7 +15,7 @@ let
     "vm-nix" = {
       name = "Constantinople";
       tokenSecret = config.sops.secrets."github-runners/Constantinople".path;
-      proxy = "http://127.0.0.1:10809";
+      proxy = "http://192.168.0.240:10809";
     };
   };
 
@@ -39,8 +39,11 @@ in
       extraLabels = [ "nix" ];
       user = "midashood";
       replace = true;
+      workDir = "/var/lib/github-runner/${thisHostCfg.name}";
       extraEnvironment = lib.mkIf (thisHostCfg ? proxy) {
         all_proxy = thisHostCfg.proxy;
+        https_proxy = thisHostCfg.proxy;
+        http_proxy = thisHostCfg.proxy;
       };
     };
   };
