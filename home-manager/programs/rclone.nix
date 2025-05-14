@@ -15,7 +15,7 @@ let
       POST_MOUNT_SCRIPT ? ''""'',
       RCLONE_RC_ON ? "false",
       RCLONE_TEMP_DIR ? "/tmp/rclone/%u/${name}",
-      RCLONE_TPSLIMIT ? "2.5",
+      RCLONE_TPSLIMIT ? "0",
       RCLONE_TPSLIMIT_BURST ? "1",
       RCLONE_BWLIMIT ? "0",
       RCLONE_MOUNT_DAEMON_TIMEOUT ? "0",
