@@ -31,6 +31,7 @@ plugin.
   - [Arrow (`arrow`)](#arrow-arrow)
 - [New commands](#new-commands)
   - [Parent arrow (`parent_arrow`)](#parent-arrow-parent_arrow)
+  - [Archive (`archive`)](#archive-archive)
   - [Editor (`editor`)](#editor-editor)
   - [Pager (`pager`)](#pager-pager)
 - [Usage](#usage)
@@ -40,7 +41,7 @@ plugin.
 
 ## Requirements
 
-- [Yazi][yazi-link] v25.3.2+
+- [Yazi][yazi-link] v25.4.8+
 - [`7z` or `7zz` command][7z-link]
 - [`file` command][file-command-link]
 
@@ -79,12 +80,16 @@ ya pack -u
 | `extract_retries`                   | An integer, like `1`, `3`, `10`, etc.                     | `3`       | This option determines how many times the plugin will retry opening an encrypted or password-protected archive when a wrong password is given. This value plus 1 is the total number of times the plugin will try opening an encrypted or password-protected archive.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `recursively_extract_archives`      | `true` or `false`                                         | `true`    | This option determines whether the plugin will extract all archives inside an archive file recursively. If this option is set to `false`, archive files inside an archive will not be extracted, and you will have to manually extract them yourself.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `preserve_file_permissions`         | `true` or `false`                                         | `false`   | This option determines whether to preserve the file permissions of the items in the extracted archive. Setting this option to `true` will preserve the file permissions of the extracted items. It requires the [`tar` command][gnu-tar-link] and will only work on `tar` archives, or tarballs, as [`7z`][7z-link] does not support preserving file permissions. You will receive a warning if you have this option set but [`tar`][gnu-tar-link] is not installed. Do note that there are significant security implications of setting this option to `true`, as any executable file or binary in an archive can be immediately executed after it is extracted, which can compromise your system if you extract a malicious archive. As such, the default value is `false`, and it is strongly recommended to leave it as such. |
+| `encrypt_archives`                  | `true` or `false`                                         | `false`   | This option determines whether the plugin will encrypt the archives it creates. If this option is set to `true`, the plugin will prompt for the archive password when creating an archive to encrypt it with. The plugin will prompt twice for the password, and will check both of them to see if they match. If they do, the password entered is set as the archive password. Otherwise, the plugin will show an error stating the passwords do not match, and prompt for two passwords again. Cancelling either of the prompts will cancel the whole process.                                                                                                                                                                                                                                                                  |
+| `encrypt_archive_headers`           | `true` or `false`                                         | `false`   | This option determines whether the plugin will encrypt the headers of the archives it creates. If this option is set to `true`, the plugin will encrypt the headers of all `7z` archives, which means the file list cannot be previewed and Yazi will not be able to preview the contents of the archive. This encryption is only available to `7z` archives, so the plugin will show a warning message when this option is used, but the selected archive file type, does not support header encryption, like a `zip` archive, but will continue with the creation of the encrypted archive. This option has no effect when the archive is not encrypted, which is when `encrypt_archives` is set to `false`.                                                                                                                    |
+| `reveal_created_archive`            | `true` or `false`                                         | `true`    | This option determines whether the plugin will automatically hover over the created archive once created.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `remove_archived_files`             | `true` or `false`                                         | `false`   | This option determines whether the plugin will automatically remove the files that were added to the created archive.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `must_have_hovered_item`            | `true` or `false`                                         | `true`    | This option stops the plugin from executing any commands when there is no hovered item.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `skip_single_subdirectory_on_enter` | `true` or `false`                                         | `true`    | Skip directories when there is only one subdirectory and no other files when entering directories. This behaviour can be turned off by passing the `--no-skip` flag to the `enter` or `open` commands.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `skip_single_subdirectory_on_leave` | `true` or `false`                                         | `true`    | Skip directories when there is only one subdirectory and no other files when leaving directories. This behaviour can be turned off by passing the `--no-skip` flag to the `leave` command.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `smooth_scrolling`                  | `true` or `false`                                         | `false`   | Self-explanatory, this option enables smooth scrolling.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `scroll_delay`                      | A floating point number, like `0.02`, `0.05`, `0.1`, etc. | `0.02`    | The delay, in seconds, between each call of the `arrow` command to scroll through the file list. The smaller the `scroll_delay`, the faster the file list is scrolled. Avoid setting a `scroll_delay` that is more than `1` second. This is due to the plugin being asynchronous, which will result in the plugin continuing to call the `arrow` command even when the directory has changed, or when you are in a different application that doesn't block Yazi, resulting in unexpected behaviour.                                                                                                                                                                                                                                                                                                                              |
-| `wraparound_file_navigation`        | `true` or `false`                                         | `false`   | Wrap around from the bottom to the top or from the top to the bottom when using the `arrow` or `parent_arrow` command to navigate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `wraparound_file_navigation`        | `true` or `false`                                         | `true`    | Wrap around from the bottom to the top or from the top to the bottom when using the `arrow` or `parent_arrow` command to navigate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 If you would like to use the default configuration, which is shown below,
 you don't need to add anything to your `~/.config/yazi/init.lua`
@@ -111,12 +116,16 @@ require("augment-command"):setup({
     extract_retries = 3,
     recursively_extract_archives = true,
     preserve_file_permissions = false,
+    encrypt_archives = false,
+    encrypt_archive_headers = false,
+    reveal_created_archive = true,
+    remove_archived_files = false,
     must_have_hovered_item = true,
     skip_single_subdirectory_on_enter = true,
     skip_single_subdirectory_on_leave = true,
     smooth_scrolling = false,
     scroll_delay = 0.02,
-    wraparound_file_navigation = false,
+    wraparound_file_navigation = true,
 })
 ```
 
@@ -139,8 +148,9 @@ require("augment-command"):setup({
     open_file_after_creation = true,
     enter_directory_after_creation = true,
     extract_retries = 5,
+    encrypt_archives = true,
     smooth_scrolling = true,
-    wraparound_file_navigation = true,
+    wraparound_file_navigation = false,
 })
 ```
 
@@ -148,7 +158,8 @@ require("augment-command"):setup({
 
 All commands that can operate on multiple files and directories,
 like `open`, `rename`, `remove` and `shell`,
-as well as the new commands `extract`, `editor` and `pager`,
+as well as the new commands `extract`, `archive`,
+`editor` and `pager`,
 now determine an item group to operate on.
 By default, the command will operate on the hovered item,
 unless the hovered item is also selected,
@@ -182,9 +193,11 @@ then it will operate on the selected items.
 
 - When `smart_enter` is set to `true`,
   it calls the `enter` command when the hovered item is a directory.
-- `--smart` flag to use one command to `open` files and `enter` directories.
-  This flag will cause the `open` command to call the `enter` command when
-  the hovered item is a directory even when `smart_enter` is set to `false`.
+- `--smart` flag to use one command to `open` files
+  and `enter` directories.
+  This flag will cause the `open` command to call
+  the `enter` command when the hovered item is a directory
+  even when `smart_enter` is set to `false`.
   This allows you to set a key to use this behaviour
   with the `open` command instead of using it for
   every `open` command.
@@ -221,16 +234,18 @@ then it will operate on the selected items.
 
 ### Extract (`extract`)
 
-- Technically this is a new command, as Yazi does not provide an `extract`
-  command. However, Yazi does provide a built-in plugin called `extract`,
+- Technically this is a new command,
+  as Yazi does not provide an `extract` command.
+  However, Yazi does provide a built-in plugin called `extract`,
   so this command is included in the
   [augmented commands section](#augmented-commands) instead of the
   [new commands section](#new-commands).
 - This command requires the [`7z` or `7zz` command][7z-link] to
   be present to extract the archives, as well as the
   [`file` command][file-command-link] to check if a file is an archive or not.
-- You are not meant to use this command directly. However, you can do so
-  if you like, as the extract command is also augmented as stated in
+- You are not meant to use this command directly.
+  However, you can do so if you like,
+  as the extract command is also augmented as stated in
   [this section above][augment-section].
 
   Videos:
@@ -251,21 +266,24 @@ then it will operate on the selected items.
 
     [extract-behaviour-video]
 
-- Instead, this command is intended to replace the built-in `extract` plugin,
-  which is used for the `extract` opener. This way, you can use the
+- Instead, this command is intended to replace the
+  built-in `extract` plugin, which is used for the `extract` opener.
+  This way, you can use the
   features that come with the augmented `extract` command, like
   recursively extracting archives, with the `open` command.
-  This is the intended way to use this command, as the `open` command is
-  meant to be the command that opens everything, so it is a bit
-  counterintuitive to have to use a separate key to extract archives.
+  This is the intended way to use this command,
+  as the `open` command is meant to be the command
+  that opens everything, so it is a bit counterintuitive
+  to have to use a separate key to extract archives.
 
   To replace the built-in `extract` plugin, copy the
   [`extract` openers section][yazi-yazi-toml-extract-openers]
   in [Yazi's default `yazi.toml`][yazi-yazi-toml] into your `yazi.toml`,
-  which is located at `~/.config/yazi/yazi.toml` for Linux and macOS, and
-  `%AppData%\yazi\config\yazi.toml` file on Windows.
-  Make sure that the `extract` openers are under the `opener` key in your
-  `yazi.toml`. Then replace `extract` with `augmented-extract`,
+  which is located at `~/.config/yazi/yazi.toml` for Linux and macOS,
+  and `%AppData%\yazi\config\yazi.toml` file on Windows.
+  Make sure that the `extract` openers are
+  under the `opener` key in your `yazi.toml`.
+  Then replace `extract` with `augmented-extract`,
   and you will be using the plugin's `extract` command instead of
   Yazi's built-in `extract` plugin.
 
@@ -282,7 +300,8 @@ then it will operate on the selected items.
   ]
   ```
 
-  If that exceeds your editor's line length limit, another way to do it is:
+  If that exceeds your editor's line length limit,
+  another way to do it is:
 
   ```toml
   # ~/.config/yazi/yazi.toml for Linux and macOS
@@ -331,7 +350,7 @@ then it will operate on the selected items.
 
   Video:
 
-  [extract-encrypted-archive]
+  [extract-encrypted-archive-video]
 
 - The `preserve_file_permissions` configuration option applies to
   the `extract` command, and requires the [`tar` command][gnu-tar-link]
@@ -353,24 +372,43 @@ then it will operate on the selected items.
   if it finds the [`gtar` command][gnu-tar-link] instead
   of the [Apple provided `tar` command][apple-tar-link].
 
-  Setting the `preserve_file_permissions` configuration option to `true`
-  will preserve the file permissions of the files contained in a `tar`
-  archive or tarball.
+  Setting the `preserve_file_permissions` configuration
+  option to `true` will preserve the file permissions
+  of the files contained in a `tar` archive or tarball.
 
-  This has considerable security implications, as executables extracted from
-  all `tar` archives can be immediately executed on your system, possibly
-  compromising your system if you extract a malicious `tar` archive.
-  Hence, this option is set to `false` by default, and should be left as such.
-  This option is provided for your convenience, but do seriously consider
-  if such convenience is worth the risk of extracting a malicious `tar`
-  archive that executes malware on your system.
+  This has considerable security implications,
+  as executables extracted from
+  all `tar` archives can be immediately executed on your system,
+  possibly compromising your system if you extract a
+  malicious `tar` archive.
+  Hence, this option is set to `false` by default,
+  and should be left as such.
+  This option is provided for your convenience,
+  but do seriously consider if such convenience
+  is worth the risk of extracting a malicious `tar` archive
+  that executes malware on your system.
+
+- `--reveal` flag to automatically hover the files
+  that have been extracted.
+
+  Video:
+
+  [extract-reveal-extracted-item-video]
+
+- `--remove` flag to automatically remove the archive
+  after the files have been extracted.
+
+  Video:
+
+  [extract-remove-extracted-archive-video]
 
 ### Enter (`enter`)
 
 - When `smart_enter` is set to `true`,
   it calls the `open` command when the hovered item is a file.
-- `--smart` flag to use one command to `enter` directories and `open` files.
-  This flag will cause the `enter` command to call the `open` command when
+- `--smart` flag to use one command to `enter`
+  directories and `open` files. This flag will cause
+  the `enter` command to call the `open` command when
   the selected items or the hovered item is a file,
   even when `smart_enter` is set to `false`.
   This allows you to set a key to use this behaviour
@@ -462,30 +500,36 @@ then it will operate on the selected items.
 
 ### Create (`create`)
 
-- You should use Yazi's default `create` command instead of this augmented
-  `create` command if you don't want the paths without file extensions to
-  be created as directories by default, and you don't care about automatically
+- You should use Yazi's default `create` command instead
+  of this augmented `create` command if you
+  don't want the paths without file extensions to be created
+  as directories by default, and you don't care about automatically
   opening and entering the created file and directory respectively.
-- The `create` command has a different behaviour from Yazi's `create` command.
+- The `create` command has a different behaviour from
+  Yazi's `create` command.
   When the path given to the command doesn't have a file extension,
   the `create` command will create a directory instead of a file,
   unlike Yazi's `create` command. Other that this major difference,
-  the `create` command functions identically to Yazi's `create` command,
+  the `create` command functions identically
+  to Yazi's `create` command,
   which means that you can use a trailing `/` on Linux and macOS,
   or `\` on Windows to create a directory. It will also recursively
   create directories to ensure that the path given exists.
-  It also supports all the options supported by Yazi's `create` command,
+  It also supports all the options supported
+  by Yazi's `create` command,
   so you can pass them to the command and expect the same behaviour.
 - The rationale for this behaviour is that creating a path without
-  a file extension usually means you intend to create a directory instead
-  of a file, as files usually have file extensions.
+  a file extension usually means you intend to
+  create a directory instead of a file,
+  as files usually have file extensions.
 
   Video:
 
   [create-behaviour-video]
 
-- When `open_file_after_creation` is set to `true`, the `create` command
-  will `open` the created file. This behaviour can also be enabled by
+- When `open_file_after_creation` is set to `true`,
+  the `create` command will `open` the created file.
+  This behaviour can also be enabled by
   passing the `--open` flag to the `create` command.
 
   Video:
@@ -501,16 +545,17 @@ then it will operate on the selected items.
 
   [create-and-enter-directories-video]
 
-  To enable both behaviours with flags, just pass both the `--open` flag
-  and the `--enter` flag to the `create` command.
+  To enable both behaviours with flags, just pass both the
+  `--open` flag and the `--enter` flag to the `create` command.
 
   Video:
 
   [create-and-open-files-and-directories-video]
 
 - If you would like to use the behaviour of Yazi's `create` command,
-  probably because you would like to automatically open and enter the created
-  file and directory respectively, you can either set
+  probably because you would like to automatically open
+  and enter the created file and directory respectively,
+  you can either set
   `use_default_create_behaviour` to `true`,
   or pass the `--default-behaviour` flag to the `create` command.
 
@@ -545,9 +590,9 @@ then it will operate on the selected items.
     [shell-behaviour-video]
 
 - To use this command, the syntax is exactly the same as the default
-  `shell` command provided by Yazi. You just provide the command you want and
-  provide any Yazi shell variable, which is documented
-  [here][yazi-shell-variables].
+  `shell` command provided by Yazi. You just provide
+  the command you want and provide any Yazi shell variable,
+  which is documented [here][yazi-shell-variables].
   The plugin will automatically replace the shell variable you give
   with the file paths for the item group before executing the command.
 
@@ -577,8 +622,10 @@ then it will operate on the selected items.
   desc = "Open the pager"
   ```
 
-  It is also used in the `editor` command, since you usually wouldn't use
-  your text editor to open directories, especially if you are already using
+  It is also used in the `editor` command,
+  since you usually wouldn't use
+  your text editor to open directories,
+  especially if you are already using
   a terminal file manager like [Yazi][yazi-link].
   The `editor` command is essentially:
 
@@ -598,12 +645,13 @@ then it will operate on the selected items.
 
 #### Passing arguments to the `shell` command
 
-Ideally, you will want to avoid using backslashes to escape the shell command
-arguments, so here are a few ways to do it:
+Ideally, you will want to avoid using backslashes to escape
+the shell command arguments, so here are a few ways to do it:
 
 1. Shell arguments that don't have special shell variables
-   on Linux and macOS, like `$SHELL`, or don't have special shell characters
-   like `>`, `|` or spaces, need not be quoted with double quotes `"`
+   on Linux and macOS, like `$SHELL`, or don't have
+   special shell characters like `>`, `|` or spaces,
+   need not be quoted with double quotes `"`
    or single quotes `'` respectively.
    For example:
 
@@ -616,15 +664,18 @@ arguments, so here are a few ways to do it:
    desc = "Open with bat"
    ```
 
-   Even though the `$@` argument above is considered a shell variable in Linux
-   and macOS, the plugin automatically replaces it with the full path
-   of the items in the item group, so it does not need to be quoted with
+   Even though the `$@` argument above is considered
+   a shell variable in Linux and macOS,
+   the plugin automatically replaces it with the full path
+   of the items in the item group,
+   so it does not need to be quoted with
    double quotes `"`, as it is expanded by the plugin,
    and not meant to be expanded by the shell.
 
-2. If the arguments to the `shell` command have special shell variables
-   on Linux and macOS, like `$SHELL`, or special shell characters like
-   `>`, `|`, or spaces, use `--` to denote the end of the flags and options
+2. If the arguments to the `shell` command have special
+   shell variables on Linux and macOS, like `$SHELL`,
+   or special shell characters like `>`, `|`, or spaces,
+   use `--` to denote the end of the flags and options
    passed to the `shell` command.
    For example:
 
@@ -646,10 +697,11 @@ arguments, so here are a few ways to do it:
    desc = "Open a shell and say hello inside the opened shell"
    ```
 
-3. If the arguments passed to the `shell` command themselves contain arguments
-   that have special shell variables on Linux and macOS, like `$SHELL`,
-   or special shell characters like `>`, `|`, or spaces,
-   use the triple single quote `'''` delimiter for the `run` string.
+3. If the arguments passed to the `shell` command themselves
+   contain arguments that have special shell variables on
+   Linux and macOS, like `$SHELL`, or special shell characters
+   like `>`, `|`, or spaces, use the triple single quote
+   `'''` delimiter for the `run` string.
 
    ```toml
    # ~/.config/yazi/keymap.toml on Linux and macOS
@@ -687,13 +739,16 @@ arguments, so here are a few ways to do it:
    desc = "Email files using Mozilla Thunderbird"
    ```
 
-   Once again, the `$@` variable above does not need to be quoted in double
-   quotes `"` as it is expanded by the plugin instead of the shell.
+   Once again, the `$@` variable above does not need to be quoted
+   in double quotes `"` as it is expanded by the plugin
+   instead of the shell.
 
-If the above few methods to avoid using backslashes within your shell command
-to escape the quotes are still insufficient for your use case,
-it is probably more appropriate to write a shell script in a separate file
-and execute that instead of writing the shell command inline
+If the above few methods to avoid using backslashes
+within your shell command to escape the quotes are
+still insufficient for your use case,
+it is probably more appropriate to write a shell script
+in a separate file and execute that instead of
+writing the shell command inline
 in your `keymap.toml` file.
 
 ### Paste (`paste`)
@@ -709,7 +764,8 @@ in your `keymap.toml` file.
 - `--smart` flag to enable pasting in the hovered directory
   without entering the directory.
   This flag will cause the `paste` command to paste items
-  into the hovered directory even when `smart_paste` is set to `false`.
+  into the hovered directory even
+  when `smart_paste` is set to `false`.
   This allows you to set a key to use this behaviour
   with the `paste` command instead of using it for
   every `paste` command.
@@ -784,26 +840,31 @@ in your `keymap.toml` file.
 
 ### Quit (`quit`)
 
-- You should use Yazi's default `quit` command instead of this augmented
-  command if you don't want to have a prompt when quitting Yazi
-  with multiple tabs open.
-  This command has a visual side effect of showing a confirmation prompt
-  for a split second before closing Yazi when quitting Yazi
-  with only 1 tab open, which can be annoying.
-  This confirmation prompt is due to the plugin still running for a bit
-  after the `quit` command is emitted, causing Yazi to prompt you for
+- You should use Yazi's default `quit` command instead of this
+  augmented command if you don't want to have a prompt
+  when quitting Yazi with multiple tabs open.
+  This command has a visual side effect of showing a
+  confirmation prompt for a split second before closing Yazi
+  when quitting Yazi with only 1 tab open,
+  which can be annoying.
+  This confirmation prompt is due to the plugin still running
+  for a bit after the `quit` command is emitted,
+  causing Yazi to prompt you for
   confirmation as there are tasks still running.
-  However, once the plugin has stopped running, which is a split second
-  after the `quit` command is emitted, Yazi will exit.
+  However, once the plugin has stopped running,
+  which is a split second after the `quit` command is emitted,
+  Yazi will exit.
   You can observe this visual effect in the video demonstration below.
-- When `confirm_on_quit` is set to `true`, the plugin will prompt you for
-  confirmation when there is more than 1 tab open. Otherwise, it will
-  immediately quit Yazi, just like the default `quit` command.
-- `--confirm` flag to get the plugin to prompt you for confirmation when
-  quitting with multiple tabs open.
-  This flag will cause the `quit` command to prompt you for confirmation
-  when quitting with multiple tabs open even when `confirm_on_quit` is
-  set to `false`.
+- When `confirm_on_quit` is set to `true`,
+  the plugin will prompt you for
+  confirmation when there is more than 1 tab open.
+  Otherwise, it will immediately quit Yazi,
+  just like the default `quit` command.
+- `--confirm` flag to get the plugin to prompt you
+  for confirmation when quitting with multiple tabs open.
+  This flag will cause the `quit` command to
+  prompt you for confirmation when quitting with multiple tabs open
+  even when `confirm_on_quit` is set to `false`.
   This allows you to set a specific key to use this behaviour with the
   `quit` command instead of using it for every `quit` command.
 
@@ -828,14 +889,18 @@ in your `keymap.toml` file.
 
   [wraparound-arrow-video]
 
-- When both `smooth_scrolling` and `wraparound_file_navigation` are set to
-  `true`, the command will smoothly scroll the wraparound transition as well.
+- When both `smooth_scrolling` and `wraparound_file_navigation`
+  are set to `true`,
+  the command will smoothly scroll the wraparound transition as well.
 
   Video:
 
   [smooth-wraparound-arrow-video]
 
-- Otherwise, it'll behave like the default `arrow` command.
+- Otherwise, it'll behave like the default `arrow 1` command.
+- `--no-wrap` flag to prevent the `arrow` command
+  from wrapping around,
+  even when `wraparound_file_navigation` is set to `true`.
 
 ## New commands
 
@@ -865,8 +930,9 @@ in your `keymap.toml` file.
 
   [wraparound-parent-arrow-video]
 
-- When both `smooth_scrolling` and `wraparound_file_navigation` are set to
-  `true`, the command will smoothly scroll the wraparound transition as well.
+- When both `smooth_scrolling` and `wraparound_file_navigation`
+  are set to `true`,
+  the command will smoothly scroll the wraparound transition as well.
 
   Video:
 
@@ -893,6 +959,71 @@ in your `keymap.toml` file.
   run = ["leave", "arrow 1", "enter"]
   desc = "Move down in the parent directory"
   ```
+
+- `--no-wrap` flag to prevent the `parent_arrow` command from
+  wrapping around,
+  even when `wraparound_file_navigation` is set to `true`.
+
+### Archive (`archive`)
+
+- The `archive` command adds the selected or hovered items
+  to an archive, with the plugin prompting for an archive name.
+  The archive file extension given will be used to determine
+  the type of archive to create.
+- This command is also augmented as stated in
+  [this section above][augment-section].
+
+  Videos:
+
+  - When `must_have_hovered_item` is `true`:
+
+    [archive-must-have-hovered-item-video]
+
+  - When `must_have_hovered_item` is `false`:
+
+    [archive-hovered-item-optional-video]
+
+  - When `prompt` is set to `true`:
+
+    [archive-prompt-video]
+
+  - When `prompt` is set to `false`:
+
+    [archive-behaviour-video]
+
+- `--encrypt` flag to encrypt the archive with the given password,
+  which applies even when `encrypt_archives` is set to `false`.
+- `--encrypt-headers` flag to encrypt the archive headers,
+  which applies even when `encrypt_archive_headers`
+  is set to `false`.
+  Note that this option only works with `7z` archives,
+  other types of archives like `zip` archives
+  do not support header encryption.
+  The plugin will show a warning if the archive type
+  does not support header encryption and the flag is passed,
+  but will continue with the creation of the encrypted archive.
+  This option has no effect if either `encrypt_archives`
+  is set to `false` or the `--encrypt` flag isn't given.
+
+  Video:
+
+  [archive-encrypt-files-video]
+
+- `--reveal` flag to automatically hover the archive file
+  that is created, which applies even when
+  `reveal_created_archive` is set to `false`.
+
+  Video:
+
+  [archive-reveal-created-archive-video]
+
+- `--remove` flag to automatically remove the files
+  that are added to the archive, which applies even when
+  `remove_archived_files` is set to `false`.
+
+  Video:
+
+  [archive-remove-archived-files-video]
 
 ### Editor (`editor`)
 
@@ -1059,98 +1190,110 @@ You can view the full licence in the [`LICENSE`][Licence] file.
 
 <!-- Open command -->
 
-[open-prompt-video]: https://github.com/user-attachments/assets/ad51d25b-dc68-48f6-bd14-20dc0b68fb0c
-[open-behaviour-video]: https://github.com/user-attachments/assets/0b84e0e8-e483-4c3c-8408-4f672a34e249
-[open-auto-extract-archives-video]: https://github.com/user-attachments/assets/ae7e8b33-1f41-4ee7-8f5b-18fb4d455709
-[open-recursively-extract-archives-video]: https://github.com/user-attachments/assets/99119e03-e770-4442-b529-c5586cc04bd0
+[open-prompt-video]: https://github.com/user-attachments/assets/624da7a1-99cc-428d-acbb-d4ce684f92cb
+[open-behaviour-video]: https://github.com/user-attachments/assets/202f1c07-2001-49d7-a9d7-7a4e7b102c41
+[open-auto-extract-archives-video]: https://github.com/user-attachments/assets/dad0572e-15d7-4dfd-bf48-00851af66b6e
+[open-recursively-extract-archives-video]: https://github.com/user-attachments/assets/b8e929ce-32cd-4f7e-ad97-ffe94bdacd71
 
 <!-- Extract command -->
 
-[extract-must-have-hovered-item-video]: https://github.com/user-attachments/assets/c7d4ef2f-5455-4c06-a84e-bfc71c31bfea
-[extract-hovered-item-optional-video]: https://github.com/user-attachments/assets/64536ddb-2309-4442-b5a3-73b334d68161
-[extract-prompt-video]: https://github.com/user-attachments/assets/40ad3b74-0036-4835-bfd8-cec6259504c4
-[extract-behaviour-video]: https://github.com/user-attachments/assets/6c7e7b3e-1be5-42ab-b7d9-987dcc10cc88
-[extract-recursively-extract-archives-video]: https://github.com/user-attachments/assets/6b5aef9d-9673-458b-8555-0c84570656dd
-[extract-encrypted-archive]: https://github.com/user-attachments/assets/9c1c1377-6693-409d-840e-1eb128cf3ccd
+[extract-must-have-hovered-item-video]: https://github.com/user-attachments/assets/6b9f347f-34ce-4ca1-8e3a-24dbeb297dc7
+[extract-hovered-item-optional-video]: https://github.com/user-attachments/assets/1596f9f8-e0f5-49e3-964c-6f94b1c24055
+[extract-prompt-video]: https://github.com/user-attachments/assets/568aef53-dc90-420e-ada9-171f56388ee1
+[extract-behaviour-video]: https://github.com/user-attachments/assets/d6ebf5fb-45d3-4ae0-adab-3e89b1ec2f4e
+[extract-recursively-extract-archives-video]: https://github.com/user-attachments/assets/d8978671-9149-45b7-9a92-21c1697baa7d
+[extract-encrypted-archive-video]: https://github.com/user-attachments/assets/24701662-0c19-4478-b576-75d9284cd695
+[extract-reveal-extracted-item-video]: https://github.com/user-attachments/assets/170bf187-dc2a-4310-aa86-5dc9a864aced
+[extract-remove-extracted-archive-video]: https://github.com/user-attachments/assets/9b2e625a-a7f8-4678-8a26-265a7d3b8e0c
 
 <!-- Enter command -->
 
-[smart-enter-video]: https://github.com/user-attachments/assets/85b043bc-f152-44a9-9627-d0282a6481ef
-[enter-skip-single-subdirectory-video]: https://github.com/user-attachments/assets/70b3f595-31f8-474d-a623-fc4d927566ec
+[smart-enter-video]: https://github.com/user-attachments/assets/be950544-a58f-495a-a7e8-e37e99011070
+[enter-skip-single-subdirectory-video]: https://github.com/user-attachments/assets/1bd30cb0-611a-44f2-9839-968287af4455
 
 <!-- Leave command -->
 
-[leave-skip-single-subdirectory-video]: https://github.com/user-attachments/assets/3f0f98d1-519e-48c7-90d8-15e57986cc89
+[leave-skip-single-subdirectory-video]: https://github.com/user-attachments/assets/735de8f7-6abb-4929-8e3d-bba470fc6063
 
 <!-- Rename command -->
 
-[rename-must-have-hovered-item-video]: https://github.com/user-attachments/assets/0ec0ad97-d0f0-441d-86a7-73a93a11a683
-[rename-hovered-item-optional-video]: https://github.com/user-attachments/assets/9bc918fa-c8b6-4f09-954c-7631a61032a0
-[rename-prompt-video]: https://github.com/user-attachments/assets/69da784c-0408-468b-bc34-f2271d0a8cdc
-[rename-behaviour-video]: https://github.com/user-attachments/assets/44ea4d01-3d66-4ecd-82ac-4b4f874d2124
+[rename-must-have-hovered-item-video]: https://github.com/user-attachments/assets/b0f608df-7e8d-4e5f-958f-b3df9d0a92fa
+[rename-hovered-item-optional-video]: https://github.com/user-attachments/assets/9613d238-d8e3-4e6f-b073-f847a4f331a1
+[rename-prompt-video]: https://github.com/user-attachments/assets/6ad26e1b-dab1-4e8e-92af-bfcbf6c5232c
+[rename-behaviour-video]: https://github.com/user-attachments/assets/fdd70919-f164-4676-9046-6a4b95cd86ed
 
 <!-- Remove command -->
 
-[remove-must-have-hovered-item-video]: https://github.com/user-attachments/assets/76c511c8-d3b6-494c-9fcf-f4035325bca3
-[remove-hovered-item-optional-video]: https://github.com/user-attachments/assets/4502d34d-1432-43ee-99b1-234085f795b5
-[remove-prompt-video]: https://github.com/user-attachments/assets/9b7f774c-f982-4e57-a895-6368f3043311
-[remove-behaviour-video]: https://github.com/user-attachments/assets/de57f05d-582d-44d3-9908-5c3f370e7119
+[remove-must-have-hovered-item-video]: https://github.com/user-attachments/assets/fa0aeb4e-ee6a-4e34-9c6f-4d4bc0afd111
+[remove-hovered-item-optional-video]: https://github.com/user-attachments/assets/f42167dc-df59-451d-b26b-16e75be93fad
+[remove-prompt-video]: https://github.com/user-attachments/assets/dd901db3-1ab4-4cb7-bb3f-8aec335c7b94
+[remove-behaviour-video]: https://github.com/user-attachments/assets/d4087826-3480-486d-98ff-708bca548270
 
 <!-- Create command -->
 
-[create-and-enter-directories-video]: https://github.com/user-attachments/assets/70ffbdc9-d05f-4cb7-bf18-b219139221ab
-[create-and-open-files-video]: https://github.com/user-attachments/assets/b3c4ae5a-41be-4d6a-8cb9-59450a4b77c4
-[create-and-open-files-and-directories-video]: https://github.com/user-attachments/assets/f645fa80-eb78-4bee-b234-a0fa8b1d5610
-[create-behaviour-video]: https://github.com/user-attachments/assets/0d73e2a1-ed13-4601-b9b5-3e696d69621c
-[create-default-behaviour-video]: https://github.com/user-attachments/assets/452300b3-71d1-46ce-aa65-bed39ff2b92d
+[create-and-enter-directories-video]: https://github.com/user-attachments/assets/0604e9a3-7c23-4e9c-963a-6e83955fe7ae
+[create-and-open-files-video]: https://github.com/user-attachments/assets/2feee5e5-1d56-4150-8f08-101338392950
+[create-and-open-files-and-directories-video]: https://github.com/user-attachments/assets/629a6923-6fa5-4b85-93b7-3b5495c8bbbb
+[create-behaviour-video]: https://github.com/user-attachments/assets/55b485ea-e49e-4629-b077-4f2a81031f38
+[create-default-behaviour-video]: https://github.com/user-attachments/assets/acf04af0-107f-4ebb-9ed2-2a03847071a5
 
 <!-- Shell command -->
 
-[shell-must-have-hovered-item-video]: https://github.com/user-attachments/assets/dec6a8f1-1a7a-4955-aab1-46bf185aa0c5
-[shell-hovered-item-optional-video]: https://github.com/user-attachments/assets/989a57d6-10ae-4e5d-93a4-d7461fef436f
-[shell-prompt-video]: https://github.com/user-attachments/assets/5c6f92be-a21e-49fd-aec2-7bdde85fd21b
-[shell-behaviour-video]: https://github.com/user-attachments/assets/dba3b896-377d-4cee-8168-792cbf4c0491
-[shell-exit-if-directory-video]: https://github.com/user-attachments/assets/0c01094d-5518-411c-965a-63a77ecaa910
+[shell-must-have-hovered-item-video]: https://github.com/user-attachments/assets/d9a49cb7-67fd-40fe-8f68-130561de0cca
+[shell-hovered-item-optional-video]: https://github.com/user-attachments/assets/f7fdfa7c-d7cc-4157-bb5f-63c37f82ea5b
+[shell-prompt-video]: https://github.com/user-attachments/assets/6648ad92-320f-457d-9f3e-b5da6f1c07bc
+[shell-behaviour-video]: https://github.com/user-attachments/assets/4727658f-e27c-4fbe-acd7-acfeac54cd17
+[shell-exit-if-directory-video]: https://github.com/user-attachments/assets/ef0e9818-cc81-45fc-9126-6903314ed6b3
 
 <!-- Paste command -->
 
-[smart-paste-video]: https://github.com/user-attachments/assets/067ad79a-d224-475e-8333-c1bf34aea746
+[smart-paste-video]: https://github.com/user-attachments/assets/59800de2-8445-4f68-834b-10a0e394c400
 
 <!-- Tab create command -->
 
-[smart-tab-create-video]: https://github.com/user-attachments/assets/f1805f59-cfd2-4d97-b1b7-a4de1a25b668
+[smart-tab-create-video]: https://github.com/user-attachments/assets/bf48e411-b7ed-4624-abd9-084dcdc25ab5
 
 <!-- Tab switch command -->
 
-[smart-tab-switch-video]: https://github.com/user-attachments/assets/de59fd6b-7dbe-4055-8a9f-174fd24d5a8c
+[smart-tab-switch-video]: https://github.com/user-attachments/assets/5b94ff0f-f77c-4250-96ac-4fea67eebc46
 
 <!-- Quit command -->
 
-[quit-with-confirmation-video]: https://github.com/user-attachments/assets/a87cdc00-e22b-4b96-a069-229fbfd7d451
+[quit-with-confirmation-video]: https://github.com/user-attachments/assets/9e212a32-c7c3-470f-895e-bb1cba03292d
 
 <!-- Arrow command -->
 
-[smooth-arrow-video]: https://github.com/user-attachments/assets/d6c9bc96-5fdc-4ecd-8c30-91d3e97e67db
-[wraparound-arrow-video]: https://github.com/user-attachments/assets/b52153df-1e7a-4063-8bcb-a7c4dc923652
-[smooth-wraparound-arrow-video]: https://github.com/user-attachments/assets/f9bdd784-1cae-4292-8809-af6e26d5860f
+[smooth-arrow-video]: https://github.com/user-attachments/assets/990935f5-ce6e-4536-9ddc-d8a32da69803
+[wraparound-arrow-video]: https://github.com/user-attachments/assets/b8233e26-06b7-436d-bafa-1639ed12aa53
+[smooth-wraparound-arrow-video]: https://github.com/user-attachments/assets/59d3618a-59cd-448d-b552-e3cc796d109e
 
 <!-- Parent arrow command -->
 
-[parent-arrow-video]: https://github.com/user-attachments/assets/ea2d2b37-0355-466d-bbd5-0a5860507589
-[smooth-parent-arrow-video]: https://github.com/user-attachments/assets/b62548eb-2f10-4f15-8c95-9127b90a364c
-[wraparound-parent-arrow-video]: https://github.com/user-attachments/assets/2fcc30b8-9a6a-44d2-84c4-d224e9c467d8
-[smooth-wraparound-parent-arrow-video]: https://github.com/user-attachments/assets/44b87884-58b7-41af-81e6-e4cf771665aa
+[parent-arrow-video]: https://github.com/user-attachments/assets/c412ed7b-a6ee-44e7-bf68-f9f2e5214a50
+[smooth-parent-arrow-video]: https://github.com/user-attachments/assets/45fdfa5f-86ef-453c-89a8-1c58d6318e93
+[wraparound-parent-arrow-video]: https://github.com/user-attachments/assets/3a429a57-2dc6-47c6-be4e-fab5844bafde
+[smooth-wraparound-parent-arrow-video]: https://github.com/user-attachments/assets/7d3d58ea-4b00-4cb2-9aea-950940b1ad1a
+
+<!-- Archive command -->
+
+[archive-must-have-hovered-item-video]: https://github.com/user-attachments/assets/a8d667c8-a8a5-44ed-9220-aa55345c98ed
+[archive-hovered-item-optional-video]: https://github.com/user-attachments/assets/213f82d2-fe70-4c42-8f24-b09c7d7d7dfe
+[archive-prompt-video]: https://github.com/user-attachments/assets/20366432-f195-4531-bb08-9b3f0e8f848e
+[archive-behaviour-video]: https://github.com/user-attachments/assets/dcbe9909-db40-4f96-8591-c1a104b63381
+[archive-encrypt-files-video]: https://github.com/user-attachments/assets/08b98e01-2cc2-486e-bd4d-bfbe9da792db
+[archive-reveal-created-archive-video]: https://github.com/user-attachments/assets/e908afb8-c431-4e6d-8834-c02216461076
+[archive-remove-archived-files-video]: https://github.com/user-attachments/assets/d0495292-6508-4417-b378-033e6acc0c4d
 
 <!-- Editor command -->
 
-[editor-must-have-hovered-item-video]: https://github.com/user-attachments/assets/ba982592-3351-4f13-bdf3-8971e0fdaf2c
-[editor-hovered-item-optional-video]: https://github.com/user-attachments/assets/0d9ba0fa-6ad3-492d-b3d4-3ea427ac1b9d
-[editor-prompt-video]: https://github.com/user-attachments/assets/792ebdec-45c8-430c-a426-35c94adeb6ce
-[editor-behaviour-video]: https://github.com/user-attachments/assets/3f1740af-334f-46a2-aa61-2d783bf82a6c
+[editor-must-have-hovered-item-video]: https://github.com/user-attachments/assets/a0e4500d-7bfe-4fb1-9289-8c39c5c6f323
+[editor-hovered-item-optional-video]: https://github.com/user-attachments/assets/96798f1f-2ddc-464a-b6ae-48cc20f88b3c
+[editor-prompt-video]: https://github.com/user-attachments/assets/5453cc87-3721-4b80-8cc2-b730ddff5da8
+[editor-behaviour-video]: https://github.com/user-attachments/assets/f479ef38-5b78-43f1-83d4-045bef6f5f20
 
 <!-- Pager command -->
 
-[pager-must-have-hovered-item-video]: https://github.com/user-attachments/assets/b992a0a1-eb07-4ee5-af2a-179b94bff764
-[pager-hovered-item-optional-video]: https://github.com/user-attachments/assets/7a35f938-687a-40b7-82bd-fde72c185edd
-[pager-prompt-video]: https://github.com/user-attachments/assets/3ec2a4e4-bf44-4058-938f-d9af66e15191
-[pager-behaviour-video]: https://github.com/user-attachments/assets/7185799e-48bc-40c0-a11d-a94d0989d8d7
+[pager-must-have-hovered-item-video]: https://github.com/user-attachments/assets/7daa8e81-bc83-4ff3-9462-d71293565e67
+[pager-hovered-item-optional-video]: https://github.com/user-attachments/assets/e123fb58-d49e-46b6-bc33-c41eb01cf9aa
+[pager-prompt-video]: https://github.com/user-attachments/assets/cfba76a1-116e-4caf-b25a-57d631d115a0
+[pager-behaviour-video]: https://github.com/user-attachments/assets/d036f865-2909-414b-80d9-80e550b6b3dd

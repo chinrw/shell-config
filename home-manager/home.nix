@@ -72,7 +72,7 @@ in
     ++ lib.optionals (builtins.match "^(wsl|vm-nix)$" hostname != null) [
       (import ./programs/rclone.nix { inherit config lib pkgs; })
     ]
-    ++ lib.optionals (hostname != "wsl") [
+    ++ lib.optionals (hostname != "vm-nix") [
       (import ./programs/yazi.nix { inherit config; })
     ];
 
