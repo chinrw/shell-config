@@ -162,6 +162,7 @@ in
         age # A simple, modern and secure encryption tool
         sops
         delta # A syntax-highlighting pager for git, diff, grep, and blame output
+        osc # Access the system clipboard from anywhere using the ANSI OSC52 sequence
       ]
       ++ lib.optionals (!smallNode) [
 
