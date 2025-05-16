@@ -135,13 +135,12 @@
     lsof
     psmisc
     config.boot.kernelPackages.perf
-    llama-cpp
+    osc # Access the system clipboard from anywhere using the ANSI OSC52 sequence
 
     (pkgs.python3.withPackages (
       python-pkgs: with python-pkgs; [
         # select Python packages here
         bpython
-        llama-cpp-python
       ]
     ))
   ];
