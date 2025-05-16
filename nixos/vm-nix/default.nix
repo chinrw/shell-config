@@ -11,6 +11,7 @@
     inputs.hardware.nixosModules.common-cpu-amd
     ./hardware.nix
     ./wireguard.nix
+    ./container/jellyfin.nix
     ../services/github-runners.nix
     ../services/samba/wsl-server.nix
     # ./proxy.nix
