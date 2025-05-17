@@ -111,6 +111,7 @@
       "ssh_pub_key" = { };
       "access-tokens" = { };
       "github-runners/Constantinople" = { };
+      "smb_creds" = { };
     };
   };
 
@@ -149,4 +150,26 @@
       };
     };
   };
+
+  environment.systemPackages = [ pkgs.cifs-utils ];
+
+  fileSystems."/mnt/data" = {
+    device  = "//192.168.0.254/data";   # UNC path
+    fsType  = "cifs";
+    options = [
+      "vers=3.11"
+      "credentials=${config.sops.secrets."smb_creds".path}"
+      "multichannel,max_channels=4"
+      "cache=loose,actimeo=30"
+      "rsize=130048,wsize=57344"
+      "fsc"
+      "uid=1000"
+      "gid=100"
+      "iocharset=utf8"
+      "_netdev"           # delays mount until network-online.target
+      "x-systemd.automount"      # lazy-mount on first access
+    ];
+    neededForBoot = false;
+  };
+
 }
