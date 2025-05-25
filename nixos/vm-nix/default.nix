@@ -151,11 +151,14 @@
     };
   };
 
-  environment.systemPackages = [ pkgs.cifs-utils ];
+  environment.systemPackages = with pkgs; [
+    cifs-utils
+    aria2
+  ];
 
   fileSystems."/mnt/data" = {
-    device  = "//192.168.0.254/data";   # UNC path
-    fsType  = "cifs";
+    device = "//192.168.0.254/data"; # UNC path
+    fsType = "cifs";
     options = [
       "vers=3.11"
       "credentials=${config.sops.secrets."smb_creds".path}"
@@ -166,8 +169,8 @@
       "uid=1000"
       "gid=100"
       "iocharset=utf8"
-      "_netdev"           # delays mount until network-online.target
-      "x-systemd.automount"      # lazy-mount on first access
+      "_netdev" # delays mount until network-online.target
+      "x-systemd.automount" # lazy-mount on first access
     ];
     neededForBoot = false;
   };
