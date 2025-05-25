@@ -2,6 +2,7 @@
   config,
   pkgs,
   hostname,
+  username,
   ...
 }:
 {
