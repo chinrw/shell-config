@@ -203,8 +203,11 @@ in
         devenv # Fast, Declarative, Reproducible, and Composable Developer Environments
         restic # Fast, secure, efficient backup program
       ]
-      ++ lib.optionals (hostname != "macos") [
+      ++ lib.optionals (hostname != "macos" && !smallNode) [
         conda
+      ]
+      ++ lib.optionals (hostname == "vm-nix") [
+        iperf3
       ]
       ++ lib.optionals (!noGUI) [
         mpv
