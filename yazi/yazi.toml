@@ -1,4 +1,4 @@
-[manager]
+[mgr]
 ratio = [1, 4, 4]
 sort_by = "natural"
 linemode = "size"
