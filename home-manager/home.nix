@@ -202,6 +202,7 @@ in
         hyperfine # A command-line benchmarking tool
         devenv # Fast, Declarative, Reproducible, and Composable Developer Environments
         restic # Fast, secure, efficient backup program
+        unar
       ]
       ++ lib.optionals (hostname != "macos" && !smallNode) [
         conda
