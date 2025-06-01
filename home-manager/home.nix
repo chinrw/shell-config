@@ -185,7 +185,10 @@ in
         gitoxide
         git-lfs
         hexyl
-        _7zz-rar
+        (_7zz.override {
+          enableUnfree = true;
+          useUasm = true;
+        })
         ouch
         helix
         nurl # Generate Nix fetcher calls from repository URLs
