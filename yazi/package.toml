@@ -10,18 +10,18 @@ hash = "5b9dea47776a30946cfbf83232d18fb1"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:git"
-rev = "a54b96a"
+rev = "63f9650"
 hash = "bf6f074cd41ee33c3360341d168f9733"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:mime-ext"
-rev = "a54b96a"
+rev = "63f9650"
 hash = "6094c7e7def6d131323e53d641f1bddd"
 
 [[plugin.deps]]
 use = "hankertrix/augment-command"
-rev = "ac4a651"
-hash = "7b6b0b8c260c9c5e557287bf9b370f7c"
+rev = "9b15ea4"
+hash = "32cfc63cf0f802fc471f81868d93dbfe"
 
 [flavor]
 deps = []
