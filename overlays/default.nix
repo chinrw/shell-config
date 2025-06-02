@@ -64,10 +64,13 @@
       useUasm = true;
     });
 
-    yazi = inputs.yazi.packages.${final.system}.default.override {
+    yazi = (inputs.yazi.packages.${final.system}.default.override {
       #NOTE need use final to use modify 7z
       _7zz = final._7zz;
-    };
+    }).overrideAttrs (old: {
+      # We can change the version of the package
+      extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold -Clinker-plugin-lto";
+    });
 
     zsh-fzf-tab = prev.zsh-fzf-tab.override (old: {
       stdenv = final.clangStdenv;
