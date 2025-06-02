@@ -157,7 +157,6 @@ in
         dua
         cachix
         nix-search-cli
-        inputs.yazi.packages.${pkgs.system}.default
         zjstatus
         age # A simple, modern and secure encryption tool
         sops
@@ -184,11 +183,9 @@ in
         dstask # Git powered terminal-based todo/note manager -- markdown note page per task
         gitoxide
         git-lfs
+        _7zz
+        yazi
         hexyl
-        (_7zz.override {
-          enableUnfree = true;
-          useUasm = true;
-        })
         ouch
         helix
         nurl # Generate Nix fetcher calls from repository URLs

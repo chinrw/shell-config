@@ -59,6 +59,16 @@
       };
     });
 
+    _7zz = prev._7zz.override (old: {
+      enableUnfree = true;
+      useUasm = true;
+    });
+
+    yazi = inputs.yazi.packages.${final.system}.default.override {
+      #NOTE need use final to use modify 7z
+      _7zz = final._7zz;
+    };
+
     zsh-fzf-tab = prev.zsh-fzf-tab.override (old: {
       stdenv = final.clangStdenv;
     });
