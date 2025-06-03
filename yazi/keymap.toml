@@ -23,6 +23,21 @@ on = ["q"]
 run = "close"
 desc = "Close the current tab, or quit if it is last tab"
 
+[[mgr.prepend_keymap]]
+on = [",", "h"]
+run = "plugin time-travel --args=prev"
+desc = "Go to previous snapshot"
+
+[[mgr.prepend_keymap]]
+on = [",", "l"]
+run = "plugin time-travel --args=next"
+desc = "Go to next snapshot"
+
+[[mgr.prepend_keymap]]
+on = [",", "t"]
+run = "plugin time-travel --args=exit"
+desc = "Exit browsing snapshots"
+
 # [[manager.prepend_keymap]]
 # on = ["l"]
 # run = "plugin bypass --args=smart_enter"
