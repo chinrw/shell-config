@@ -23,5 +23,10 @@ use = "hankertrix/augment-command"
 rev = "9b15ea4"
 hash = "32cfc63cf0f802fc471f81868d93dbfe"
 
+[[plugin.deps]]
+use = "iynaix/time-travel"
+rev = "7e0179e"
+hash = "69967963fba96295a07b68354fc91ea9"
+
 [flavor]
 deps = []
