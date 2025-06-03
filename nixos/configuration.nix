@@ -169,15 +169,6 @@
   #   enable = true;
   # };
 
-  fileSystems."/mnt/autofs/data" = {
-    device = "10.0.0.254:/volume1/Data";
-    fsType = "nfs4";
-    options = [
-      "noauto"
-      "x-systemd.automount"
-      "x-systemd.idle-timeout=1h"
-    ];
-  };
   time.timeZone = "Asia/Shanghai";
 
   services.openssh = {
