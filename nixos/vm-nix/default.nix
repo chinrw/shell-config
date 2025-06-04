@@ -180,8 +180,10 @@
     fsType = "nfs4";
     options = [
       "noauto"
-      "x-systemd.idle-timeout=1h"
+      "x-systemd.requires=wireguard-wg0-peer-arch-synology-refresh.service"
+      "x-systemd.after=wireguard-wg0-peer-arch-synology-refresh.service"
       "noatime"
+      "nofail"
       "_netdev"
       "x-systemd.automount"
     ];
