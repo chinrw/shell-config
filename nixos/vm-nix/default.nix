@@ -60,6 +60,8 @@
       5246
       5432
 
+      5000 # kavita
+
       8080 # open-webui
       # kik
       8888
@@ -149,7 +151,20 @@
         https_proxy = "http://192.168.0.240:10809";
       };
     };
+
+    kavita = {
+      enable = true;
+      tokenKeyFile = "/etc/nixos/secrets/kavita_token.key";
+      # make sure the service user can read the key
+    };
+    komga = {
+      enable = true;
+      openFirewall = true;
+      settings.server.port = 8081;
+    };
+
   };
+  users.users.kavita.extraGroups = [ "kavita" ];
 
   environment.systemPackages = with pkgs; [
     cifs-utils
