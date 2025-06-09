@@ -45,6 +45,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    rustowl-overlay = {
+      url = "github:nix-community/rustowl-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     yazi.url = "github:sxyazi/yazi";
     yazi.inputs.nixpkgs.follows = "nixpkgs";
 

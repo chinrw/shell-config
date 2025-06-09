@@ -203,6 +203,7 @@ in
         devenv # Fast, Declarative, Reproducible, and Composable Developer Environments
         restic # Fast, secure, efficient backup program
         unar
+        inputs.rustowl-overlay.packages.${pkgs.system}.default
       ]
       ++ lib.optionals (hostname != "macos" && !smallNode) [
         conda
