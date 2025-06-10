@@ -135,6 +135,7 @@
   };
 
   services = {
+    qemuGuest.enable = true;
     adguardhome = {
       enable = true;
       openFirewall = true;
