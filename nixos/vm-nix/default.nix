@@ -61,6 +61,7 @@
       5432
 
       5000 # kavita
+      3001 # lanraragi
 
       8080 # open-webui
       # kik
@@ -162,6 +163,10 @@
       enable = true;
       openFirewall = true;
       settings.server.port = 8081;
+    };
+    lanraragi = {
+      enable = true;
+      port = 3001;
     };
 
   };
