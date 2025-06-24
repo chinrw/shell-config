@@ -1,0 +1,100 @@
+diff --git a/lib/LANraragi.pm b/lib/LANraragi.pm
+index 60b44cb..d956b3e 100644
+--- a/lib/LANraragi.pm
++++ b/lib/LANraragi.pm
+@@ -23,6 +23,8 @@ use LANraragi::Utils::I18NInitializer;
+ use LANraragi::Model::Search;
+ use LANraragi::Model::Config;
+ 
++use FindBin;
++
+ # This method will run once at server start
+ sub startup {
+     my $self = shift;
+@@ -32,7 +34,7 @@ sub startup {
+     say "ｷﾀ━━━━━━(ﾟ∀ﾟ)━━━━━━!!!!!";
+ 
+     # Load package.json to get version/vername/description
+-    my $packagejson = decode_json( Mojo::File->new('package.json')->slurp );
++    my $packagejson = decode_json( Mojo::File->new("$FindBin::Bin/../package.json")->slurp );
+ 
+     my $version = $packagejson->{version};
+     my $vername = $packagejson->{version_name};
+diff --git a/lib/LANraragi/Model/Archive.pm b/lib/LANraragi/Model/Archive.pm
+index 425f935..9483012 100644
+--- a/lib/LANraragi/Model/Archive.pm
++++ b/lib/LANraragi/Model/Archive.pm
+@@ -14,6 +14,7 @@ use File::Path  qw(remove_tree);
+ use File::Basename;
+ use File::Copy "cp";
+ use File::Path qw(make_path);
++use FindBin;
+ 
+ use LANraragi::Utils::Generic    qw(render_api_response);
+ use LANraragi::Utils::String     qw(trim trim_CRLF);
+@@ -222,7 +223,7 @@ sub serve_thumbnail {
+         } else {
+ 
+             # If the thumbnail doesn't exist, serve the default thumbnail.
+-            $self->render_file( filepath => "./public/img/noThumb.png" );
++            $self->render_file( filepath => "$FindBin::Bin/../public/img/noThumb.png" );
+         }
+         return;
+     } else {
+diff --git a/lib/LANraragi/Utils/Generic.pm b/lib/LANraragi/Utils/Generic.pm
+index 81a1a00..cd71176 100644
+--- a/lib/LANraragi/Utils/Generic.pm
++++ b/lib/LANraragi/Utils/Generic.pm
+@@ -18,6 +18,8 @@ use LANraragi::Utils::TempFolder qw(get_temp);
+ use LANraragi::Utils::String qw(trim);
+ use LANraragi::Utils::Logging qw(get_logger);
+ 
++use FindBin;
++
+ # Generic Utility Functions.
+ use Exporter 'import';
+ our @EXPORT_OK = qw(is_image is_archive render_api_response get_tag_with_namespace shasum_str start_shinobu
+@@ -132,7 +134,7 @@ sub start_shinobu {
+     my $mojo = shift;
+ 
+     my $proc = Proc::Simple->new();
+-    $proc->start( $^X, "./lib/Shinobu.pm" );
++    $proc->start( $^X, "$FindBin::Bin/../lib/Shinobu.pm" );
+     $proc->kill_on_destroy(0);
+ 
+     $mojo->LRR_LOGGER->debug( "Shinobu Worker new PID is " . $proc->pid );
+@@ -172,7 +174,7 @@ sub get_css_list {
+ 
+     #Get all the available CSS sheets.
+     my @css;
+-    opendir( my $dir, "./public/themes" ) or die $!;
++    opendir( my $dir, "$FindBin::Bin/../public/themes" ) or die $!;
+     while ( my $file = readdir($dir) ) {
+         if ( $file =~ /.+\.css/ ) { push( @css, $file ); }
+     }
+diff --git a/lib/LANraragi/Utils/Logging.pm b/lib/LANraragi/Utils/Logging.pm
+index 21f64ae..c22aa08 100644
+--- a/lib/LANraragi/Utils/Logging.pm
++++ b/lib/LANraragi/Utils/Logging.pm
+@@ -18,7 +18,7 @@ our @EXPORT_OK = qw(get_logger get_plugin_logger get_logdir get_lines_from_file)
+ # Get the Log folder.
+ sub get_logdir {
+ 
+-    my $log_folder = "$FindBin::Bin/../log";
++    my $log_folder = "./log";
+ 
+     # Folder location can be overriden by LRR_LOG_DIRECTORY
+     if ( $ENV{LRR_LOG_DIRECTORY} ) {
+diff --git a/lib/LANraragi/Utils/TempFolder.pm b/lib/LANraragi/Utils/TempFolder.pm
+index a5ab8a8..8435129 100644
+--- a/lib/LANraragi/Utils/TempFolder.pm
++++ b/lib/LANraragi/Utils/TempFolder.pm
+@@ -13,7 +13,7 @@ our @EXPORT_OK = qw(get_temp);
+ #Get the current tempfolder.
+ #This can be called from any process safely as it uses FindBin.
+ sub get_temp {
+-    my $temp_folder = "$FindBin::Bin/../temp";
++    my $temp_folder = "./public/temp";
+ 
+     # Folder location can be overriden by LRR_TEMP_DIRECTORY
+     if ( $ENV{LRR_TEMP_DIRECTORY} ) {

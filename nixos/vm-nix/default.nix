@@ -166,6 +166,7 @@
     };
     lanraragi = {
       enable = true;
+      package = pkgs.lanraragi;
       port = 3001;
     };
 

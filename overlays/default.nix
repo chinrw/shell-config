@@ -47,17 +47,29 @@
 
     dstask = prev.dstask.overrideAttrs (old: {
 
-      # Update the rev and sha256 accordingly
-      # src = final.fetchurl {
-      #   url = "https://github.com/naggie/dstask/archive/refs/tags/0.27.tar.gz";
-      #   hash = "sha256-hdqS61DDYR4QVPUVPcDPkP4bixIhnHfRqoamE4TEUKA=";
-      # };
-
       # Override the platforms
       meta = old.meta // {
         platforms = final.lib.platforms.unix;
       };
     });
+
+    # lanraragi = prev.lanraragi.overrideAttrs (old: rec {
+    #   version = "0.9.41";
+    #
+    #   src = prev.fetchFromGitHub {
+    #     owner = "Difegue";
+    #     repo = "LANraragi";
+    #     rev = "v.${version}";
+    #     hash = "sha256-HF2g8rrcV6f6ZTKmveS/yjil/mBxpvRUFyauv5f+qQ8=";
+    #   };
+    #
+    #   patches = [
+    #     ./patches/lanraragi/install.patch
+    #     ./patches/lanraragi/fix-paths.patch
+    #     ./patches/lanraragi/expose-password-hashing.patch
+    #   ];
+    #   npmDepsHash = "";
+    # });
 
     _7zz = prev._7zz.override (old: {
       enableUnfree = true;
