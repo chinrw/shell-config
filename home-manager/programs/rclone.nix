@@ -91,6 +91,7 @@ let
                         --vfs-cache-poll-interval=${RCLONE_MOUNT_VFS_CACHE_POLL_INTERVAL} \
                         --vfs-read-chunk-size=${RCLONE_MOUNT_VFS_READ_CHUNK_SIZE} \
                         --vfs-read-chunk-size-limit=${RCLONE_MOUNT_VFS_READ_CHUNK_SIZE_LIMIT} \
+                        --log-file=/tmp/rclone-${name}.log --log-level NOTICE \
                         --write-back-cache \
                         ${REMOTE_NAME}:${REMOTE_PATH} ${MOUNT_DIR}
           '';
@@ -139,6 +140,7 @@ in
       RCLONE_MOUNT_TRANSFER = "4";
       RCLONE_MOUNT_VFS_CACHE_MODE = "full";
       RCLONE_MOUNT_TIMEOUT = "120m";
+      RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "48h0m0s";
     })
   ];
 }
