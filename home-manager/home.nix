@@ -172,7 +172,7 @@ in
         genact
         man-pages
         basedpyright
-        stable.tailspin # 🌀 A log file highlighter
+        tailspin # 🌀 A log file highlighter
 
         glow
         go
