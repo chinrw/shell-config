@@ -214,4 +214,10 @@
     ];
     neededForBoot = false;
   };
+
+  systemd.services.lanraragi.environment = {
+    http_proxy = "http://192.168.0.254:10809";
+    https_proxy = "http://192.168.0.254:10809";
+  };
+
 }
