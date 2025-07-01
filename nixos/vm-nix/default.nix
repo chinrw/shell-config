@@ -167,11 +167,11 @@
       openFirewall = true;
       settings.server.port = 8081;
     };
-    lanraragi = {
-      enable = true;
-      package = pkgs.lanraragi;
-      port = 3001;
-    };
+    # lanraragi = {
+    #   enable = true;
+    #   package = pkgs.lanraragi;
+    #   port = 3001;
+    # };
 
   };
   users.users.kavita.extraGroups = [ "kavita" ];
