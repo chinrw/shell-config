@@ -208,6 +208,7 @@ in
         gemini-cli
         claude-code
         rustscan # modern scanner
+        marksman
       ]
       ++ lib.optionals (hostname != "macos" && !smallNode) [
         conda
