@@ -204,6 +204,7 @@ in
         restic # Fast, secure, efficient backup program
         unar
         inputs.rustowl-overlay.packages.${pkgs.system}.default
+        gemini-cli
       ]
       ++ lib.optionals (hostname != "macos" && !smallNode) [
         conda
