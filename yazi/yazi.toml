@@ -87,12 +87,12 @@ prepend_previewers = [
 ]
 append_previewers = [{ name = "*", run = "hexyl" }]
 
-[[plugin.prepend_fetchers]]
-id = "mime"
-if = "!mime"
-name = "*"
-run = "mime-ext"
-prio = "high"
+# [[plugin.prepend_fetchers]]
+# id = "mime"
+# if = "!mime"
+# name = "*"
+# run = "mime-ext"
+# prio = "high"
 
 [[plugin.prepend_fetchers]]
 id = "git"

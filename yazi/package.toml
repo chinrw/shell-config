@@ -14,11 +14,6 @@ rev = "63f9650"
 hash = "bf6f074cd41ee33c3360341d168f9733"
 
 [[plugin.deps]]
-use = "yazi-rs/plugins:mime-ext"
-rev = "63f9650"
-hash = "6094c7e7def6d131323e53d641f1bddd"
-
-[[plugin.deps]]
 use = "hankertrix/augment-command"
 rev = "9b15ea4"
 hash = "32cfc63cf0f802fc471f81868d93dbfe"
