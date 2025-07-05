@@ -205,6 +205,7 @@ in
         unar
         inputs.rustowl-overlay.packages.${pkgs.system}.default
         gemini-cli
+        rustscan # modern scanner
       ]
       ++ lib.optionals (hostname != "macos" && !smallNode) [
         conda
