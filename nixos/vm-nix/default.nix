@@ -14,6 +14,7 @@
     ./container/jellyfin.nix
     ../services/github-runners.nix
     ../services/samba/wsl-server.nix
+    ./rclone.nix
     # ./proxy.nix
   ];
 
