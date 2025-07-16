@@ -15,6 +15,7 @@
     ../services/github-runners.nix
     ../services/samba/wsl-server.nix
     ../services/aria2.nix
+    ../services/qbittorrent.nix
     ./rclone.nix
     # ./proxy.nix
   ];
@@ -67,8 +68,7 @@
       7892 # AutoBangumi
 
       8080 # open-webui
-      # kik
-      8888
+      8888 # kik
 
       8096 # jellyfin
       7359
