@@ -14,6 +14,7 @@
     ./container/jellyfin.nix
     ../services/github-runners.nix
     ../services/samba/wsl-server.nix
+    ../services/aria2.nix
     ./rclone.nix
     # ./proxy.nix
   ];
@@ -63,6 +64,7 @@
 
       5000 # kavita
       3001 # lanraragi
+      7892 # AutoBangumi
 
       8080 # open-webui
       # kik
@@ -179,7 +181,6 @@
 
   environment.systemPackages = with pkgs; [
     cifs-utils
-    aria2
   ];
 
   fileSystems."/mnt/data" = {
