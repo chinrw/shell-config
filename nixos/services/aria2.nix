@@ -1,4 +1,10 @@
-{ config, pkgs, username, ... }:
+{
+  config,
+  pkgs,
+  username,
+  sharedGroup,
+  ...
+}:
 {
   sops = {
     age.keyFile = "/home/${username}/.config/sops/age/keys.txt"; # must have no password!
@@ -15,7 +21,8 @@
     openPorts = true;
 
     settings = {
-      dir = "/mnt/elysion/data/Downloads/aria2";
+      dir = "/mnt/data/Downloads/aria2";
+      umask = "0002";
       enable-rpc = true;
       "disable-ipv6" = true;
       "rpc-listen-all" = true;
@@ -24,5 +31,5 @@
       "max-concurrent-downloads" = 10;
     };
   };
+  users.users.aria2.extraGroups = [ sharedGroup ];
 }
-

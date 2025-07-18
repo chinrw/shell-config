@@ -6,6 +6,9 @@
   username,
   ...
 }:
+let
+  sharedGroup = "users";
+in
 {
   imports = [
     inputs.hardware.nixosModules.common-cpu-amd
@@ -14,7 +17,14 @@
     ./container/jellyfin.nix
     ../services/github-runners.nix
     ../services/samba/wsl-server.nix
-    ../services/aria2.nix
+    (import ../services/aria2.nix {
+      inherit
+        config
+        pkgs
+        username
+        sharedGroup
+        ;
+    })
     ../services/qbittorrent.nix
     ./rclone.nix
     # ./proxy.nix
@@ -26,6 +36,8 @@
     extraGroups = [
       "networkmanager"
       "wheel"
+      "aria2"
+      "media"
     ];
     shell = pkgs.zsh;
     packages = with pkgs; [ ];
@@ -194,8 +206,11 @@
       "rsize=130048,wsize=57344"
       "fsc"
       "uid=1000"
-      "gid=100"
+      "gid=${sharedGroup}"
       "iocharset=utf8"
+      "dir_mode=0775"
+      "file_mode=0775"
+      "nofail"
       "_netdev" # delays mount until network-online.target
       "x-systemd.automount" # lazy-mount on first access
     ];
