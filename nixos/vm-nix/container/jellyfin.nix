@@ -30,7 +30,7 @@ in
       "/home/chin39/Documents/container/jellyfin/config-jellyfin:/config:rw"
       "/home/chin39/Documents/container/jellyfin/fonts:/config/fonts:rw"
       "/home/chin39/mounts:/mounts:rw"
-      "/mnt/autofs/data/video/jellyfin:/jellyfin-media:rw"
+      "/mnt/data/video/jellyfin:/jellyfin-media:rw"
     ];
     ports = [
       "8096:8096/tcp"

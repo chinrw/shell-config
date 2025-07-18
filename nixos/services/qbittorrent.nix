@@ -1,19 +1,15 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
-  qbUser = "qbittorrent";   # ← changed
+  qbUser = "qbittorrent"; # ← changed
   port = 8090;
 in
 {
-  users.users.${qbUser} = {
-    isSystemUser = true;
-    description = "qBittorrent service account";
-    group = qbUser;
-    home = "/var/lib/${qbUser}";
-  };
-
-  users.groups.${qbUser} = { };
-
   environment.systemPackages = [ pkgs.qbittorrent-nox ];
 
   systemd.services.qbittorrent = {
@@ -24,10 +20,10 @@ in
 
     serviceConfig = {
       Type = "exec";
-      User = qbUser;
-      Group = qbUser;
+      User = "chin39";
+      Group = "users";
       Environment = "HOME=/var/lib/${qbUser}";
-      ExecStart = "${pkgs.qbittorrent-nox}/bin/qbittorrent-nox --webui-port=${port}";
+      ExecStart = "${pkgs.qbittorrent-nox}/bin/qbittorrent-nox --webui-port=${builtins.toString port}";
 
       StateDirectory = qbUser;
       CacheDirectory = qbUser;
@@ -38,9 +34,9 @@ in
       ProtectHome = true;
       PrivateTmp = true;
       Restart = "on-failure";
+      ReadWritePaths = [ "/mnt/data/Video/jellyfin" ]; # :contentReference[oaicite:1]{index=1}
     };
   };
 
   networking.firewall.allowedTCPPorts = [ port ];
 }
-
