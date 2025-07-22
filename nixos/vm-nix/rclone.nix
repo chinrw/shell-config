@@ -12,7 +12,7 @@
                     --log-systemd \
                     --stats-one-line \
                     --log-level INFO \
-                    --transfers 4 \
+                    --transfers 8 \
                     --multi-thread-streams 0 \
                     --timeout 0 \
                     --multi-thread-chunk-size 32M \
