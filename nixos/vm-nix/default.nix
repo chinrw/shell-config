@@ -26,7 +26,7 @@ in
         ;
     })
     ../services/qbittorrent.nix
-    ./rclone.nix
+    # ./rclone.nix
     # ./proxy.nix
   ];
 

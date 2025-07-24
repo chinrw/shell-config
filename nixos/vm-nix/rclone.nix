@@ -37,4 +37,23 @@
       AccuracySec = "1min";
     };
   };
+
+  # Service to restart rclone_downloader
+  systemd.services."rclone_downloader_restart" = {
+    description = "Restart rclone service to prevent hanging";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.systemd}/bin/systemctl restart rclone_downloader.service";
+    };
+  };
+
+  # Timer to restart service every 2 hours to prevent hanging
+  systemd.timers."rclone_downloader_restart" = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "2h";
+      OnCalendar = "*:0/120"; # Every 2 hours
+      Persistent = true;
+    };
+  };
 }
