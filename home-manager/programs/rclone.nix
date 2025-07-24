@@ -1,40 +1,39 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 
 let
   rcloneService =
-    {
-      name,
-      REMOTE_NAME,
-      REMOTE_PATH ? "/",
-      MOUNT_DIR ? "%h/mounts/${name}",
-      POST_MOUNT_SCRIPT ? ''""'',
-      RCLONE_RC_ON ? "false",
-      RCLONE_TEMP_DIR ? "/tmp/rclone/%u/${name}",
-      RCLONE_TPSLIMIT ? "0",
-      RCLONE_TPSLIMIT_BURST ? "1",
-      RCLONE_BWLIMIT ? "0",
-      RCLONE_MOUNT_DAEMON_TIMEOUT ? "0",
-      RCLONE_MOUNT_MULTI_THREAD_STREAMS ? "4",
-      RCLONE_MOUNT_TIMEOUT ? "10m",
-      RCLONE_MOUNT_TRANSFER ? "4",
-      RCLONE_MOUNT_DIR_CACHE_TIME ? "5m",
-      RCLONE_MOUNT_MAX_READ_AHEAD ? "256k",
-      RCLONE_MOUNT_POLL_INTERVAL ? "1m0s",
-      RCLONE_MOUNT_ATTR_TIMEOUT ? "15s",
-      RCLONE_MOUNT_UMASK ? "022",
-      RCLONE_MOUNT_VFS_CACHE_MAX_AGE ? "1h0m0s",
-      RCLONE_MOUNT_VFS_CACHE_MAX_SIZE ? "128G",
-      RCLONE_MOUNT_VFS_CACHE_MODE ? "writes",
-      RCLONE_MOUNT_VFS_CACHE_POLL_INTERVAL ? "1m30s",
-      RCLONE_MOUNT_VFS_READ_CHUNK_SIZE ? "128M",
-      RCLONE_MOUNT_VFS_READ_CHUNK_SIZE_LIMIT ? "off",
-      RCLONE_MOUNT_VFS_WRITE_BACK ? "1m",
-      RCLONE_MOUNT_VFS_WRITE_WAIT ? "30s",
+    { name
+    , REMOTE_NAME
+    , REMOTE_PATH ? "/"
+    , MOUNT_DIR ? "%h/mounts/${name}"
+    , POST_MOUNT_SCRIPT ? ''""''
+    , RCLONE_RC_ON ? "false"
+    , RCLONE_TEMP_DIR ? "/tmp/rclone/%u/${name}"
+    , RCLONE_TPSLIMIT ? "0"
+    , RCLONE_TPSLIMIT_BURST ? "1"
+    , RCLONE_BWLIMIT ? "0"
+    , RCLONE_MOUNT_DAEMON_TIMEOUT ? "0"
+    , RCLONE_MOUNT_MULTI_THREAD_STREAMS ? "4"
+    , RCLONE_MOUNT_TIMEOUT ? "10m"
+    , RCLONE_MOUNT_TRANSFER ? "4"
+    , RCLONE_MOUNT_DIR_CACHE_TIME ? "5m"
+    , RCLONE_MOUNT_MAX_READ_AHEAD ? "256k"
+    , RCLONE_MOUNT_POLL_INTERVAL ? "1m0s"
+    , RCLONE_MOUNT_ATTR_TIMEOUT ? "15s"
+    , RCLONE_MOUNT_UMASK ? "022"
+    , RCLONE_MOUNT_VFS_CACHE_MAX_AGE ? "1h0m0s"
+    , RCLONE_MOUNT_VFS_CACHE_MAX_SIZE ? "128G"
+    , RCLONE_MOUNT_VFS_CACHE_MODE ? "writes"
+    , RCLONE_MOUNT_VFS_CACHE_POLL_INTERVAL ? "1m30s"
+    , RCLONE_MOUNT_VFS_READ_CHUNK_SIZE ? "128M"
+    , RCLONE_MOUNT_VFS_READ_CHUNK_SIZE_LIMIT ? "off"
+    , RCLONE_MOUNT_VFS_WRITE_BACK ? "1m"
+    , RCLONE_MOUNT_VFS_WRITE_WAIT ? "30s"
+    ,
     }:
     {
       "rclone-${name}" = {
@@ -142,5 +141,50 @@ in
       RCLONE_MOUNT_TIMEOUT = "120m";
       RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "48h0m0s";
     })
+    {
+      "rclone_downloader" = {
+        Unit = {
+          Description = "rclone baidu netdisk";
+        };
+        Service = {
+          Type = "simple";
+          ExecStart = ''
+            ${pkgs.rclone}/bin/rclone move \
+                        baidu:baidu/apps/Alist/ \
+                        /mnt/data/baidu \
+                        --log-systemd \
+                        --stats-one-line \
+                        --log-level INFO \
+                        --transfers 8 \
+                        --multi-thread-streams 0 \
+                        --timeout 0 \
+                        --multi-thread-chunk-size 32M \
+                        --delete-empty-src-dirs \
+                        --bwlimit 35M
+          '';
+        };
+      };
+    }
   ];
+
+  systemd.user.timers = {
+    "rclone_downloader" = {
+      Unit = {
+        Description = "Timer for rclone baidu netdisk";
+      };
+      Timer = {
+        # First run 5 min after user session starts, then every 10 min
+        OnStartupSec = "5min";
+        OnUnitActiveSec = "10min";
+
+        # Nice-to-haves (optional)
+        Persistent = true; # catch up on missed runs after suspend/offline
+        AccuracySec = "1min";
+      };
+      Install = {
+        WantedBy = [ "timers.target" ];
+      };
+    };
+
+  };
 }
