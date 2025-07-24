@@ -73,7 +73,7 @@
 
     _7zz = prev._7zz.override (old: {
       enableUnfree = true;
-      useUasm = true;
+      useUasm = final.stdenv.isx86_64;
     });
 
     yazi =
