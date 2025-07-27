@@ -209,6 +209,12 @@
           isServer = true;
           noGUI = true;
         };
+        "chin39@jd-cloud" = helpers.mkHome {
+          hostname = "jd-cloud";
+          isServer = true;
+          noGUI = true;
+          smallNode = true;
+        };
         "chin39@macos" = helpers.mkHome {
           hostname = "macos";
           platform = "aarch64-darwin";
