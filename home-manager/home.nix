@@ -173,6 +173,7 @@ in
         man-pages
         basedpyright
         tailspin # 🌀 A log file highlighter
+        rename
 
         glow
         go
