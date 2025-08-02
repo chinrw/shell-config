@@ -170,6 +170,7 @@ fi
         "1password"
         "fzf"
         "git"
+        "jj"
         "rust"
         "python"
         "pip"
