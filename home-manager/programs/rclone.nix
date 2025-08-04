@@ -164,6 +164,15 @@ in
           '';
         };
       };
+      "rclone_downloader_restart" = {
+        Unit = {
+          Description = "Restart rclone_downloader service";
+        };
+        Service = {
+          Type = "oneshot";
+          ExecStart = "${pkgs.systemd}/bin/systemctl --user restart rclone_downloader.service";
+        };
+      };
     }
   ];
 
@@ -177,8 +186,21 @@ in
         OnStartupSec = "5min";
         OnUnitActiveSec = "10min";
 
-        # Nice-to-haves (optional)
         Persistent = true; # catch up on missed runs after suspend/offline
+        AccuracySec = "1min";
+      };
+      Install = {
+        WantedBy = [ "timers.target" ];
+      };
+    };
+
+    "rclone_downloader_restart" = {
+      Unit = {
+        Description = "Timer to restart rclone_downloader service every 2 hours";
+      };
+      Timer = {
+        OnCalendar = "*:0/2:00";
+        Persistent = true;
         AccuracySec = "1min";
       };
       Install = {
