@@ -1,39 +1,40 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
 
 let
   rcloneService =
-    { name
-    , REMOTE_NAME
-    , REMOTE_PATH ? "/"
-    , MOUNT_DIR ? "%h/mounts/${name}"
-    , POST_MOUNT_SCRIPT ? ''""''
-    , RCLONE_RC_ON ? "false"
-    , RCLONE_TEMP_DIR ? "/tmp/rclone/%u/${name}"
-    , RCLONE_TPSLIMIT ? "0"
-    , RCLONE_TPSLIMIT_BURST ? "1"
-    , RCLONE_BWLIMIT ? "0"
-    , RCLONE_MOUNT_DAEMON_TIMEOUT ? "0"
-    , RCLONE_MOUNT_MULTI_THREAD_STREAMS ? "4"
-    , RCLONE_MOUNT_TIMEOUT ? "10m"
-    , RCLONE_MOUNT_TRANSFER ? "4"
-    , RCLONE_MOUNT_DIR_CACHE_TIME ? "5m"
-    , RCLONE_MOUNT_MAX_READ_AHEAD ? "256k"
-    , RCLONE_MOUNT_POLL_INTERVAL ? "1m0s"
-    , RCLONE_MOUNT_ATTR_TIMEOUT ? "15s"
-    , RCLONE_MOUNT_UMASK ? "022"
-    , RCLONE_MOUNT_VFS_CACHE_MAX_AGE ? "1h0m0s"
-    , RCLONE_MOUNT_VFS_CACHE_MAX_SIZE ? "128G"
-    , RCLONE_MOUNT_VFS_CACHE_MODE ? "writes"
-    , RCLONE_MOUNT_VFS_CACHE_POLL_INTERVAL ? "1m30s"
-    , RCLONE_MOUNT_VFS_READ_CHUNK_SIZE ? "128M"
-    , RCLONE_MOUNT_VFS_READ_CHUNK_SIZE_LIMIT ? "off"
-    , RCLONE_MOUNT_VFS_WRITE_BACK ? "1m"
-    , RCLONE_MOUNT_VFS_WRITE_WAIT ? "30s"
-    ,
+    {
+      name,
+      REMOTE_NAME,
+      REMOTE_PATH ? "/",
+      MOUNT_DIR ? "%h/mounts/${name}",
+      POST_MOUNT_SCRIPT ? ''""'',
+      RCLONE_RC_ON ? "false",
+      RCLONE_TEMP_DIR ? "/tmp/rclone/%u/${name}",
+      RCLONE_TPSLIMIT ? "0",
+      RCLONE_TPSLIMIT_BURST ? "1",
+      RCLONE_BWLIMIT ? "0",
+      RCLONE_MOUNT_DAEMON_TIMEOUT ? "0",
+      RCLONE_MOUNT_MULTI_THREAD_STREAMS ? "4",
+      RCLONE_MOUNT_TIMEOUT ? "10m",
+      RCLONE_MOUNT_TRANSFER ? "4",
+      RCLONE_MOUNT_DIR_CACHE_TIME ? "5m",
+      RCLONE_MOUNT_MAX_READ_AHEAD ? "256k",
+      RCLONE_MOUNT_POLL_INTERVAL ? "1m0s",
+      RCLONE_MOUNT_ATTR_TIMEOUT ? "15s",
+      RCLONE_MOUNT_UMASK ? "022",
+      RCLONE_MOUNT_VFS_CACHE_MAX_AGE ? "1h0m0s",
+      RCLONE_MOUNT_VFS_CACHE_MAX_SIZE ? "128G",
+      RCLONE_MOUNT_VFS_CACHE_MODE ? "writes",
+      RCLONE_MOUNT_VFS_CACHE_POLL_INTERVAL ? "1m30s",
+      RCLONE_MOUNT_VFS_READ_CHUNK_SIZE ? "128M",
+      RCLONE_MOUNT_VFS_READ_CHUNK_SIZE_LIMIT ? "off",
+      RCLONE_MOUNT_VFS_WRITE_BACK ? "1m",
+      RCLONE_MOUNT_VFS_WRITE_WAIT ? "30s",
     }:
     {
       "rclone-${name}" = {

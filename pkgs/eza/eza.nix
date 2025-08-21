@@ -35,12 +35,13 @@ rustPlatform.buildRustPackage rec {
     installShellFiles
     pandoc
   ];
-  buildInputs =
-    [ zlib ]
-    ++ lib.optionals stdenv.isDarwin [
-      libiconv
-      darwin.apple_sdk.frameworks.Security
-    ];
+  buildInputs = [
+    zlib
+  ]
+  ++ lib.optionals stdenv.isDarwin [
+    libiconv
+    darwin.apple_sdk.frameworks.Security
+  ];
 
   buildNoDefaultFeatures = true;
   buildFeatures = lib.optional gitSupport "git";
@@ -50,20 +51,19 @@ rustPlatform.buildRustPackage rec {
     "man"
   ];
 
-  postInstall =
-    ''
-      pandoc --standalone -f markdown -t man man/eza.1.md > man/eza.1
-      pandoc --standalone -f markdown -t man man/eza_colors.5.md > man/eza_colors.5
-      pandoc --standalone -f markdown -t man man/eza_colors-explanation.5.md > man/eza_colors-explanation.5
-      installManPage man/eza.1 man/eza_colors.5 man/eza_colors-explanation.5
-      installShellCompletion \
-        --bash completions/bash/eza \
-        --fish completions/fish/eza.fish \
-        --zsh completions/zsh/_eza
-    ''
-    + lib.optionalString exaAlias ''
-      ln -s eza $out/bin/exa
-    '';
+  postInstall = ''
+    pandoc --standalone -f markdown -t man man/eza.1.md > man/eza.1
+    pandoc --standalone -f markdown -t man man/eza_colors.5.md > man/eza_colors.5
+    pandoc --standalone -f markdown -t man man/eza_colors-explanation.5.md > man/eza_colors-explanation.5
+    installManPage man/eza.1 man/eza_colors.5 man/eza_colors-explanation.5
+    installShellCompletion \
+      --bash completions/bash/eza \
+      --fish completions/fish/eza.fish \
+      --zsh completions/zsh/_eza
+  ''
+  + lib.optionalString exaAlias ''
+    ln -s eza $out/bin/exa
+  '';
 
   meta = with lib; {
     description = "A modern, maintained replacement for ls";

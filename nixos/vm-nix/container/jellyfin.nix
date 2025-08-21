@@ -50,11 +50,13 @@ in
     after = [
       "docker-network-jellyfin_default.service"
       "docker-build-jellyfin.service"
-    ] ++ jellyfinMounts;
+    ]
+    ++ jellyfinMounts;
     requires = [
       "docker-network-jellyfin_default.service"
       "docker-build-jellyfin.service"
-    ] ++ jellyfinMounts;
+    ]
+    ++ jellyfinMounts;
     bindsTo = jellyfinMounts;
     unitConfig = {
       RequiresMountsFor = [ "/mnt/autofs/data" ];

@@ -73,7 +73,8 @@
       };
       modules = [
         ../nixos/configuration.nix
-      ] ++ inputs.nixpkgs.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
+      ]
+      ++ inputs.nixpkgs.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
     };
 
   mkDarwin =

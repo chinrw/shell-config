@@ -91,11 +91,9 @@
     });
 
     buildRustPackage = prev.buildRustPackage.overrideAttrs (old: {
-      postBuild =
-        old.postBuild or ""
-        + ''
-          export RUSTFLAGS="$RUSTFLAGS -C target-cpu=native -C link-arg=-fuse-ld=mold"
-        '';
+      postBuild = old.postBuild or "" + ''
+        export RUSTFLAGS="$RUSTFLAGS -C target-cpu=native -C link-arg=-fuse-ld=mold"
+      '';
     });
   };
 

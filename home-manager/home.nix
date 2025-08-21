@@ -35,74 +35,72 @@ let
 in
 {
   # You can import other home-manager modules here
-  imports =
-    [
-      # If you want to use home-manager modules from other flakes (such as nix-colors):
-      # inputs.nix-colors.homeManagerModule
-      ./programs/nushell
-      (import ./programs/zsh {
-        inherit
-          lib
-          pkgs
-          isDesktop
-          noGUI
-          proxyUrl
-          ;
-      })
-      (import ./programs/git {
-        inherit
-          lib
-          pkgs
-          isDesktop
-          noGUI
-          isWork
-          hostname
-          proxyUrl
-          ;
-      })
-      (import ./programs/zellij { inherit lib pkgs config; })
-      (import ./programs/sops.nix { inherit lib config isServer; })
+  imports = [
+    # If you want to use home-manager modules from other flakes (such as nix-colors):
+    # inputs.nix-colors.homeManagerModule
+    ./programs/nushell
+    (import ./programs/zsh {
+      inherit
+        lib
+        pkgs
+        isDesktop
+        noGUI
+        proxyUrl
+        ;
+    })
+    (import ./programs/git {
+      inherit
+        lib
+        pkgs
+        isDesktop
+        noGUI
+        isWork
+        hostname
+        proxyUrl
+        ;
+    })
+    (import ./programs/zellij { inherit lib pkgs config; })
+    (import ./programs/sops.nix { inherit lib config isServer; })
 
-      # You can also split up your configuration and import pieces of it here:
-      # ./nvim.nix
-      inputs.nix-index-database.homeModules.nix-index
-      inputs._1password-shell-plugins.hmModules.default
-      inputs.sops-nix.homeManagerModules.sops
-    ]
-    ++ lib.optionals (builtins.match "^(wsl|vm-nix)$" hostname != null) [
-      (import ./programs/rclone.nix { inherit config lib pkgs; })
-    ]
-    ++ lib.optionals (hostname != "vm-nix") [
-      (import ./programs/yazi.nix { inherit config; })
-    ];
+    # You can also split up your configuration and import pieces of it here:
+    # ./nvim.nix
+    inputs.nix-index-database.homeModules.nix-index
+    inputs._1password-shell-plugins.hmModules.default
+    inputs.sops-nix.homeManagerModules.sops
+  ]
+  ++ lib.optionals (builtins.match "^(wsl|vm-nix)$" hostname != null) [
+    (import ./programs/rclone.nix { inherit config lib pkgs; })
+  ]
+  ++ lib.optionals (hostname != "vm-nix") [
+    (import ./programs/yazi.nix { inherit config; })
+  ];
 
   nixpkgs = {
     # You can add overlays here
-    overlays =
-      [
-        # If you want to use overlays exported from other flakes:
-        # (import ../overlays/rust-overlay.nix)
+    overlays = [
+      # If you want to use overlays exported from other flakes:
+      # (import ../overlays/rust-overlay.nix)
 
-        (final: prev: {
-          zjstatus = inputs.zjstatus.packages.${prev.system}.default;
-        })
+      (final: prev: {
+        zjstatus = inputs.zjstatus.packages.${prev.system}.default;
+      })
 
-        outputs.overlays.additions
-        outputs.overlays.modifications
-        outputs.overlays.stable-packages
-        outputs.overlays.unstable-packages
+      outputs.overlays.additions
+      outputs.overlays.modifications
+      outputs.overlays.stable-packages
+      outputs.overlays.unstable-packages
 
-        # Or define it inline, for example:
-        # (final: prev: {
-        #   hi = final.hello.overrideAttrs (oldAttrs: {
-        #     patches = [ ./change-hello-to-hi.patch ];
-        #   });
-        # })
-        # ] ++ lib.optionals (builtins.isString platform && !builtins.match "aarch64" platform) [
-      ]
-      ++ lib.optionals (!(builtins.match "aarch64.*" platform != null)) [
+      # Or define it inline, for example:
+      # (final: prev: {
+      #   hi = final.hello.overrideAttrs (oldAttrs: {
+      #     patches = [ ./change-hello-to-hi.patch ];
+      #   });
+      # })
+      # ] ++ lib.optionals (builtins.isString platform && !builtins.match "aarch64" platform) [
+    ]
+    ++ lib.optionals (!(builtins.match "aarch64.*" platform != null)) [
 
-      ];
+    ];
     # Configure your nixpkgs instance
     config = {
       # Disable if you don't want unfree packages
@@ -298,21 +296,20 @@ in
       ];
 
       package = pkgs.atuin;
-      settings =
-        {
-          show_preview = true;
-          search_mode = "fuzzy";
-          secrets_filter = true;
-          style = "compact";
-          update_check = false;
-          filter_mode = "host";
-        }
-        // lib.optionalAttrs (builtins.match "^(wsl|wsl-mini|archlinux|macos|vm-nix)$" hostname != null) {
-          sync_address = "http://10.0.0.242:8881";
-          key_path = config.sops.secrets.atuin_key.path;
-          auto_sync = true;
-          sync_frequency = "1h";
-        };
+      settings = {
+        show_preview = true;
+        search_mode = "fuzzy";
+        secrets_filter = true;
+        style = "compact";
+        update_check = false;
+        filter_mode = "host";
+      }
+      // lib.optionalAttrs (builtins.match "^(wsl|wsl-mini|archlinux|macos|vm-nix)$" hostname != null) {
+        sync_address = "http://10.0.0.242:8881";
+        key_path = config.sops.secrets.atuin_key.path;
+        auto_sync = true;
+        sync_frequency = "1h";
+      };
     };
 
     bat = {

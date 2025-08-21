@@ -15,33 +15,32 @@
 }:
 {
   # You can import other NixOS modules here
-  imports =
-    [
-      # If you want to use modules from other flakes (such as nixos-hardware):
-      # inputs.hardware.nixosModules.common-cpu-amd
-      # inputs.hardware.nixosModules.common-ssd
-      inputs.sops-nix.nixosModules.sops
+  imports = [
+    # If you want to use modules from other flakes (such as nixos-hardware):
+    # inputs.hardware.nixosModules.common-cpu-amd
+    # inputs.hardware.nixosModules.common-ssd
+    inputs.sops-nix.nixosModules.sops
 
-      # You can also split up your configuration and import pieces of it here:
-      # ./users.nix
+    # You can also split up your configuration and import pieces of it here:
+    # ./users.nix
 
-      # Import your generated (nixos-generate-config) hardware configuration
-      # ./hardware-configuration.nix
-    ]
-    ++ lib.optionals (hostname == "wsl") [
-      ./wsl.nix
-      ./services/samba/wsl-server.nix
-      ./nvidia-wsl.nix
-      ./services/nvidia-container.nix
-      ./services/llm.nix
-    ]
-    ++ lib.optionals (hostname == "wsl-mini") [
-      ./wsl-mini.nix
-      ./services/github-runners.nix
-    ]
-    ++ lib.optionals (hostname == "vm-nix") [
-      ./vm-nix
-    ];
+    # Import your generated (nixos-generate-config) hardware configuration
+    # ./hardware-configuration.nix
+  ]
+  ++ lib.optionals (hostname == "wsl") [
+    ./wsl.nix
+    ./services/samba/wsl-server.nix
+    ./nvidia-wsl.nix
+    ./services/nvidia-container.nix
+    ./services/llm.nix
+  ]
+  ++ lib.optionals (hostname == "wsl-mini") [
+    ./wsl-mini.nix
+    ./services/github-runners.nix
+  ]
+  ++ lib.optionals (hostname == "vm-nix") [
+    ./vm-nix
+  ];
 
   nixpkgs = {
     # You can add overlays here
