@@ -1,8 +1,7 @@
-{
-  config,
-  pkgs,
-  lib,
-  ...
+{ config
+, pkgs
+, lib
+, ...
 }:
 
 let
@@ -34,7 +33,7 @@ in
       ProtectHome = true;
       PrivateTmp = true;
       Restart = "on-failure";
-      ReadWritePaths = [ "/mnt/data/Video/jellyfin" ]; # :contentReference[oaicite:1]{index=1}
+      ReadWritePaths = [ "/mnt/data/Video/jellyfin" "/mnt/data/harmony" ]; # :contentReference[oaicite:1]{index=1}
     };
   };
 
