@@ -204,7 +204,7 @@ in
         unar
         inputs.rustowl-overlay.packages.${pkgs.system}.default
         gemini-cli
-        claude-code
+        unstable.claude-code
         rustscan # modern scanner
         marksman
       ]
