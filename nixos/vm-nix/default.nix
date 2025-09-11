@@ -164,7 +164,7 @@ in
     };
     open-webui = {
       enable = true;
-      package = pkgs.unstable.open-webui;
+      package = pkgs.stable.open-webui;
       host = "192.168.0.240";
       environment = {
         http_proxy = "http://192.168.0.240:10809";
