@@ -200,7 +200,7 @@ in
         Description = "Timer to restart rclone_downloader service every 2 hours";
       };
       Timer = {
-        OnCalendar = "00/2:00:00";
+        OnCalendar = "00/8:00:00";
         Persistent = true;
         AccuracySec = "1min";
       };
