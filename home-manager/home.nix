@@ -208,6 +208,7 @@ in
         unstable.codex
         rustscan # modern scanner
         marksman
+        pyrefly
       ]
       ++ lib.optionals (hostname != "macos" && !smallNode) [
         conda
