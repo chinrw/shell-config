@@ -45,6 +45,7 @@
     aria2
   ];
 
+  services.tailscale.enable = true;
   networking.proxy.default = "http://10.0.0.201:7891";
   networking.enableIPv6 = false;
 
