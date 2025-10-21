@@ -1,9 +1,9 @@
 {
   lib,
-  pkgs,
-  isDesktop,
+  # , pkgs
+  # , isDesktop
   hostname,
-  noGUI,
+  # , noGUI
   isWork,
   proxyUrl,
   ...
@@ -20,23 +20,10 @@
       ui.editor = "nvim";
     };
   };
-
-  programs.git = {
-    enable = true;
-    aliases = {
-      co = "checkout";
-      lg = "lg1";
-      lg1 = "lg1-specific --all";
-      lg2 = "lg2-specific --all";
-      lg3 = "lg3-specific --all";
-
-      lg1-specific = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)'";
-      lg2-specific = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(auto)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)'";
-      lg3-specific = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset) %C(bold cyan)(committed: %cD)%C(reset) %C(auto)%d%C(reset)%n''          %C(white)%s%C(reset)%n''          %C(dim white)- %an <%ae> %C(reset) %C(dim white)(committer: %cn <%ce>)%C(reset)'";
-
-    };
-    delta.enable = false;
-    delta.options = {
+  programs.difftastic.enable = true;
+  programs.delta = {
+    enable = false;
+    options = {
       decorations = {
         commit-decoration-style = "bold yellow box ul";
         file-style = "bold yellow ul";
@@ -62,10 +49,10 @@
       whitespace-error-style = "22 reverse";
       true-color = "always";
     };
-    difftastic.enable = true;
+  };
 
-    userName = "Ruowen Qin";
-    userEmail = if (!isWork) then "chinqrw@gmail.com" else "ruqin@redhat.com";
+  programs.git = {
+    enable = true;
 
     signing = {
       key =
@@ -76,7 +63,23 @@
       signByDefault = true;
       format = "ssh";
     };
-    extraConfig = {
+    settings = {
+      user = {
+        name = "Ruowen Qin";
+        email = if (!isWork) then "chinqrw@gmail.com" else "ruqin@redhat.com";
+      };
+      alias = {
+        co = "checkout";
+        lg = "lg1";
+        lg1 = "lg1-specific --all";
+        lg2 = "lg2-specific --all";
+        lg3 = "lg3-specific --all";
+
+        lg1-specific = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)'";
+        lg2-specific = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(auto)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)'";
+        lg3-specific = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset) %C(bold cyan)(committed: %cD)%C(reset) %C(auto)%d%C(reset)%n''          %C(white)%s%C(reset)%n''          %C(dim white)- %an <%ae> %C(reset) %C(dim white)(committer: %cn <%ce>)%C(reset)'";
+
+      };
       core = {
         packedGitLimit = "512m";
         packedGitWindowSize = "512m";
