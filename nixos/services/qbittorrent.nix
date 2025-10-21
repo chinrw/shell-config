@@ -37,6 +37,7 @@ in
       ReadWritePaths = [
         "/mnt/data/Video/jellyfin"
         "/mnt/data/harmony"
+        "/mnt/data/Downloads/bt"
       ]; # :contentReference[oaicite:1]{index=1}
     };
   };
