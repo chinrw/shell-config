@@ -142,15 +142,10 @@
           hostname = "wsl";
           GPU = "nvidia";
         };
-      };
-
-      nixosConfigurations = {
         "wsl-mini" = helpers.mkNixos {
           hostname = "wsl-mini";
           GPU = "amd";
         };
-      };
-      nixosConfigurations = {
         "vm-nix" = helpers.mkNixos {
           hostname = "vm-nix";
           GPU = "amd";
