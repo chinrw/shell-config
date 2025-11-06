@@ -162,7 +162,7 @@ in
       ]
       ++ lib.optionals (!smallNode) [
 
-        luarocks
+        lua51Packages.lua
         gh # github shell
         procs # A modern replacement for ps written in Rust
         tokei # Count your code, quickly.
