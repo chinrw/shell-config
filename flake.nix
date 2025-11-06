@@ -77,6 +77,8 @@
     # Zellij plugin
     zjstatus.url = "github:dj95/zjstatus";
     zjstatus.inputs.nixpkgs.follows = "nixpkgs";
+    zjstatus.inputs.rust-overlay.follows = "rust-overlay";
+
   };
 
   outputs =
