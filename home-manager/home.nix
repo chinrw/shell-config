@@ -155,7 +155,6 @@ in
         dua
         cachix
         nix-search-cli
-        zjstatus
         age # A simple, modern and secure encryption tool
         sops
         delta # A syntax-highlighting pager for git, diff, grep, and blame output
@@ -163,6 +162,7 @@ in
       ]
       ++ lib.optionals (!smallNode) [
 
+        luarocks
         gh # github shell
         procs # A modern replacement for ps written in Rust
         tokei # Count your code, quickly.
@@ -364,10 +364,12 @@ in
       enable = true;
       settings = {
         git = {
-          paging = {
-            colorArg = "always";
-            pager = "delta --dark --paging=never";
-          };
+          pagers = [
+            {
+              colorArg = "always";
+              pager = "delta --dark --paging=never";
+            }
+          ];
           commit = {
             signOff = true;
           };
