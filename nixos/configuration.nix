@@ -118,8 +118,8 @@
     unzip
     wget
     curl
-    (hiPrio clang)
-    (hiPrio llvm)
+    (lib.hiPrio clang)
+    (lib.hiPrio llvm)
     gcc
     rustc
     cargo
@@ -158,7 +158,7 @@
     neovim = {
       enable = true;
       defaultEditor = true;
-      package = inputs.neovim-nightly-overlay.packages.${pkgs.system}.default;
+      package = inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default;
     };
 
     zsh.enable = true;

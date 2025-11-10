@@ -77,7 +77,7 @@
     });
 
     yazi =
-      (inputs.yazi.packages.${final.system}.default.override {
+      (inputs.yazi.packages.${final.stdenv.hostPlatform.system}.default.override {
         #NOTE need use final to use modify 7z
         _7zz = final._7zz;
       }).overrideAttrs
@@ -101,7 +101,7 @@
   # be accessible through 'pkgs.unstable'
   unstable-packages = final: _prev: {
     unstable = import inputs.nixpkgs-master {
-      inherit (final) system;
+      system = final.stdenv.hostPlatform.system;
       config.allowUnfree = true;
       config.allowUnfreePredicate = _: true;
     };
@@ -109,7 +109,7 @@
 
   stable-packages = final: prev: {
     stable = import inputs.nixpkgs-stable {
-      inherit (final) system;
+      system = final.stdenv.hostPlatform.system;
       config.allowUnfree = true;
       config.allowUnfreePredicate = _: true;
     };

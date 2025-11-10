@@ -82,7 +82,7 @@ in
       # (import ../overlays/rust-overlay.nix)
 
       (final: prev: {
-        zjstatus = inputs.zjstatus.packages.${prev.system}.default;
+        zjstatus = inputs.zjstatus.packages.${prev.stdenv.hostPlatform.system}.default;
       })
 
       outputs.overlays.additions
@@ -202,7 +202,7 @@ in
         devenv # Fast, Declarative, Reproducible, and Composable Developer Environments
         restic # Fast, secure, efficient backup program
         unar
-        inputs.rustowl-overlay.packages.${pkgs.system}.default
+        inputs.rustowl-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
         gemini-cli
         unstable.claude-code
         unstable.codex
@@ -221,7 +221,7 @@ in
       ]
       ++ lib.optionals isDesktop [
         openapi-tui
-        inputs.nixgl.packages.${pkgs.system}.nixGLDefault
+        inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLDefault
         jellyfin-media-player
         aria2
       ]
@@ -237,7 +237,7 @@ in
       ]
       ++ lib.optionals isWsl [
         # Clangd from clang-tools must come first.
-        (hiPrio clang-tools)
+        (lib.hiPrio clang-tools)
         par2cmdline
         marksman
         aria2
@@ -357,7 +357,7 @@ in
     neovim = {
       enable = true;
       defaultEditor = true;
-      package = inputs.neovim-nightly-overlay.packages.${pkgs.system}.default;
+      package = inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default;
     };
 
     lazygit = {

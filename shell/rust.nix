@@ -12,7 +12,7 @@ pkgs.mkShell {
 
     file
     jq
-    poppler_utils
+    poppler-utils
     unar
     ffmpegthumbnailer
     fd
@@ -23,9 +23,11 @@ pkgs.mkShell {
     pkgs.bashInteractive
   ];
 
-  buildInputs =
-    with pkgs;
-    lib.optionals stdenv.isDarwin (with darwin.apple_sdk.frameworks; [ Foundation ]);
+  # Temporarily disabled due to nixpkgs issue with darwin.apple_sdk_11_0
+  # See: https://nixos.org/manual/nixpkgs/stable/#sec-darwin-legacy-frameworks
+  # buildInputs = pkgs.lib.optionals pkgs.stdenv.isDarwin [
+  #   pkgs.darwin.apple_sdk.frameworks.Foundation
+  # ];
 
   env = {
     RUST_BACKTRACE = "1";
