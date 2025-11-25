@@ -45,6 +45,31 @@ in
         https_proxy = thisHostCfg.proxy;
         http_proxy = thisHostCfg.proxy;
       };
+      # Allow the service to create user namespaces
+      serviceOverrides = {
+        PrivateUsers = lib.mkForce false;
+        # Allow namespaces needed for buildFHSEnv + QEMU networking
+        RestrictNamespaces = lib.mkForce "user mnt pid ipc net";
+        # Allow syscalls needed for namespace creation
+        SystemCallFilter = [
+          "@system-service"
+          # Capability syscalls for bubblewrap
+          "@capabilities"
+          # Namespace syscalls for bubblewrap/FHS
+          "unshare"
+          "setns"
+          "clone"
+          "clone3"
+          # Memory protection keys for Node.js V8
+          "pkey_alloc"
+          "pkey_free"
+          "pkey_mprotect"
+          # Mount syscalls for bubblewrap
+          "mount"
+          "umount2"
+          "pivot_root"
+        ];
+      };
     };
   };
 
