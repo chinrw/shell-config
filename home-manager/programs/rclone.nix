@@ -143,6 +143,26 @@ in
       RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "48h0m0s";
     })
     {
+      "rclone_onedrive_sync" = {
+        Unit = {
+          Description = "rclone onedrive sync";
+        };
+        Service = {
+          Type = "simple";
+          ExecStart = ''
+            ${pkgs.rclone}/bin/rclone sync \
+                        onedrive-365: \
+                        /mnt/data/Documents/onedrive \
+                        --log-systemd \
+                        --stats-one-line \
+                        --log-level INFO \
+                        --transfers 8 \
+                        --multi-thread-streams 0 \
+                        --timeout 0 \
+                        --bwlimit 5M
+          '';
+        };
+      };
       "rclone_downloader" = {
         Unit = {
           Description = "rclone baidu netdisk";
@@ -181,6 +201,23 @@ in
     "rclone_downloader" = {
       Unit = {
         Description = "Timer for rclone baidu netdisk";
+      };
+      Timer = {
+        # First run 5 min after user session starts, then every 10 min
+        OnStartupSec = "5min";
+        OnUnitActiveSec = "10min";
+
+        Persistent = true; # catch up on missed runs after suspend/offline
+        AccuracySec = "1min";
+      };
+      Install = {
+        WantedBy = [ "timers.target" ];
+      };
+    };
+
+    "rclone_onedrive_sync" = {
+      Unit = {
+        Description = "Timer for rclone onedrive sync";
       };
       Timer = {
         # First run 5 min after user session starts, then every 10 min
