@@ -213,9 +213,6 @@ in
       ++ lib.optionals (hostname != "macos" && !smallNode) [
         conda
       ]
-      ++ lib.optionals (hostname == "vm-nix") [
-        iperf3
-      ]
       ++ lib.optionals (!noGUI) [
         mpv
       ]
@@ -223,7 +220,6 @@ in
         openapi-tui
         inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLDefault
         jellyfin-media-player
-        aria2
       ]
       ++ lib.optionals (!isDesktop) [
         rustup
@@ -235,12 +231,12 @@ in
       ]
       ++ lib.optionals (!isWork) [
       ]
-      ++ lib.optionals isWsl [
+      ++ lib.optionals (isWsl || hostname == "vm-nix") [
+        iperf3
         # Clangd from clang-tools must come first.
         (lib.hiPrio clang-tools)
         par2cmdline
         marksman
-        aria2
         gdb
         gef # GEF (GDB Enhanced Features) - a modern experience for GDB with advanced debugging capabilities for exploit devs & reverse engineers on Linux
         asciinema_3
