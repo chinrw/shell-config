@@ -79,7 +79,10 @@ in
       3001 # lanraragi
       7892 # AutoBangumi
 
+      7861 # gcli2api
+      8000
       8080 # open-webui
+      8484 # clewdr claude reverse
       8888 # kik
 
       8096 # jellyfin
