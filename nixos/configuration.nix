@@ -135,7 +135,7 @@
     bpftrace
     lsof
     psmisc
-    config.boot.kernelPackages.perf
+    perf
     osc # Access the system clipboard from anywhere using the ANSI OSC52 sequence
 
     (pkgs.python3.withPackages (
