@@ -144,6 +144,10 @@ in
     layout = "us";
     variant = "";
   };
+  services.tailscale = {
+    enable = true;
+    extraSetFlags = [ "--netfilter-mode=nodivert" ];
+  };
   sops.secrets."xray" = {
     owner = "root";
     sopsFile = ../../secrets/xray.conf;
