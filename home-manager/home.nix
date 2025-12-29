@@ -46,6 +46,7 @@ in
         isDesktop
         noGUI
         proxyUrl
+        config
         ;
     })
     (import ./programs/git {
