@@ -81,7 +81,6 @@ in
 
       7861 # gcli2api
       8000
-      8080 # open-webui
       8484 # clewdr claude reverse
       8888 # kik
 
@@ -169,15 +168,15 @@ in
         http_proxy = "http://127.0.0.1:10809";
       };
     };
-    open-webui = {
-      enable = true;
-      package = pkgs.stable.open-webui;
-      host = "192.168.0.240";
-      environment = {
-        http_proxy = "http://192.168.0.240:10809";
-        https_proxy = "http://192.168.0.240:10809";
-      };
-    };
+    # open-webui = {
+    #   enable = true;
+    #   package = pkgs.stable.open-webui;
+    #   host = "192.168.0.240";
+    #   environment = {
+    #     http_proxy = "http://192.168.0.240:10809";
+    #     https_proxy = "http://192.168.0.240:10809";
+    #   };
+    # };
 
     kavita = {
       enable = true;
