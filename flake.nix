@@ -61,6 +61,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    linux-src = {
+      url = "git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git?ref=linux-rolling-stable&shallow=1";
+      flake = false;
+    };
+
     # support for wsl
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
     # Rust development
@@ -116,6 +121,7 @@
         devShells = {
           rust = import ./shell/rust.nix { inherit pkgs inputs; };
           hm = import ./shell/home-manager.nix { inherit pkgs inputs; };
+          kernel = import ./shell/kernel.nix { inherit pkgs inputs; };
         };
         # formatter used by `nix fmt`
         formatter = pkgs.nixfmt-tree;
