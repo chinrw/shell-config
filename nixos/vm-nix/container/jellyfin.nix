@@ -64,9 +64,14 @@ in
     partOf = [
       "docker-compose-jellyfin-root.target"
     ];
-    wantedBy = [
-      "docker-compose-jellyfin-root.target"
-    ];
+  };
+
+  systemd.timers."docker-jellyfin-delay" = {
+    wantedBy = [ "docker-compose-jellyfin-root.target" ];
+    timerConfig = {
+      OnActiveSec = "120";
+      Unit = "docker-jellyfin.service";
+    };
   };
 
   # Networks
