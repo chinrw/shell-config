@@ -204,7 +204,7 @@ in
         restic # Fast, secure, efficient backup program
         unar
         inputs.rustowl-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
-        gemini-cli
+        unstable.gemini-cli
         unstable.claude-code
         # unstable.codex
         rustscan # modern scanner
