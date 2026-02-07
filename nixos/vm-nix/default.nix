@@ -36,6 +36,7 @@ in
     description = "chin39";
     extraGroups = [
       "networkmanager"
+      "docker"
       "wheel"
       "aria2"
       "media"
