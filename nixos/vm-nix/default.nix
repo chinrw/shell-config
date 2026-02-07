@@ -43,6 +43,7 @@ in
     ];
     shell = pkgs.zsh;
     packages = with pkgs; [ ];
+    openssh.authorizedKeys.keys = [ config.sops.secrets.ssh_pub_key.path ];
   };
 
   networking = {
