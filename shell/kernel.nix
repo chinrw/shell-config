@@ -22,6 +22,7 @@ pkgs.mkShell.override { stdenv = pkgs.clangStdenv; } {
   KERNEL_SRC = kernelPkg.src;
   KERNEL_VERSION = kernelPkg.version;
   LLVM = "1";
+  NIX_CFLAGS_COMPILE = "-Wno-unused-command-line-argument";
 
   shellHook = ''
     echo "Kernel Source: $KERNEL_SRC"
