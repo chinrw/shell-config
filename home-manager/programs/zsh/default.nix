@@ -86,10 +86,6 @@ bindkey \^U backward-kill-line
 bindkey '^r' _atuin_search_widget
 
 "
-      + lib.optionalString noGUI "
-# for single user mode
-if [ -e /home/chin39/.nix-profile/etc/profile.d/nix.sh ]; then . /home/chin39/.nix-profile/etc/profile.d/nix.sh; fi 
-"
       + lib.optionalString isDesktop "
 alias_flatpak_exports() {
   zmodload zsh/parameter
@@ -114,6 +110,21 @@ if [ \"$(command -v flatpak)\" ] ; then
     alias_flatpak_exports
 fi
 ";
+
+    profileExtra = lib.optionalString noGUI ''
+      # Source Nix profile for single user mode
+      if [ -e /home/chin39/.nix-profile/etc/profile.d/nix.sh ]; then
+        . /home/chin39/.nix-profile/etc/profile.d/nix.sh
+      fi
+      # Re-exec into Nix's zsh to avoid glibc mismatch with Nix-built modules
+      if [[ ! "$(readlink /proc/$$/exe 2>/dev/null)" == /nix/store/* ]]; then
+        _nix_zsh="$(command -v zsh 2>/dev/null)"
+        if [[ "$_nix_zsh" == /nix/store/* ]]; then
+          exec "$_nix_zsh" -l
+        fi
+        unset _nix_zsh
+      fi
+    '';
 
     enableCompletion = true;
     autosuggestion.enable = true;
