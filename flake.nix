@@ -187,6 +187,10 @@
           isServer = true;
           smallNode = true;
         };
+        "chin39@arch-lxc" = helpers.mkHome {
+          hostname = "arch-lxc";
+          isServer = true;
+        };
         "chin39@proxmox" = helpers.mkHome {
           hostname = "chin39";
           isServer = true;
