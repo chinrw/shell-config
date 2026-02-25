@@ -375,6 +375,15 @@ in
     };
   };
 
+  home.activation.neovimConfig = lib.mkIf (!smallNode) (
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      NVIM_DIR="${config.home.homeDirectory}/.config/nvim"
+      if [ ! -d "$NVIM_DIR" ]; then
+        run ${pkgs.git}/bin/git clone https://github.com/chinrw/nvim-config.git "$NVIM_DIR"
+      fi
+    ''
+  );
+
   xdg = {
     enable = isLinux;
     userDirs = {
