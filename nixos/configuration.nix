@@ -137,13 +137,6 @@
     psmisc
     perf
     osc # Access the system clipboard from anywhere using the ANSI OSC52 sequence
-
-    (pkgs.python3.withPackages (
-      python-pkgs: with python-pkgs; [
-        # select Python packages here
-        bpython
-      ]
-    ))
   ];
   # Set the default editor to vim
   environment.variables = {
