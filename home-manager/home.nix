@@ -170,6 +170,7 @@ in
         fq # jq for binary formats - tool, language and decoders for working with binary and text formats
         genact
         man-pages
+        pyright
         basedpyright
         tailspin # 🌀 A log file highlighter
         rename
