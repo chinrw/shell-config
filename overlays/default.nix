@@ -96,6 +96,7 @@
         "binsider"
         "rustscan"
         "pyrefly"
+        "gitui"
       ];
       rustOptimized =
         if isX86 then

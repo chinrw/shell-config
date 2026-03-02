@@ -358,6 +358,10 @@ in
       package = inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default;
     };
 
+    gitui = {
+      enable = true;
+    };
+
     lazygit = {
       enable = true;
       settings = {
