@@ -7,94 +7,132 @@
   # This one contains whatever you want to overlay
   # You can change versions, add patches, set compilation flags, anything really.
   # https://nixos.wiki/wiki/Overlays
-  modifications = final: prev: {
-    # eza = prev.eza.overrideAttrs (old: {
-    #   # We can change the version of the package
-    #   extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold -Clinker-plugin-lto";
-    # });
-    # yazi = prev.yazi.overrideAttrs (old: {
-    #   # We can change the version of the package
-    #   extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold -Clinker-plugin-lto";
-    # });
-    # zoxide = prev.zoxide.overrideAttrs (old: {
-    #   # We can change the version of the package
-    #   extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold -Clinker-plugin-lto";
-    # });
-    # zellij = prev.zellij.overrideAttrs (old: rec {
-    #   # We can change the version of the package
-    #   extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold -Clinker-plugin-lto";
-    # });
-    #
-    # In Nix, the rec keyword stands for “recursive attribute set.” A recursive
-    # set means that attributes defined inside can reference each other without
-    # needing to be defined beforehand
-    # rec {
-    #   version = "0.26";
-    #   src = fetchFromGitHub {
-    #     owner = "naggie";
-    #     repo  = "dstask";
-    #     rev   = "v${version}";
-    #     sha256 = "sha256-...";
-    #   };
-    # }
-    # Without rec:
-    # You can’t refer to attributes (like version) from within the same set; the
-    # interpreter doesn’t know they exist yet.
-    #
-    # With rec: The set is self-referential. This means inside the set, you can
-    # do things like rev = "v${version}" because version is also defined in
-    # that same set.
+  modifications = final: prev:
+    let
+      isX86 = prev.stdenv.hostPlatform.isx86_64;
+
+      # Optimized Clang stdenv with mold linker (x86_64-linux only).
+      # Packages in clangOptimizedNames use this instead of the default GCC stdenv.
+      optimizedClangStdenv =
+        let
+          # Use prev (not final) to avoid infinite recursion — packages built
+          # with this stdenv must not pull in the overlay's own output.
+          base = prev.llvmPackages.stdenv;
+          llvmBins = prev.llvmPackages.llvm;
+          moldBintools = base.cc.bintools.override (old: {
+            extraBuildCommands = (old.extraBuildCommands or "") + ''
+              ln -sf ${prev.mold}/bin/ld.mold $out/bin/ld.mold
+            '';
+          });
+        in
+        base.override {
+          allowedRequisites = null;
+          cc = base.cc.override (old: {
+            bintools = moldBintools;
+            extraBuildCommands = (old.extraBuildCommands or "") + ''
+              echo "-O3 -march=x86-64-v3 -flto=thin -fno-plt -fno-semantic-interposition -ffunction-sections -fdata-sections -pipe -fuse-ld=mold -Wl,--gc-sections -Wl,--icf=safe -Wno-unused-command-line-argument" >> $out/nix-support/cc-cflags-before
+              ln -sf ${llvmBins}/bin/llvm-ar $out/bin/ar
+              ln -sf ${llvmBins}/bin/llvm-ranlib $out/bin/ranlib
+              ln -sf ${llvmBins}/bin/llvm-nm $out/bin/nm
+              ln -sf ${llvmBins}/bin/llvm-strip $out/bin/strip
+            '';
+          });
+        };
+
+      # Packages to build with optimized Clang + mold + cflags.
+      clangOptimizedNames = [
+        "htop"
+        "fastfetch"
+        "wget"
+        "aria2"
+        "mediainfo"
+        "iperf3"
+        "par2cmdline"
+        "neovim"
+        "zsh"
+        "zsh-fzf-tab"
+      ];
+      clangOptimized =
+        if isX86 then
+          builtins.listToAttrs (
+            map (name: {
+              inherit name;
+              value = prev.${name}.override { stdenv = optimizedClangStdenv; };
+            }) clangOptimizedNames
+          )
+        else
+          { };
+
+      # GCC exception list — packages that fail to compile with Clang or LTO.
+      gccExceptionNames = builtins.attrNames {
+        # inherit (prev) packageName;
+      };
+      gccExceptions = builtins.listToAttrs (
+        map (name: {
+          inherit name;
+          value = prev.${name}.override { stdenv = final.gccStdenv; };
+        }) gccExceptionNames
+      );
+
+      # ── Rust optimization flags ────────────────────────────────────────
+      optimizedRustFlags =
+        (if isX86 then "-C target-cpu=x86-64-v3 " else "")
+        + "-C link-arg=-fuse-ld=mold";
+
+      # Rust packages to build with optimized flags.
+      rustOptimizedNames = [
+        "ripgrep"
+        "fd"
+        "bat"
+        "zoxide"
+        "dua"
+        "tokei"
+        "procs"
+        "hexyl"
+        "ouch"
+        "tailspin"
+        "hyperfine"
+        "gitoxide"
+        "binsider"
+        "rustscan"
+        "pyrefly"
+      ];
+      rustOptimized =
+        if isX86 then
+          builtins.listToAttrs (
+            map (name: {
+              inherit name;
+              value = prev.${name}.overrideAttrs (old: {
+                RUSTFLAGS = (old.RUSTFLAGS or "") + " ${optimizedRustFlags}";
+                nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ prev.mold ];
+              });
+            }) rustOptimizedNames
+          )
+        else
+          { };
+    in
+    clangOptimized // gccExceptions // rustOptimized // {
 
     dstask = prev.dstask.overrideAttrs (old: {
-
-      # Override the platforms
       meta = old.meta // {
         platforms = final.lib.platforms.unix;
       };
     });
 
-    # lanraragi = prev.lanraragi.overrideAttrs (old: rec {
-    #   version = "0.9.41";
-    #
-    #   src = prev.fetchFromGitHub {
-    #     owner = "Difegue";
-    #     repo = "LANraragi";
-    #     rev = "v.${version}";
-    #     hash = "sha256-HF2g8rrcV6f6ZTKmveS/yjil/mBxpvRUFyauv5f+qQ8=";
-    #   };
-    #
-    #   patches = [
-    #     ./patches/lanraragi/install.patch
-    #     ./patches/lanraragi/fix-paths.patch
-    #     ./patches/lanraragi/expose-password-hashing.patch
-    #   ];
-    #   npmDepsHash = "";
-    # });
-
-    _7zz = prev._7zz.override (old: {
+    # 7-Zip: unfree + uasm on x86_64 (uses GCC — its Makefile has GCC-specific flags)
+    _7zz = prev._7zz.override {
       enableUnfree = true;
-      useUasm = final.stdenv.isx86_64;
-    });
+      useUasm = isX86;
+    };
 
+    # yazi: from flake input, uses shared Rust flags + optimized _7zz
     yazi =
-      (inputs.yazi.packages.${final.stdenv.hostPlatform.system}.default.override {
-        #NOTE need use final to use modify 7z
+      (inputs.yazi.packages.${prev.stdenv.hostPlatform.system}.default.override {
         _7zz = final._7zz;
       }).overrideAttrs
         (old: {
-          # We can change the version of the package
-          extraRustcOpts = "-C target-cpu=native -C link-arg=-fuse-ld=mold -Clinker-plugin-lto";
+          extraRustcOpts = optimizedRustFlags;
         });
-
-    zsh-fzf-tab = prev.zsh-fzf-tab.override (old: {
-      stdenv = final.clangStdenv;
-    });
-
-    buildRustPackage = prev.buildRustPackage.overrideAttrs (old: {
-      postBuild = old.postBuild or "" + ''
-        export RUSTFLAGS="$RUSTFLAGS -C target-cpu=native -C link-arg=-fuse-ld=mold"
-      '';
-    });
   };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
