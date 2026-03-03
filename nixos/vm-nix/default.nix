@@ -93,6 +93,7 @@ in
 
       10808
       10809
+      22267 # alas
     ];
     allowedUDPPorts = [
       53
@@ -201,6 +202,7 @@ in
 
   environment.systemPackages = with pkgs; [
     cifs-utils
+    android-tools
   ];
 
   fileSystems."/mnt/data" = {
