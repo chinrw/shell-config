@@ -74,6 +74,9 @@ in
   ]
   ++ lib.optionals (hostname != "vm-nix") [
     (import ./programs/yazi.nix { inherit config; })
+  ]
+  ++ [
+    (import ./programs/gitui { })
   ];
 
   nixpkgs = {
@@ -356,10 +359,6 @@ in
       enable = true;
       defaultEditor = true;
       package = inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default;
-    };
-
-    gitui = {
-      enable = true;
     };
 
     lazygit = {
