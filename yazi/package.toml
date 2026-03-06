@@ -5,23 +5,23 @@ hash = "50da29476e744dba37d77fb209328fd1"
 
 [[plugin.deps]]
 use = "ndtoan96/ouch"
-rev = "10b4627"
-hash = "3ec6a973d506665f1570a9fe08343fd8"
+rev = "406ce6c"
+hash = "f5afc904d5106ee368c8aa2ded43bd74"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:git"
-rev = "63f9650"
-hash = "bf6f074cd41ee33c3360341d168f9733"
+rev = "1962818"
+hash = "26db011a778f261d730d4f5f8bf24b3f"
 
 [[plugin.deps]]
 use = "hankertrix/augment-command"
-rev = "9b15ea4"
-hash = "32cfc63cf0f802fc471f81868d93dbfe"
+rev = "681158d"
+hash = "63ed5325016895306781d13690b246bf"
 
 [[plugin.deps]]
 use = "iynaix/time-travel"
-rev = "7e0179e"
-hash = "69967963fba96295a07b68354fc91ea9"
+rev = "aaec6e2"
+hash = "3d52b2b88c91a4ece2f7ed68ff39bb7b"
 
 [flavor]
 deps = []
