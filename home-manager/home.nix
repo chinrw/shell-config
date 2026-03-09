@@ -167,6 +167,7 @@ in
       ++ lib.optionals (!smallNode) [
 
         lua51Packages.lua
+        uv # An extremely fast Python package and project manager, written in Rust.
         gh # github shell
         procs # A modern replacement for ps written in Rust
         tokei # Count your code, quickly.
