@@ -21,6 +21,7 @@
         # path = "%r/test.txt";
       };
       "atuin_key" = { };
+      "git_allowed_signers" = { };
       "proxy/clash" = { };
     }
     // lib.optionalAttrs (!isServer) {

@@ -1,5 +1,6 @@
 {
   lib,
+  config,
   # , pkgs
   # , isDesktop
   hostname,
@@ -95,6 +96,7 @@
       };
 
       gpg.format = "ssh";
+      gpg.ssh.allowedSignersFile = config.sops.secrets."git_allowed_signers".path;
       pull.rebase = true;
       push.autoSetupRemote = true;
 

@@ -58,6 +58,7 @@ in
         isWork
         hostname
         proxyUrl
+        config
         ;
     })
     (import ./programs/zellij { inherit lib pkgs config; })
