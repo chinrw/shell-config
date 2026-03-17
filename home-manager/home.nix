@@ -366,6 +366,9 @@ in
     lazygit = {
       enable = true;
       settings = {
+        os = {
+          copyToClipboardCmd = "printf '%s' {{text}} | osc copy";
+        };
         git = {
           pagers = [
             {
