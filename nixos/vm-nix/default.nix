@@ -79,6 +79,7 @@ in
       5432
 
       5000 # kavita
+      5001
       3001 # lanraragi
       7892 # AutoBangumi
 
