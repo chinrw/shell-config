@@ -177,6 +177,7 @@ in
         man-pages
         pyright
         basedpyright
+        opencode
         tailspin # 🌀 A log file highlighter
         rename
 
