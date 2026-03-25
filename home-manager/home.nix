@@ -398,8 +398,9 @@ in
     userDirs = {
       enable = isLinux;
       createDirectories = lib.mkDefault true;
+      setSessionVariables = true;
       extraConfig = {
-        XDG_SCREENSHOTS_DIR = "${config.home.homeDirectory}/Pictures/Screenshots";
+        SCREENSHOTS = "${config.home.homeDirectory}/Pictures/Screenshots";
       };
     };
   };
