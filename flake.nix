@@ -201,10 +201,12 @@
         "chin39@arch-lxc" = helpers.mkHome {
           hostname = "arch-lxc";
           isServer = true;
+          useLocalCache = true;
         };
         "chin39@proxmox" = helpers.mkHome {
           hostname = "chin39";
           isServer = true;
+          useLocalCache = true;
         };
         "chin39@arch-vm" = helpers.mkHome {
           hostname = "arch";
@@ -221,6 +223,7 @@
         "chin39@gentoo-server" = helpers.mkHome {
           hostname = "gentoo-server";
           isServer = true;
+          useLocalCache = true;
         };
         "chin39@vm-nix" = helpers.mkHome {
           hostname = "vm-nix";
@@ -231,6 +234,7 @@
           hostname = "jd-cloud";
           isServer = true;
           noGUI = true;
+          useLocalCache = true;
           smallNode = true;
         };
         "chin39@macos" = helpers.mkHome {

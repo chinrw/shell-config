@@ -206,7 +206,7 @@ in
   environment.systemPackages = with pkgs; [
     cifs-utils
     android-tools
-    python
+    python3
   ];
 
   fileSystems."/mnt/data" = {

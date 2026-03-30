@@ -14,6 +14,7 @@
       platform ? "x86_64-linux",
       isServer ? false,
       smallNode ? false,
+      useLocalCache ? false,
     }:
     let
       isWsl = builtins.substring 0 3 hostname == "wsl";
@@ -34,6 +35,7 @@
           isWsl
           isWork
           isServer
+          useLocalCache
           ;
       };
       modules = [ ../home-manager/home.nix ];
