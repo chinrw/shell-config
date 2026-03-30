@@ -80,7 +80,7 @@ in
       5246
       5432
 
-      5000 # kavita
+      5000 # local binary cache
       5001
       3001 # lanraragi
       7892 # AutoBangumi
@@ -184,11 +184,11 @@ in
     #   };
     # };
 
-    kavita = {
-      enable = true;
-      tokenKeyFile = "/etc/nixos/secrets/kavita_token.key";
-      # make sure the service user can read the key
-    };
+    # kavita = {
+    #   enable = true;
+    #   tokenKeyFile = "/etc/nixos/secrets/kavita_token.key";
+    #   # make sure the service user can read the key
+    # };
     komga = {
       enable = true;
       openFirewall = true;
@@ -201,7 +201,7 @@ in
     # };
 
   };
-  users.users.kavita.extraGroups = [ "kavita" ];
+  # users.users.kavita.extraGroups = [ "kavita" ];
 
   environment.systemPackages = with pkgs; [
     cifs-utils
