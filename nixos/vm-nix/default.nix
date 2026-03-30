@@ -26,6 +26,7 @@ in
         ;
     })
     ../services/qbittorrent.nix
+    ../services/cachix-deploy.nix
     ./kernel.nix
     # ./rclone.nix
     # ./proxy.nix

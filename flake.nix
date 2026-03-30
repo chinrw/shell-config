@@ -79,6 +79,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    cachix-deploy-flake = {
+      url = "github:cachix/cachix-deploy-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Zellij plugin
     zjstatus.url = "github:dj95/zjstatus";
     zjstatus.inputs.nixpkgs.follows = "nixpkgs";
@@ -134,6 +139,12 @@
 
       # Your custom packages and modifications, exported as overlays
       overlays = import ./overlays { inherit inputs; };
+
+      deploy.vm-nix = inputs.cachix-deploy-flake.lib.spec {
+        agents = {
+          vm-nix = self.nixosConfigurations.vm-nix.config.system.build.toplevel;
+        };
+      };
 
       # Reusable nixos modules you might want to export
       # These are usually stuff you would upstream into nixpkgs
