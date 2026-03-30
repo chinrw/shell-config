@@ -13,5 +13,8 @@
     secretKeyFile = config.sops.secrets."nix-serve-secret-key".path;
   };
 
+  # Auto-sign all builds so other hosts can pull from nix-serve
+  nix.settings.secret-key-files = [ config.sops.secrets."nix-serve-secret-key".path ];
+
   networking.firewall.allowedTCPPorts = [ 5000 ];
 }
