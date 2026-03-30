@@ -27,6 +27,7 @@ in
     })
     ../services/qbittorrent.nix
     ../services/cachix-deploy.nix
+    ../services/nix-serve.nix
     ./kernel.nix
     # ./rclone.nix
     # ./proxy.nix
@@ -205,6 +206,7 @@ in
   environment.systemPackages = with pkgs; [
     cifs-utils
     android-tools
+    python
   ];
 
   fileSystems."/mnt/data" = {
