@@ -14,7 +14,6 @@
   hostname,
   noGUI,
   isServer,
-  useLocalCache,
   platform,
   ...
 }:
@@ -253,13 +252,6 @@ in
       ];
   };
 
-  nix = lib.mkIf useLocalCache {
-    package = pkgs.nix;
-    settings = {
-      extra-substituters = [ "http://192.168.0.240:5000" ];
-      extra-trusted-public-keys = [ "vm-nix:5SZMXyCcqGm5z/GJNdx+wRyyE8CKtcvSsaDY0uFp25s=" ];
-    };
-  };
 
   # Enable home-manager and git
   programs.home-manager.enable = true;
