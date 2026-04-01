@@ -90,6 +90,7 @@ in
       8484 # clewdr claude reverse
       8888 # kik
 
+      8787
       8096 # jellyfin
       7359
       1900
