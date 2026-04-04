@@ -98,9 +98,14 @@ in
       10808
       10809
       22267 # alas
+
+      8384 # syncthing web GUI
+      22000 # syncthing sync protocol
     ];
     allowedUDPPorts = [
       53
+      22000 # syncthing QUIC sync
+      21027 # syncthing local discovery
     ];
     allowedUDPPortRanges = [
       # { from = 4000; to = 4007; }
