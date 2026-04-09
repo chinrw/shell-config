@@ -37,9 +37,13 @@
       # loss) loses at most a minute of queue state instead of
       # everything since the last clean shutdown.
       "save-session-interval" = 60;
-      # Include completed & errored downloads in the session so their
-      # history is preserved across restarts, not just in-progress.
-      "force-save" = true;
+      # Do NOT enable `force-save` — despite its innocent-sounding
+      # name, it causes aria2 to retain the `.aria2` control file
+      # next to every completed download forever (the option is
+      # designed for BitTorrent seeding state, not HTTP history).
+      # Standard save-session already handles restart-resume for
+      # in-progress downloads; completed ones don't need their
+      # control files preserved.
     };
   };
   users.users.aria2.extraGroups = [ sharedGroup ];
