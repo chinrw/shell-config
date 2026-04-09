@@ -28,6 +28,20 @@
     # Admins get /promote etc. in-game
     admins = [ "chin39" ];
 
+    # Keep the game ticking when no players are connected.
+    # By default factorio-headless pauses the simulation whenever
+    # the player count drops to zero, which means trains don't
+    # run, biters don't evolve, science doesn't tick while you're
+    # away. Setting auto_pause=false in the generated
+    # server-settings.json makes the server run continuously.
+    #
+    # `only_admins_can_pause_the_game` is kept at its default
+    # (true) so randoms can't freeze the factory for everyone if
+    # you open the game to more than just yourself.
+    extraSettings = {
+      auto_pause = false;
+    };
+
     # NOTE: `mods` is intentionally left unset.
     #
     # When `mods = []`, the module does NOT pass `--mod-directory`,
