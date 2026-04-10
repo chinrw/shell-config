@@ -28,6 +28,11 @@
       "rpc-allow-origin-all" = true;
       "auto-file-renaming" = false;
       "max-concurrent-downloads" = 10;
+      # Retry indefinitely with a 30s cooldown between attempts.
+      # Default is max-tries=5, retry-wait=0 (5 rapid-fire retries
+      # then permanent failure). 0 = unlimited retries.
+      "max-tries" = 0;
+      "retry-wait" = 600;
 
       # Resume on restart. The module already sets `save-session` to
       # /var/lib/aria2/aria2.session automatically, so we just need
