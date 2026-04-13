@@ -207,7 +207,7 @@
 
         };
         "chin39@proxmox" = helpers.mkHome {
-          hostname = "chin39";
+          hostname = "proxmox";
           isServer = true;
 
         };
