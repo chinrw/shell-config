@@ -63,7 +63,7 @@ in
     })
     (import ./programs/zellij { inherit lib pkgs config; })
     (import ./programs/sops.nix { inherit lib config isServer; })
-    (import ./programs/syncthing.nix { inherit lib hostname; })
+    (import ./programs/syncthing.nix { inherit lib config hostname; })
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
