@@ -40,6 +40,8 @@ in
           path = "/mnt/elysion/data/Documents/onedrive";
           devices = [ "windows-desktop" ];
           type = "sendreceive";
+          fsWatcherEnabled = true;
+          fsWatcherDelayS = 10;
         };
       })
     ];
