@@ -40,7 +40,7 @@ extract = [
 ]
 play = [
 	{ run = 'mpv "$@"', orphan = true, for = "unix" },
-	{ run = '/mnt/d/tools/mpv-lazy/mpv.exe "$1"', dexc = "WSL mpv", orphan = true, for = "linux" },
+	{ run = '/mnt/d/tools/mpv-lazy/mpv.exe "$1"', desc = "WSL mpv", orphan = true, for = "linux" },
 	{ run = 'IINA "%1"', orphan = true, for = "macos" },
 	{ run = 'mpv "%1"', orphan = true, for = "windows" },
 	{ run = '''mediainfo "$1"; echo "Press enter to exit"; read _''', block = true, desc = "Show media info", for = "unix" },
@@ -52,7 +52,7 @@ view = [
 [open]
 rules = [
 	# Folder
-	{ name = "*/", use = [ "edit", "open", "reveal" ] },
+	{ url = "*/", use = [ "edit", "open", "reveal" ] },
 	# Text
 	{ mime = "text/*", use = [ "edit", "reveal" ] },
 	# Image
@@ -67,14 +67,14 @@ rules = [
 	# Empty file
 	{ mime = "inode/empty", use = [ "edit", "reveal" ] },
 	# Fallback
-	{ name = "*", use = [ "open", "reveal", "edit" ] },
+	{ url = "*", use = [ "open", "reveal", "edit" ] },
 ]
 
 
 [plugin]
 prefetchers = [
 	# Mimetype
-	{ name = "*", cond = "!mime", run = "mime", prio = "high" },
+	{ url = "*", cond = "!mime", run = "mime", prio = "high" },
 ]
 prepend_previewers = [
 	# Archive previewer
@@ -85,7 +85,7 @@ prepend_previewers = [
 	{ mime = "application/x-rar", run = "ouch" },
 	{ mime = "application/x-xz", run = "ouch" },
 ]
-append_previewers = [{ name = "*", run = "hexyl" }]
+append_previewers = [{ url = "*", run = "hexyl" }]
 
 # [[plugin.prepend_fetchers]]
 # id = "mime"
@@ -96,10 +96,12 @@ append_previewers = [{ name = "*", run = "hexyl" }]
 
 [[plugin.prepend_fetchers]]
 id = "git"
-name = "*"
+url = "*"
 run = "git"
+group = "git"
 
 [[plugin.prepend_fetchers]]
 id = "git"
-name = "*/"
+url = "*/"
 run = "git"
+group = "git"
