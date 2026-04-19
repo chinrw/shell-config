@@ -118,6 +118,7 @@
     unzip
     wget
     curl
+    inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
     (lib.hiPrio clang)
     (lib.hiPrio llvm)
     gcc
@@ -146,12 +147,6 @@
   programs = {
     nix-ld = {
       enable = true;
-    };
-
-    neovim = {
-      enable = true;
-      defaultEditor = true;
-      package = inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default;
     };
 
     zsh.enable = true;

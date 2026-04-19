@@ -127,6 +127,7 @@ in
     sessionVariables = lib.mkMerge [
       {
         _ZO_FZF_OPTS = "--preview 'eza -G -a --color auto --sort=accessed --git --icons -s type {2}'";
+        EDITOR = "nvim";
       }
       # (lib.mkIf (proxyUrl != "") {
       #   http_proxy = proxyUrl;
@@ -146,6 +147,7 @@ in
         unstable.zellij
         duf # better df
         tcpdump # monitor tcp
+        inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
 
         # (pkgs.dstask.overrideAttrs ({ meta ? { }, ... }: {
         #   meta = meta // {
@@ -358,20 +360,6 @@ in
         "--smart-case"
       ];
       enable = true;
-    };
-
-    neovim = {
-      enable = true;
-      defaultEditor = true;
-      package = inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default;
-      # home-manager ≥ 26.05 flipped these defaults from true to false.
-      # Pin them explicitly to silence the transition warning and to
-      # shrink the closure — modern Lua-based plugins don't use the
-      # legacy :ruby / :python3 providers, so dropping pynvim + a ruby
-      # interpreter is free savings. If a plugin ever complains in
-      # `:checkhealth`, flip the relevant one back to true.
-      withRuby = false;
-      withPython3 = false;
     };
 
     lazygit = {
