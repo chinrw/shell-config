@@ -39,7 +39,7 @@
     # (true) so randoms can't freeze the factory for everyone if
     # you open the game to more than just yourself.
     extraSettings = {
-      auto_pause = false;
+      # auto_pause = false;
     };
 
     # NOTE: `mods` is intentionally left unset.
