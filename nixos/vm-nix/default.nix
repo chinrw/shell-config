@@ -82,7 +82,8 @@ in
       5432
 
       5000 # local binary cache
-      5001
+      5001 # test webserver1
+      5002 # test webserver2
       3001 # lanraragi
       7892 # AutoBangumi
 
