@@ -49,7 +49,6 @@
         "iperf3"
         "par2cmdline"
         "neovim"
-        "zsh"
         "zsh-fzf-tab"
       ];
       clangOptimized =
