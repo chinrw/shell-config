@@ -24,8 +24,8 @@ let
   proxyUrl =
     if (hostname == "wsl" || isDesktop) then
       # "http://10.0.0.242:10809"
-      # "http://192.168.0.101:10809"
-      config.sops.secrets."proxy/clash".path
+      "http://192.168.0.240:10809"
+      # config.sops.secrets."proxy/clash".path
     else if isWork then
       ""
     else if (hostname == "wsl-mini") then
