@@ -71,7 +71,7 @@ in
     inputs._1password-shell-plugins.hmModules.default
     inputs.sops-nix.homeManagerModules.sops
   ]
-  ++ lib.optionals (builtins.match "^(wsl|vm-nix)$" hostname != null) [
+  ++ lib.optionals (builtins.match "^(wsl-mini|vm-nix)$" hostname != null) [
     (import ./programs/rclone.nix { inherit config lib pkgs; })
   ]
   ++ lib.optionals (hostname != "vm-nix") [
