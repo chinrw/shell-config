@@ -136,9 +136,6 @@ in
     ];
     homeDirectory = if (hostname == "macos") then "/Users/${username}" else "/home/${username}";
 
-    # file = {
-    #   "${config.home.homeDirectory}/.zshrc".text = builtins.readFile ./zsh/zshrc;
-    # };
     packages =
       with pkgs;
       [

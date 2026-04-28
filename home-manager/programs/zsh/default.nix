@@ -111,7 +111,7 @@ if [ \"$(command -v flatpak)\" ] ; then
 fi
 ";
 
-    profileExtra = lib.optionalString noGUI ''
+    profileExtra = ''
       # Source Nix profile for single user mode
       if [ -e /home/chin39/.nix-profile/etc/profile.d/nix.sh ]; then
         . /home/chin39/.nix-profile/etc/profile.d/nix.sh
