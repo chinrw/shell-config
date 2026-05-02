@@ -75,6 +75,14 @@ in
   ++ lib.optionals (hostname != "vm-nix") [
     (import ./programs/yazi.nix { inherit config; })
   ]
+  ++ lib.optionals (!smallNode) [
+    (import ./programs/claude-code {
+      inherit lib pkgs config hostname;
+      source = inputs.everything-claude-code;
+      # Per-host CLAUDE.md additions; default empty. Override per host as needed.
+      extraInstructions = "";
+    })
+  ]
   ++ [
     (import ./programs/gitui { })
   ];

@@ -102,6 +102,23 @@
         "type": "github"
       }
     },
+    "everything-claude-code": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1777566314,
+        "narHash": "sha256-R1LwfU8w4QJi69so+TG1BMVVH+zf9epsAmZPbw9mnYU=",
+        "owner": "affaan-m",
+        "repo": "everything-claude-code",
+        "rev": "841beea45cb25ba51f29fa45b7e272938d19b80a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "affaan-m",
+        "ref": "main",
+        "repo": "everything-claude-code",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -655,6 +672,7 @@
       "inputs": {
         "_1password-shell-plugins": "_1password-shell-plugins",
         "cachix-deploy-flake": "cachix-deploy-flake",
+        "everything-claude-code": "everything-claude-code",
         "flake-utils": "flake-utils",
         "hardware": "hardware",
         "home-manager": "home-manager_2",

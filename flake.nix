@@ -92,6 +92,11 @@
     zjstatus.inputs.nixpkgs.follows = "nixpkgs";
     zjstatus.inputs.rust-overlay.follows = "rust-overlay";
 
+    everything-claude-code = {
+      url = "github:affaan-m/everything-claude-code?ref=main";
+      flake = false;
+    };
+
   };
 
   outputs =
