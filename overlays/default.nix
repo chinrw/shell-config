@@ -7,7 +7,8 @@
   # This one contains whatever you want to overlay
   # You can change versions, add patches, set compilation flags, anything really.
   # https://nixos.wiki/wiki/Overlays
-  modifications = final: prev:
+  modifications =
+    final: prev:
     let
       isX86 = prev.stdenv.hostPlatform.isx86_64;
 
@@ -75,8 +76,7 @@
 
       # ── Rust optimization flags ────────────────────────────────────────
       optimizedRustFlags =
-        (if isX86 then "-C target-cpu=x86-64-v3 " else "")
-        + "-C link-arg=-fuse-ld=mold";
+        (if isX86 then "-C target-cpu=x86-64-v3 " else "") + "-C link-arg=-fuse-ld=mold";
 
       # Rust packages to build with optimized flags.
       rustOptimizedNames = [
@@ -111,29 +111,32 @@
         else
           { };
     in
-    clangOptimized // gccExceptions // rustOptimized // {
+    clangOptimized
+    // gccExceptions
+    // rustOptimized
+    // {
 
-    dstask = prev.dstask.overrideAttrs (old: {
-      meta = old.meta // {
-        platforms = final.lib.platforms.unix;
+      dstask = prev.dstask.overrideAttrs (old: {
+        meta = old.meta // {
+          platforms = final.lib.platforms.unix;
+        };
+      });
+
+      # 7-Zip: unfree + uasm on x86_64 (uses GCC — its Makefile has GCC-specific flags)
+      _7zz = prev._7zz.override {
+        enableUnfree = true;
+        useUasm = isX86;
       };
-    });
 
-    # 7-Zip: unfree + uasm on x86_64 (uses GCC — its Makefile has GCC-specific flags)
-    _7zz = prev._7zz.override {
-      enableUnfree = true;
-      useUasm = isX86;
+      # yazi: from flake input, uses shared Rust flags + optimized _7zz
+      yazi =
+        (inputs.yazi.packages.${prev.stdenv.hostPlatform.system}.default.override {
+          _7zz = final._7zz;
+        }).overrideAttrs
+          (old: {
+            extraRustcOpts = optimizedRustFlags;
+          });
     };
-
-    # yazi: from flake input, uses shared Rust flags + optimized _7zz
-    yazi =
-      (inputs.yazi.packages.${prev.stdenv.hostPlatform.system}.default.override {
-        _7zz = final._7zz;
-      }).overrideAttrs
-        (old: {
-          extraRustcOpts = optimizedRustFlags;
-        });
-  };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
   # be accessible through 'pkgs.unstable'

@@ -77,7 +77,12 @@ in
   ]
   ++ lib.optionals (!smallNode) [
     (import ./programs/claude-code {
-      inherit lib pkgs config hostname;
+      inherit
+        lib
+        pkgs
+        config
+        hostname
+        ;
       source = inputs.everything-claude-code;
       # Per-host CLAUDE.md additions; default empty. Override per host as needed.
       extraInstructions = "";
@@ -259,7 +264,6 @@ in
       ];
   };
 
-
   # Enable home-manager and git
   programs.home-manager.enable = true;
 
@@ -318,12 +322,15 @@ in
         update_check = false;
         filter_mode = "host";
       }
-      // lib.optionalAttrs (builtins.match "^(wsl|wsl-mini|archlinux|macos|vm-nix|gentoo-server)$" hostname != null) {
-        sync_address = "http://10.0.0.242:8881";
-        key_path = config.sops.secrets.atuin_key.path;
-        auto_sync = true;
-        sync_frequency = "1h";
-      };
+      //
+        lib.optionalAttrs
+          (builtins.match "^(wsl|wsl-mini|archlinux|macos|vm-nix|gentoo-server)$" hostname != null)
+          {
+            sync_address = "http://10.0.0.242:8881";
+            key_path = config.sops.secrets.atuin_key.path;
+            auto_sync = true;
+            sync_frequency = "1h";
+          };
     };
 
     bat = {

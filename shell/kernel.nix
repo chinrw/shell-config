@@ -1,11 +1,14 @@
 { pkgs, inputs, ... }:
 
 let
-  kernelPkg = import ../nixos/vm-nix/kernel-package.nix { inherit pkgs inputs; lib = pkgs.lib; };
+  kernelPkg = import ../nixos/vm-nix/kernel-package.nix {
+    inherit pkgs inputs;
+    lib = pkgs.lib;
+  };
 in
 pkgs.mkShell.override { stdenv = pkgs.clangStdenv; } {
   name = "kernel-dev-shell";
-  
+
   # Automatically pull in all build inputs (bison, flex, openssl, etc.) from the actual kernel package
   inputsFrom = [ kernelPkg ];
 
@@ -28,7 +31,7 @@ pkgs.mkShell.override { stdenv = pkgs.clangStdenv; } {
     echo "Kernel Source: $KERNEL_SRC"
     echo "Kernel Version: $KERNEL_VERSION"
     echo "Environment synchronized with system kernel build."
-    
+
     # Function to setup a writable workdir
     setup_workdir() {
       echo "Setting up writable kernel workspace..."

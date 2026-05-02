@@ -72,9 +72,7 @@ let
   };
 
   mergedHooks =
-    (lib.mapAttrs
-      (event: defaults: defaults ++ (extraHooks.${event} or [ ]))
-      defaultHooks)
+    (lib.mapAttrs (event: defaults: defaults ++ (extraHooks.${event} or [ ])) defaultHooks)
     // (lib.removeAttrs extraHooks (lib.attrNames defaultHooks));
 
   settings = {
@@ -118,79 +116,82 @@ in
     force = true;
   };
 
-  home.activation.claudeCodeAssets = lib.hm.dag.entryAfter [ "linkGeneration" ] (''
-    REPO="${source}"
-    CLAUDE="${config.home.homeDirectory}/.claude"
+  home.activation.claudeCodeAssets = lib.hm.dag.entryAfter [ "linkGeneration" ] (
+    ''
+          REPO="${source}"
+          CLAUDE="${config.home.homeDirectory}/.claude"
 
-    link_children() {
-      local src="$1"
-      local dst="$2"
-      [ -d "$src" ] || return 0
-      run mkdir -p "$dst"
-      if [ -L "$dst" ]; then
-        run rm "$dst"
-        run mkdir -p "$dst"
-      fi
-      # Sweep stale symlinks pointing at either the current $REPO or the legacy
-      # ~/Documents/play/everything-claude-code/* location whose target no longer exists.
-      run ${pkgs.findutils}/bin/find "$dst" -maxdepth 1 -type l \
-        \( -lname "$REPO/*" -o -lname "*/Documents/play/everything-claude-code/*" \) \
-        -exec sh -c '[ ! -e "$1" ] && rm "$1"' _ {} \;
-      for entry in "$src"/*; do
-        [ -e "$entry" ] || continue
-        local name target
-        name=$(basename "$entry")
-        target="$dst/$name"
-        # Don't clobber a non-symlink file at this path.
-        if [ -e "$target" ] && [ ! -L "$target" ]; then
-          continue
-        fi
-        run ln -sfn "$entry" "$target"
-      done
-    }
+          link_children() {
+            local src="$1"
+            local dst="$2"
+            [ -d "$src" ] || return 0
+            run mkdir -p "$dst"
+            if [ -L "$dst" ]; then
+              run rm "$dst"
+              run mkdir -p "$dst"
+            fi
+            # Sweep stale symlinks pointing at either the current $REPO or the legacy
+            # ~/Documents/play/everything-claude-code/* location whose target no longer exists.
+            run ${pkgs.findutils}/bin/find "$dst" -maxdepth 1 -type l \
+              \( -lname "$REPO/*" -o -lname "*/Documents/play/everything-claude-code/*" \) \
+              -exec sh -c '[ ! -e "$1" ] && rm "$1"' _ {} \;
+            for entry in "$src"/*; do
+              [ -e "$entry" ] || continue
+              local name target
+              name=$(basename "$entry")
+              target="$dst/$name"
+              # Don't clobber a non-symlink file at this path.
+              if [ -e "$target" ] && [ ! -L "$target" ]; then
+                continue
+              fi
+              run ln -sfn "$entry" "$target"
+            done
+          }
 
-    link_children "$REPO/agents"   "$CLAUDE/agents"
-    link_children "$REPO/commands" "$CLAUDE/commands"
-    link_children "$REPO/skills"   "$CLAUDE/skills"
-    link_children "$REPO/rules"    "$CLAUDE/rules"
+          link_children "$REPO/agents"   "$CLAUDE/agents"
+          link_children "$REPO/commands" "$CLAUDE/commands"
+          link_children "$REPO/skills"   "$CLAUDE/skills"
+          link_children "$REPO/rules"    "$CLAUDE/rules"
 
-    CLAUDE_MD_BASE="${baseClaudeMdFile}"
-    LOCAL_MD="$CLAUDE/CLAUDE.local.md"
-    FINAL_MD="$CLAUDE/CLAUDE.md"
+          CLAUDE_MD_BASE="${baseClaudeMdFile}"
+          LOCAL_MD="$CLAUDE/CLAUDE.local.md"
+          FINAL_MD="$CLAUDE/CLAUDE.md"
 
-    # Seed CLAUDE.local.md on first run only — never touch existing user content.
-    if [ ! -e "$LOCAL_MD" ] && [ ! -L "$LOCAL_MD" ]; then
-      ${pkgs.coreutils}/bin/cat > "$LOCAL_MD" <<'EOF'
-<!--
-This file is local to this host and not tracked by Nix.
-Edits land in ~/.claude/CLAUDE.md after the next `home-manager switch`,
-appended below the Nix-managed base content.
+          # Seed CLAUDE.local.md on first run only — never touch existing user content.
+          if [ ! -e "$LOCAL_MD" ] && [ ! -L "$LOCAL_MD" ]; then
+            ${pkgs.coreutils}/bin/cat > "$LOCAL_MD" <<'EOF'
+      <!--
+      This file is local to this host and not tracked by Nix.
+      Edits land in ~/.claude/CLAUDE.md after the next `home-manager switch`,
+      appended below the Nix-managed base content.
 
-Use it for host-specific shortcuts, side-project context, or anything you
-want Claude to see at user scope but don't want to commit to the
-shell-config flake.
+      Use it for host-specific shortcuts, side-project context, or anything you
+      want Claude to see at user scope but don't want to commit to the
+      shell-config flake.
 
-Replace this comment with real content. Claude ignores HTML comments in
-markdown, so the seed text is not visible in CLAUDE.md until you replace it.
--->
-EOF
-    fi
+      Replace this comment with real content. Claude ignores HTML comments in
+      markdown, so the seed text is not visible in CLAUDE.md until you replace it.
+      -->
+      EOF
+          fi
 
-    # Strip a previous Nix symlink at ~/.claude/CLAUDE.md if present, then rebuild.
-    if [ -L "$FINAL_MD" ]; then
-      case "$(${pkgs.coreutils}/bin/readlink "$FINAL_MD")" in
-        /nix/store/*) run rm "$FINAL_MD" ;;
-      esac
-    fi
+          # Strip a previous Nix symlink at ~/.claude/CLAUDE.md if present, then rebuild.
+          if [ -L "$FINAL_MD" ]; then
+            case "$(${pkgs.coreutils}/bin/readlink "$FINAL_MD")" in
+              /nix/store/*) run rm "$FINAL_MD" ;;
+            esac
+          fi
 
-    TMP_MD="$(${pkgs.coreutils}/bin/mktemp -p "$(${pkgs.coreutils}/bin/dirname "$FINAL_MD")")"
-    {
-      ${pkgs.coreutils}/bin/cat "$CLAUDE_MD_BASE"
-      if [ -s "$LOCAL_MD" ]; then
-        printf '\n\n## Local additions (%s)\n\n' "${hostname}"
-        ${pkgs.coreutils}/bin/cat "$LOCAL_MD"
-      fi
-    } > "$TMP_MD"
-    run ${pkgs.coreutils}/bin/mv "$TMP_MD" "$FINAL_MD"
-  '' + mcpActivation);
+          TMP_MD="$(${pkgs.coreutils}/bin/mktemp -p "$(${pkgs.coreutils}/bin/dirname "$FINAL_MD")")"
+          {
+            ${pkgs.coreutils}/bin/cat "$CLAUDE_MD_BASE"
+            if [ -s "$LOCAL_MD" ]; then
+              printf '\n\n## Local additions (%s)\n\n' "${hostname}"
+              ${pkgs.coreutils}/bin/cat "$LOCAL_MD"
+            fi
+          } > "$TMP_MD"
+          run ${pkgs.coreutils}/bin/mv "$TMP_MD" "$FINAL_MD"
+    ''
+    + mcpActivation
+  );
 }
