@@ -91,6 +91,7 @@ let
       "clangd-lsp@claude-plugins-official" = true;
       "andrej-karpathy-skills@karpathy-skills" = true;
       "superpowers@claude-plugins-official" = true;
+      "github@claude-plugins-official" = true;
     };
     extraKnownMarketplaces = {
       karpathy-skills = {
