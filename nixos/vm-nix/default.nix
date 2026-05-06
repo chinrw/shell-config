@@ -37,6 +37,7 @@ in
   users.users.chin39 = {
     isNormalUser = true;
     description = "chin39";
+    linger = true;
     extraGroups = [
       "networkmanager"
       "docker"
