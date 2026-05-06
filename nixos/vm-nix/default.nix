@@ -95,8 +95,6 @@ in
       8765 # local python testing web
       8787
       8096 # jellyfin
-      7359
-      1900
 
       10808
       10809
@@ -109,6 +107,8 @@ in
       53
       22000 # syncthing QUIC sync
       21027 # syncthing local discovery
+      7359 # jellyfin client autodiscovery
+      1900 # SSDP / DLNA
     ];
     allowedUDPPortRanges = [
       # { from = 4000; to = 4007; }

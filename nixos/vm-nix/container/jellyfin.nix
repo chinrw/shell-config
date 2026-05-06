@@ -34,8 +34,8 @@ in
     ];
     ports = [
       "8096:8096/tcp"
-      "7359:7359/tcp"
-      "1900:1900/tcp"
+      "7359:7359/udp"
+      "1900:1900/udp"
     ];
     log-driver = "journald";
     extraOptions = [
