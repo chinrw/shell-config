@@ -1,5 +1,14 @@
 # Auto-generated using compose2nix v0.3.2-pre, then edited.
 { pkgs, lib, ... }:
+let
+  jellyfinCjkFonts = pkgs.symlinkJoin {
+    name = "jellyfin-cjk-fonts";
+    paths = [
+      pkgs.noto-fonts-cjk-sans
+      pkgs.noto-fonts-cjk-serif
+    ];
+  };
+in
 {
   # Runtime
   virtualisation.docker = {
@@ -14,7 +23,7 @@
 
   # Containers
   virtualisation.oci-containers.containers."jellyfin" = {
-    image = "compose2nix/jellyfin";
+    image = "jellyfin/jellyfin:10.10.7";
     environment = {
       "PGID" = "100";
       "PUID" = "1000";
@@ -25,7 +34,7 @@
     volumes = [
       "/home/chin39/Documents/container/jellyfin/cache:/cache:rw"
       "/home/chin39/Documents/container/jellyfin/config-jellyfin:/config:rw"
-      "/home/chin39/Documents/container/jellyfin/fonts:/config/fonts:rw"
+      "${jellyfinCjkFonts}/share/fonts/opentype/noto-cjk:/config/fonts:ro"
       "/home/chin39/mounts:/mounts:rw"
       "/mnt/data/video/jellyfin:/jellyfin-media:rw"
     ];
@@ -102,26 +111,6 @@
     wantedBy = [
       "docker-compose-jellyfin-root.target"
     ];
-  };
-
-  # Builds
-  systemd.services."docker-build-jellyfin" = {
-    path = [
-      pkgs.docker
-      pkgs.git
-    ];
-    serviceConfig = {
-      Type = "oneshot";
-      TimeoutSec = 500;
-    };
-    environment = {
-      "http_proxy" = "http://192.168.0.240:10809";
-      "https_proxy" = "http://192.168.0.240:10809";
-    };
-    script = ''
-      cd /home/chin39/Documents/container/jellyfin/build
-      docker build -t compose2nix/jellyfin .
-    '';
   };
 
   # Root service
