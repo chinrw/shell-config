@@ -47,6 +47,11 @@ in
     extraOptions = [
       "--network-alias=jellyfin"
       "--network=jellyfin_default"
+      "--health-cmd=bash -c '</dev/tcp/127.0.0.1/8096'"
+      "--health-interval=30s"
+      "--health-timeout=5s"
+      "--health-retries=3"
+      "--health-start-period=60s"
     ];
   };
   systemd.services."jellyfin-mount-ready" = {
