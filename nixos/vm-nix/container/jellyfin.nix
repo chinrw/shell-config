@@ -11,7 +11,11 @@ in
   # Runtime
   virtualisation.docker = {
     enable = true;
-    autoPrune.enable = true;
+    autoPrune = {
+      enable = true;
+      dates = "weekly";
+      flags = [ "--all" "--filter" "until=720h" ];
+    };
   };
   virtualisation.oci-containers.backend = "docker";
 
