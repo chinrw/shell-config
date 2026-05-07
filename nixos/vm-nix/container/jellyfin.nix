@@ -23,7 +23,7 @@ in
 
   # Containers
   virtualisation.oci-containers.containers."jellyfin" = {
-    image = "jellyfin/jellyfin:10.11.8";
+    image = "jellyfin/jellyfin:${pkgs.jellyfin.version}";
     environment = {
       "PGID" = "100";
       "PUID" = "1000";
