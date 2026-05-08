@@ -136,6 +136,22 @@
           (old: {
             extraRustcOpts = optimizedRustFlags;
           });
+
+      # Bump xray for VLESS post-quantum encryption (mlkem768x25519plus) and
+      # ML-DSA-65 REALITY support. Drop this override when nixpkgs catches up.
+      # Check freshness:  nix run .#check-xray-version
+      # xray-pin-fields-begin
+      xray = prev.xray.overrideAttrs (old: rec {
+        version = "26.3.27";
+        src = prev.fetchFromGitHub {
+          owner = "XTLS";
+          repo = "Xray-core";
+          rev = "v${version}";
+          hash = "sha256-tSSoaIKHgLf9ry6p0Y+BM1Nx8X+40BDDfJJYkABUoEc=";
+        };
+        vendorHash = "sha256-kwvck6Eo/e6qgb1ENznhwZ/GPX75ssLUvR2u8Qm3UIM=";
+      });
+      # xray-pin-fields-end
     };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
