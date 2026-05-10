@@ -130,6 +130,12 @@ in
     restartSec = 5;
   };
 
+  # ── Host CLI access for chin39 ──────────────────────────────────
+  # The CLI reads $HERMES_HOME/.env = /var/lib/hermes/.hermes/.env
+  # (mode 0640, group hermes). Adding chin39 to the hermes group lets
+  # the host shell traverse the 2770 stateDir and read the .env file.
+  users.users.chin39.extraGroups = [ "hermes" ];
+
   # ── Systemd overrides: probe llama.cpp for the live model name ──
   # Runs before the gateway. 5s timeout, graceful fallback writes
   # LOCAL_MODEL_NAME=local-unavailable so the service still starts
