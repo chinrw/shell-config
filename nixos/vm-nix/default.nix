@@ -30,6 +30,7 @@ in
     ../services/nix-serve.nix
     ../services/factorio.nix
     ./kernel.nix
+    ../services/hermes.nix
     # ./rclone.nix
     # ./proxy.nix
   ];

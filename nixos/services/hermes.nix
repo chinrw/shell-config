@@ -16,12 +16,13 @@ in
   # at activation (running as root, reading chin39's user age key)
   # and writes plaintext to /run/secrets/hermes-env owned by the
   # hermes service user.
-  sops.secrets."hermes-env" = {
-    sopsFile = ../../secrets/hermes.env;
-    format = "dotenv";
-    owner = "hermes";
-    mode = "0400";
-  };
+  # TODO(Task 5): Uncomment after secrets/hermes.env is encrypted and committed.
+  # sops.secrets."hermes-env" = {
+  #   sopsFile = ../../secrets/hermes.env;
+  #   format = "dotenv";
+  #   owner = "hermes";
+  #   mode = "0400";
+  # };
 
   # ── Service ─────────────────────────────────────────────────────
   services.hermes-agent = {
@@ -29,7 +30,8 @@ in
     addToSystemPackages = true;
 
     environmentFiles = [
-      config.sops.secrets."hermes-env".path
+      # TODO(Task 5): Re-add after secrets/hermes.env is encrypted and committed.
+      # config.sops.secrets."hermes-env".path
       "/run/hermes/discovered.env"
     ];
 
@@ -117,13 +119,12 @@ in
       gawk
     ];
 
-    extraPythonPackages =
-      ps: with ps; [
-        requests
-        beautifulsoup4
-        httpx
-        pydantic
-      ];
+    extraPythonPackages = with pkgs.python312Packages; [
+      requests
+      beautifulsoup4
+      httpx
+      pydantic
+    ];
 
     restart = "always";
     restartSec = 5;
