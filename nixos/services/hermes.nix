@@ -87,7 +87,10 @@ in
 
     extraPackages = with pkgs; [
       # Parity with hermes' upstream dev shell
-      python312
+      # python312 is intentionally excluded: the sealed uv2nix venv provides
+      # Python via $HERMES_PYTHON; adding python312 here causes buildEnv to pull
+      # in python3.12-3.12.13-doc.drv (via environment.extraOutputsToInstall =
+      # ["man" "info" "doc"]), which fails on sphinx/docutils-0.22.4 incompatibility.
       uv
       nodejs_22
       ripgrep
@@ -119,12 +122,11 @@ in
       gawk
     ];
 
-    extraPythonPackages = with pkgs.python312Packages; [
-      requests
-      beautifulsoup4
-      httpx
-      pydantic
-    ];
+    # extraPythonPackages are for user-developed plugins only.
+    # requests, httpx, pydantic are already in hermes' sealed uv2nix venv;
+    # beautifulsoup4 pulls typing-extensions transitively which also collides.
+    # All four removed to avoid the collision-check abort during hermes-agent build.
+    extraPythonPackages = [ ];
 
     restart = "always";
     restartSec = 5;
