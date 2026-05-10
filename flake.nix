@@ -30,6 +30,11 @@
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.11";
     hardware.url = "github:NixOS/nixos-hardware";
 
+    hermes-agent = {
+      url = "github:NousResearch/hermes-agent";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Home manager
     home-manager = {
       url = "github:nix-community/home-manager";
