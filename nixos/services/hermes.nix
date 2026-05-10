@@ -5,6 +5,9 @@
   inputs,
   ...
 }:
+let
+  deepseekModel = "deepseek-v4-flash";
+in
 {
   imports = [ inputs.hermes-agent.nixosModules.default ];
 
@@ -45,7 +48,7 @@
       # DEEPSEEK_API_KEY env var; no extra wiring needed).
       auxiliary.compression = {
         provider = "deepseek";
-        model = "deepseek-v4-flash";
+        model = deepseekModel;
         timeout = 30;
       };
 
@@ -58,7 +61,7 @@
 
       model_aliases = {
         deepseek = {
-          model = "deepseek-v4-flash";
+          model = deepseekModel;
           provider = "deepseek";
         };
         local = {
@@ -133,9 +136,9 @@
   systemd.services.hermes-agent = {
     serviceConfig.RuntimeDirectory = "hermes";
     serviceConfig.RuntimeDirectoryMode = "0750";
-    serviceConfig.ExecStartPre = lib.mkAfter [
+    serviceConfig.ExecStartPre = [
       (pkgs.writeShellScript "hermes-probe-local-model" ''
-        set -uo pipefail
+        set -u
         OUT=/run/hermes/discovered.env
 
         MODEL=$(${pkgs.curl}/bin/curl -fsS --max-time 5 \
