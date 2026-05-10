@@ -12,6 +12,29 @@ in
 {
   imports = [ inputs.hermes-agent.nixosModules.default ];
 
+  # ── Passwordless sudo for docker (chin39, container CLI fallback) ─
+  # In container mode, the hermes-agent container runs under rootful
+  # docker (because services.hermes-agent.service runs as root and
+  # uses the system docker socket /var/run/docker.sock). chin39's
+  # interactive shell uses ROOTLESS docker (per
+  # virtualisation.docker.rootless.setSocketVariable = true in
+  # nixos/configuration.nix:99-104), so chin39's `docker` commands
+  # cannot see the hermes-agent container. Hermes' CLI detects this
+  # and falls back to `sudo -n docker exec` — but only if sudo is
+  # passwordless. This rule scopes that to /run/current-system/sw/bin/docker
+  # only; chin39 still needs full sudo for everything else.
+  security.sudo.extraRules = [
+    {
+      users = [ "chin39" ];
+      commands = [
+        {
+          command = "/run/current-system/sw/bin/docker";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }
+  ];
+
   # ── Sops secret: hermes-env ─────────────────────────────────────
   # Encrypted dotenv file at secrets/hermes.env. sops-nix decrypts
   # at activation (running as root, reading chin39's user age key)
