@@ -16,13 +16,12 @@ in
   # at activation (running as root, reading chin39's user age key)
   # and writes plaintext to /run/secrets/hermes-env owned by the
   # hermes service user.
-  # TODO(Task 5): Uncomment after secrets/hermes.env is encrypted and committed.
-  # sops.secrets."hermes-env" = {
-  #   sopsFile = ../../secrets/hermes.env;
-  #   format = "dotenv";
-  #   owner = "hermes";
-  #   mode = "0400";
-  # };
+  sops.secrets."hermes-env" = {
+    sopsFile = ../../secrets/hermes.env;
+    format = "dotenv";
+    owner = "hermes";
+    mode = "0400";
+  };
 
   # ── Service ─────────────────────────────────────────────────────
   services.hermes-agent = {
@@ -30,8 +29,7 @@ in
     addToSystemPackages = true;
 
     environmentFiles = [
-      # TODO(Task 5): Re-add after secrets/hermes.env is encrypted and committed.
-      # config.sops.secrets."hermes-env".path
+      config.sops.secrets."hermes-env".path
       "/run/hermes/discovered.env"
     ];
 
