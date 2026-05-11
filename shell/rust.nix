@@ -8,7 +8,7 @@ pkgs.mkShell {
     })
     rust-analyzer
 
-    nodePackages.cspell
+    cspell
 
     file
     jq
