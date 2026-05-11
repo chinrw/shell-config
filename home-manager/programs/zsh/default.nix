@@ -85,6 +85,16 @@ fi
 bindkey \^U backward-kill-line
 bindkey '^r' _atuin_search_widget
 
+# Run hermes against the rootful docker socket where hermes-agent
+# actually lives. chin39's default DOCKER_HOST points at rootless
+# (via virtualisation.docker.rootless.setSocketVariable), but the
+# hermes-agent container runs under the rootful daemon (systemd
+# service runs as root). chin39 is in the docker group, so
+# /var/run/docker.sock is directly accessible -- no sudo needed.
+hermes() {
+  DOCKER_HOST=unix:///var/run/docker.sock command hermes \"\$@\"
+}
+
 "
       + lib.optionalString isDesktop "
 alias_flatpak_exports() {
