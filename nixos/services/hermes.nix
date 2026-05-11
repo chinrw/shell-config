@@ -12,17 +12,6 @@ in
 {
   imports = [ inputs.hermes-agent.nixosModules.default ];
 
-  # ── Passwordless sudo for docker (chin39, container CLI fallback) ─
-  # In container mode, the hermes-agent container runs under rootful
-  # docker (because services.hermes-agent.service runs as root and
-  # uses the system docker socket /var/run/docker.sock). chin39's
-  # interactive shell uses ROOTLESS docker (per
-  # virtualisation.docker.rootless.setSocketVariable = true in
-  # nixos/configuration.nix:99-104), so chin39's `docker` commands
-  # cannot see the hermes-agent container. Hermes' CLI detects this
-  # and falls back to `sudo -n docker exec` — but only if sudo is
-  # passwordless. This rule scopes that to /run/current-system/sw/bin/docker
-  # only; chin39 still needs full sudo for everything else.
   security.sudo.extraRules = [
     {
       users = [ "chin39" ];
@@ -252,4 +241,33 @@ in
       echo "LOCAL_MODEL_NAME=$MODEL" >> "$ENV_FILE"
     '')
   ];
+
+  systemd.services.hermes-perm-watch = {
+    description = "Reset /var/lib/hermes/.hermes to 2770 on attrib change";
+    after = [ "hermes-agent.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "simple";
+      Restart = "always";
+      RestartSec = 5;
+      ExecStart = pkgs.writeShellScript "hermes-perm-watch" ''
+        set -u
+        D=/var/lib/hermes/.hermes
+        # Initial sweep — fix whatever state we booted into.
+        [ -d "$D" ] && ${pkgs.coreutils}/bin/chmod 2770 "$D" 2>/dev/null || true
+        # Watch for attribute changes (chmod, chown, setxattr).
+        # --format '%w' just emits the dir path; we use stat to read
+        # the current mode and chmod only when it actually drifted.
+        ${pkgs.inotify-tools}/bin/inotifywait -m -e attrib \
+          --format '%w' "$D" 2>/dev/null \
+          | while IFS= read -r _; do
+              cur=$(${pkgs.coreutils}/bin/stat -c '%a' "$D" 2>/dev/null)
+              if [ -n "$cur" ] && [ "$cur" != "2770" ]; then
+                ${pkgs.coreutils}/bin/chmod 2770 "$D" \
+                  && echo "hermes-perm-watch: restored $D to 2770 (was $cur)"
+              fi
+            done
+      '';
+    };
+  };
 }
