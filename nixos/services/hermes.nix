@@ -64,6 +64,26 @@ in
       backend   = "docker";
       image     = "ubuntu:24.04";
       hostUsers = [ "chin39" ];
+
+      # Proxy env passed via `docker create --env` so it lands in the
+      # container's PID 1 environ from process startup — visible to
+      # any library (including python-telegram-bot's httpx layer) that
+      # captures proxy config at import time. Setting these via
+      # services.hermes-agent.environment was insufficient because
+      # those go through the merged .env file, which is only loaded
+      # after Python has already imported telegram/httpx and cached
+      # the proxy config.
+      #
+      # NO_PROXY exempts:
+      #   - 192.168.0.0/24 — local LAN (mirrors host config)
+      #   - 127.0.0.1 / localhost — loopback
+      #   - api.deepseek.com — direct-reachable from CN; bypass proxy
+      extraOptions = [
+        "--env" "HTTP_PROXY=http://192.168.0.240:10809"
+        "--env" "HTTPS_PROXY=http://192.168.0.240:10809"
+        "--env" "NO_PROXY=192.168.0.0/24,127.0.0.1,localhost,api.deepseek.com"
+        "--env" "TELEGRAM_PROXY=http://192.168.0.240:10809"
+      ];
     };
 
     environmentFiles = [
