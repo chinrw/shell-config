@@ -131,6 +131,32 @@ in
         };
       };
 
+      # Named custom providers — makes the local llama.cpp endpoint show
+      # up in the `hermes model` and `/model` pickers as a selectable
+      # entry. Without this the picker only enumerates built-in cloud
+      # providers; the bare `model.base_url` above wires the runtime
+      # default but isn't discoverable through the UI. Reference:
+      # hermes_cli/config.py:2859 (get_compatible_custom_providers).
+      # Switch syntax: /model custom:local:<model-name>
+      custom_providers = [
+        {
+          name = "local";
+          base_url = "${llamaEndpoint}/v1";
+          # api_key omitted — keyless local llama.cpp server
+        }
+      ];
+
+      # Fallback chain — tried in order when the primary model errors out
+      # (5xx, timeout, rate-limit, connection refused). Hermes' app-level
+      # retry loop walks this list before surfacing the failure to the
+      # agent. Reference: hermes_cli/fallback_cmd.py, gateway/run.py:714.
+      fallback_providers = [
+        {
+          provider = "deepseek";
+          model = deepseekModel;
+        }
+      ];
+
       terminal = {
         backend = "local";
         cwd = ".";
