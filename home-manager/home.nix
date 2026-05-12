@@ -224,7 +224,7 @@ in
         unar
         inputs.rustowl-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
         unstable.gemini-cli
-        unstable.claude-code
+        inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
         # unstable.codex
         rustscan # modern scanner
         marksman

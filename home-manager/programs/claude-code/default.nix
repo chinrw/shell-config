@@ -7,9 +7,87 @@
   mcpServers ? { },
   extraHooks ? { },
   extraInstructions ? "",
+  # Skill allowlist: names linked into ~/.claude/skills/.
+  # null = link every skill from the source flake (legacy behavior).
+  # Default set = used-in-past-sessions + ECC-tagged + user-curated workflows
+  # + their direct SKILL.md references (transitive closure not taken; the
+  # configure-ecc installer catalog is intentionally excluded to avoid
+  # re-linking every skill it advertises).
+  # Commands ($REPO/commands/) and plugin/built-in skills are unaffected.
+  skillAllowlist ? [
+    "agent-sort"
+    "agentic-engineering"
+    "api-connector-builder"
+    "automation-audit-ops"
+    "autonomous-agent-harness"
+    "autonomous-loops"
+    "benchmark"
+    "brand-voice"
+    "code-tour"
+    "codebase-onboarding"
+    "coding-standards"
+    "configure-ecc"
+    "connections-optimizer"
+    "content-engine"
+    "context-budget"
+    "continuous-agent-loop"
+    "continuous-learning-v2"
+    "council"
+    "crosspost"
+    "customer-billing-ops"
+    "dashboard-builder"
+    "deep-research"
+    "design-system"
+    "django-patterns"
+    "documentation-lookup"
+    "ecc-guide"
+    "ecc-tools-cost-audit"
+    "email-ops"
+    "eval-harness"
+    "exa-search"
+    "finance-billing-ops"
+    "frontend-patterns"
+    "git-workflow"
+    "github-ops"
+    "hermes-imports"
+    "investor-outreach"
+    "iterative-retrieval"
+    "knowledge-ops"
+    "lead-intelligence"
+    "manim-video"
+    "market-research"
+    "messages-ops"
+    "nanoclaw-repl"
+    "plan-orchestrate"
+    "plankton-code-quality"
+    "product-capability"
+    "project-flow-ops"
+    "python-patterns"
+    "python-testing"
+    "ralphinho-rfc-pipeline"
+    "remotion-video-creation"
+    "research-ops"
+    "rust-patterns"
+    "search-first"
+    "security-bounty-hunter"
+    "security-review"
+    "security-scan"
+    "skill-stocktake"
+    "strategic-compact"
+    "tdd-workflow"
+    "terminal-ops"
+    "unified-notifications-ops"
+    "verification-loop"
+    "video-editing"
+    "workspace-surface-audit"
+    "x-api"
+  ],
   ...
 }:
 let
+  skillAllowlistShell =
+    if skillAllowlist == null then "" else lib.concatStringsSep " " skillAllowlist;
+
   baseClaudeMd = builtins.readFile ./CLAUDE.md;
   withHostExtra =
     if extraInstructions == "" then
@@ -124,6 +202,11 @@ in
           link_children() {
             local src="$1"
             local dst="$2"
+            # Optional 3rd arg: space-separated allowlist of basenames to keep.
+            # When set, names outside the list are skipped and any existing
+            # symlink at that target is removed so home-manager prunes
+            # previously-linked entries.
+            local allowlist="''${3-}"
             [ -d "$src" ] || return 0
             run mkdir -p "$dst"
             if [ -L "$dst" ]; then
@@ -140,6 +223,19 @@ in
               local name target
               name=$(basename "$entry")
               target="$dst/$name"
+              if [ -n "$allowlist" ]; then
+                case " $allowlist " in
+                  *" $name "*) ;;
+                  *)
+                    # Not in allowlist: drop any pre-existing symlink so the
+                    # next switch prunes it. Leave non-symlink files alone.
+                    if [ -L "$target" ]; then
+                      run rm "$target"
+                    fi
+                    continue
+                    ;;
+                esac
+              fi
               # Don't clobber a non-symlink file at this path.
               if [ -e "$target" ] && [ ! -L "$target" ]; then
                 continue
@@ -150,7 +246,7 @@ in
 
           link_children "$REPO/agents"   "$CLAUDE/agents"
           link_children "$REPO/commands" "$CLAUDE/commands"
-          link_children "$REPO/skills"   "$CLAUDE/skills"
+          link_children "$REPO/skills"   "$CLAUDE/skills"   "${skillAllowlistShell}"
           link_children "$REPO/rules"    "$CLAUDE/rules"
 
           CLAUDE_MD_BASE="${baseClaudeMdFile}"
