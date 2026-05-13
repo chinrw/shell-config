@@ -1,13 +1,30 @@
 {
   config,
-  lib,
   pkgs,
   inputs,
   ...
 }:
 let
   deepseekModel = "deepseek-v4-flash";
-  llamaEndpoint = "http://192.168.0.101:8087";
+
+  # Local llama.cpp endpoint — points at the loader-shim
+  # (services/llama-loader-shim.nix) on this host, NOT directly at the
+  # llama-server on the Windows box. The shim transparently injects a
+  # POST /models/load before every chat/completion, working around
+  # llama-server's --no-models-autoload + --models-max 1. Bypassing
+  # the shim (going straight to 192.168.0.101:8087) means /model
+  # switches no longer "just work" — they 400 on every cold model.
+  #
+  # Loopback works because hermes-agent's upstream module pins the
+  # container to `--network=host` (see nix/nixosModules.nix:942), so
+  # 127.0.0.1 inside the container is this host's loopback. NO_PROXY
+  # already excludes 127.0.0.1 from the xray hop.
+  llamaEndpoint = "http://127.0.0.1:8088";
+
+  # Boot-time default model. Must match a section name (or alias)
+  # declared in the server-side models.ini — currently "default" is
+  # aliased there to the opus-distill GGUF.
+  preferredLocalModel = "default";
 in
 {
   imports = [ inputs.hermes-agent.nixosModules.default ];
@@ -80,16 +97,16 @@ in
     ];
 
     settings = {
-      # Primary model: local llama.cpp on the LAN (multi-model, lazy-load).
-      # ${LOCAL_MODEL_NAME} is the boot-time default — the probe (below)
-      # writes the first id from /v1/models into .env. Runtime switching
-      # between any of the models that llama-swap exposes happens via
-      # `/model custom:local:<name>`; the picker enumerates them live
-      # (see custom_providers.discover_models below). When the local
-      # endpoint is unreachable or returns an error, fallback_providers
-      # (DeepSeek) takes over automatically.
+      # Primary model: local llama.cpp via the loader-shim. Every chat
+      # completion hits the shim first, which POSTs /models/load on the
+      # upstream if the requested model isn't already resident. That
+      # means `/model custom:local:<other>` actually works end-to-end —
+      # the routing change in Hermes + the shim's load injection cover
+      # the gap that llama-server's --no-models-autoload leaves.
+      # When the upstream itself is down (shim 502s or chat 5xx),
+      # fallback_providers (DeepSeek) takes over.
       model = {
-        default = "\${LOCAL_MODEL_NAME}";
+        default = preferredLocalModel;
         provider = "custom";
         base_url = "${llamaEndpoint}/v1";
         api_key = "\${OPENAI_API_KEY}";
@@ -123,11 +140,13 @@ in
 
       # Named custom providers — exposes the local llama.cpp endpoint to
       # the `/model` picker. With api_key set + discover_models = true,
-      # Hermes hits /v1/models on demand and enumerates every GGUF
-      # llama-swap is currently serving (see hermes_cli/model_switch.py:
-      # the discovery branch is gated on `api_url && api_key && discover`).
-      # llama.cpp is keyless, but Hermes needs a non-empty Bearer to
+      # Hermes hits /v1/models on demand and enumerates every section in
+      # the server's models.ini (see hermes_cli/model_switch.py: the
+      # discovery branch is gated on `api_url && api_key && discover`).
+      # llama-server is keyless, but Hermes needs a non-empty Bearer to
       # trigger the live fetch; the value itself is ignored upstream.
+      # The shim passes /v1/models through untouched, so discovery
+      # reflects the real server-side registry.
       # Switch syntax: /model custom:local:<model-name>
       custom_providers = [
         {
@@ -209,47 +228,13 @@ in
     restartSec = 5;
   };
 
-  # ── Runtime model probe ─────────────────────────────────────────
-  # Picks the boot-time default model for `model.default` only.
-  # Live switching between the other models llama-swap is serving
-  # goes through the `/model` picker (custom_providers.discover_models
-  # makes them enumerable). If the probe fails (llama.cpp down, empty
-  # /v1/models, etc.), the placeholder "local-unavailable" gets written;
-  # the first chat request then errors out and fallback_providers
-  # (DeepSeek) takes over — no special handling needed here.
-  #
-  # Writes LOCAL_MODEL_NAME into /var/lib/hermes/.hermes/.env (the
-  # container sees this as /data/.hermes/.env via bind mount). The
-  # gateway re-reads .env on startup. Idempotent: sed-deletes any
-  # prior LOCAL_MODEL_NAME before appending.
-  #
-  # Self-healing: nixos-rebuild's activation script overwrites .env
-  # by re-merging environmentFiles — wiping our probe addition. The
-  # NEXT service start re-runs ExecStartPre which re-adds the line,
-  # so the system converges back to a correct state automatically.
-  systemd.services.hermes-agent.serviceConfig.ExecStartPre = [
-    (pkgs.writeShellScript "hermes-probe-local-model" ''
-      set -u
-      ENV_FILE=/var/lib/hermes/.hermes/.env
-
-      MODEL=$(${pkgs.curl}/bin/curl -fsS --max-time 5 \
-        ${llamaEndpoint}/v1/models 2>/dev/null \
-        | ${pkgs.jq}/bin/jq -r '.data[0].id // empty' 2>/dev/null \
-        || true)
-
-      if [ -z "$MODEL" ]; then
-        MODEL="local-unavailable"
-        echo "[hermes-probe] llama.cpp unreachable; LOCAL_MODEL_NAME=$MODEL" >&2
-      else
-        echo "[hermes-probe] LOCAL_MODEL_NAME=$MODEL" >&2
-      fi
-
-      if [ -f "$ENV_FILE" ]; then
-        ${pkgs.gnused}/bin/sed -i '/^LOCAL_MODEL_NAME=/d' "$ENV_FILE"
-      fi
-      echo "LOCAL_MODEL_NAME=$MODEL" >> "$ENV_FILE"
-    '')
-  ];
+  # Start hermes after the loader-shim so the first chat request can
+  # reach an already-listening proxy. Loose ordering only — if the shim
+  # is unhealthy, fallback_providers (DeepSeek) still catches the call.
+  systemd.services.hermes-agent = {
+    after = [ "llama-loader-shim.service" ];
+    wants = [ "llama-loader-shim.service" ];
+  };
 
   systemd.services.hermes-perm-watch = {
     description = "Reset /var/lib/hermes/.hermes to 2770 on attrib change";

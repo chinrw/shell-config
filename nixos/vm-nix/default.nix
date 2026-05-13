@@ -31,6 +31,7 @@ in
     ../services/factorio.nix
     ./kernel.nix
     ../services/hermes.nix
+    ../services/llama-loader-shim.nix
     ../services/flaresolverr.nix
     # ./rclone.nix
     # ./proxy.nix
