@@ -80,12 +80,14 @@ in
     ];
 
     settings = {
-      # Primary model: local llama.cpp on the LAN.
-      # ${LOCAL_MODEL_NAME} resolves at gateway startup from the
-      # .env file. The probe (below) writes that variable into the
-      # bind-mounted .env on every service start, so swapping a GGUF
-      # on the Windows box + `sudo systemctl restart hermes-agent`
-      # is enough to pick up the new model — no nixos-rebuild needed.
+      # Primary model: local llama.cpp on the LAN (multi-model, lazy-load).
+      # ${LOCAL_MODEL_NAME} is the boot-time default — the probe (below)
+      # writes the first id from /v1/models into .env. Runtime switching
+      # between any of the models that llama-swap exposes happens via
+      # `/model custom:local:<name>`; the picker enumerates them live
+      # (see custom_providers.discover_models below). When the local
+      # endpoint is unreachable or returns an error, fallback_providers
+      # (DeepSeek) takes over automatically.
       model = {
         default = "\${LOCAL_MODEL_NAME}";
         provider = "custom";
@@ -108,30 +110,31 @@ in
         protect_last_n = 20;
       };
 
+      # Quick-switch alias for DeepSeek (`/model deepseek`). The local
+      # alias was dropped — with multi-model discovery below, every llama
+      # model already appears in the picker as `custom:local:<name>`, so
+      # a single-model `local` alias would be both redundant and misleading.
       model_aliases = {
         deepseek = {
           model = deepseekModel;
           provider = "deepseek";
         };
-        local = {
-          model = "\${LOCAL_MODEL_NAME}";
-          provider = "custom";
-          base_url = "${llamaEndpoint}/v1";
-        };
       };
 
-      # Named custom providers — makes the local llama.cpp endpoint show
-      # up in the `hermes model` and `/model` pickers as a selectable
-      # entry. Without this the picker only enumerates built-in cloud
-      # providers; the bare `model.base_url` above wires the runtime
-      # default but isn't discoverable through the UI. Reference:
-      # hermes_cli/config.py:2859 (get_compatible_custom_providers).
+      # Named custom providers — exposes the local llama.cpp endpoint to
+      # the `/model` picker. With api_key set + discover_models = true,
+      # Hermes hits /v1/models on demand and enumerates every GGUF
+      # llama-swap is currently serving (see hermes_cli/model_switch.py:
+      # the discovery branch is gated on `api_url && api_key && discover`).
+      # llama.cpp is keyless, but Hermes needs a non-empty Bearer to
+      # trigger the live fetch; the value itself is ignored upstream.
       # Switch syntax: /model custom:local:<model-name>
       custom_providers = [
         {
           name = "local";
           base_url = "${llamaEndpoint}/v1";
-          # api_key omitted — keyless local llama.cpp server
+          api_key = "no-key-required";
+          discover_models = true;
         }
       ];
 
@@ -207,12 +210,18 @@ in
   };
 
   # ── Runtime model probe ─────────────────────────────────────────
-  # Probe llama.cpp on the host before each container start; write
-  # LOCAL_MODEL_NAME directly into /var/lib/hermes/.hermes/.env
-  # (which the container sees as /data/.hermes/.env via the bind
-  # mount). The container's gateway re-reads .env on startup and
-  # picks up the new value. Idempotent: sed-deletes any prior
-  # LOCAL_MODEL_NAME line before appending fresh.
+  # Picks the boot-time default model for `model.default` only.
+  # Live switching between the other models llama-swap is serving
+  # goes through the `/model` picker (custom_providers.discover_models
+  # makes them enumerable). If the probe fails (llama.cpp down, empty
+  # /v1/models, etc.), the placeholder "local-unavailable" gets written;
+  # the first chat request then errors out and fallback_providers
+  # (DeepSeek) takes over — no special handling needed here.
+  #
+  # Writes LOCAL_MODEL_NAME into /var/lib/hermes/.hermes/.env (the
+  # container sees this as /data/.hermes/.env via bind mount). The
+  # gateway re-reads .env on startup. Idempotent: sed-deletes any
+  # prior LOCAL_MODEL_NAME before appending.
   #
   # Self-healing: nixos-rebuild's activation script overwrites .env
   # by re-merging environmentFiles — wiping our probe addition. The
