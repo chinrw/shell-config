@@ -224,6 +224,10 @@ in
     # transitively which collides with the venv. Empty list.
     extraPythonPackages = [ ];
 
+    # Bake the `messaging` extra into the sealed uv2nix venv so the
+    # Telegram adapter's `from telegram import …` 
+    extraDependencyGroups = [ "messaging" ];
+
     restart = "always";
     restartSec = 5;
   };
