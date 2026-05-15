@@ -33,6 +33,7 @@ in
     ../services/hermes.nix
     ../services/llama-loader-shim.nix
     ../services/flaresolverr.nix
+    ../services/tailscale-exit-proxy.nix
     # ./rclone.nix
     # ./proxy.nix
   ];
@@ -165,7 +166,11 @@ in
   };
   services.tailscale = {
     enable = true;
-    extraSetFlags = [ "--netfilter-mode=nodivert" ];
+    useRoutingFeatures = "server";
+    extraSetFlags = [
+      "--netfilter-mode=nodivert"
+      "--advertise-exit-node"
+    ];
   };
   sops.secrets."xray" = {
     owner = "root";
