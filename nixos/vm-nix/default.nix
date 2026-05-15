@@ -226,6 +226,7 @@ in
     cifs-utils
     android-tools
     python3
+    nftables
   ];
 
   fileSystems."/mnt/data" = {
