@@ -28,6 +28,13 @@ in
     rcloneOptions = {
       # Becomes RCLONE_CONFIG env var inside the unit.
       config = config.sops.secrets.restic_rclone_conf.path;
+
+      # Cap API requests at 1/sec with no burst. alist/115-open
+      # returns 405s and read-after-write inconsistency under request
+      # bursts — this is the slowest knob that reliably stops the
+      # retry storms. Maps to RCLONE_TPSLIMIT / RCLONE_TPSLIMIT_BURST.
+      tpslimit = "1";
+      tpslimit_burst = "1";
     };
 
     paths = [
@@ -44,6 +51,10 @@ in
       ".cache" "node_modules" "target" "__pycache__"
       "*.tmp" "Trash" ".git/objects/pack"
       "build" "dist" ".venv"
+      # perf records often have restrictive perms; without excluding them
+      # restic logs "permission denied" and exits 3 ("succeeded with
+      # warnings") on every backup.
+      "*.perf.data" "perf.data"
     ];
 
     extraBackupArgs = [ "--tag" "vm-nix" "--tag" "daily" "-v" ];
@@ -80,6 +91,14 @@ in
   # Ordering: HM sops-nix renders secrets via a user service; wait for it.
   systemd.user.services.restic-backups-vm-nix.Unit.After =
     [ "sops-nix.service" ];
+
+  # restic returns exit code 3 when it succeeded but some source files
+  # were unreadable (e.g. permission-denied perf.data inside a kernel
+  # source tree). The snapshot IS saved on exit 3 — only "real" errors
+  # are exit 1. Without this, systemd marks the unit failed, short-
+  # circuiting the forget/prune/check chain, and OnFailure fires.
+  systemd.user.services.restic-backups-vm-nix.Service.SuccessExitStatus =
+    "3";
 
   # Leave the unit completely alone on `home-manager switch`. sd-switch
   # (the default HM activator) honours X-SwitchMethod=keep-old and will
