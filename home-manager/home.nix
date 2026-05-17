@@ -73,6 +73,9 @@ in
   ++ lib.optionals (builtins.match "^(wsl-mini|vm-nix)$" hostname != null) [
     (import ./programs/rclone.nix { inherit config lib pkgs; })
   ]
+  ++ lib.optionals (hostname == "vm-nix") [
+    (import ./programs/restic.nix { inherit config lib pkgs; })
+  ]
   ++ lib.optionals (hostname != "vm-nix") [
     (import ./programs/yazi.nix { inherit config; })
   ]
