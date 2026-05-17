@@ -214,6 +214,7 @@
         "chin39@archlinux" = helpers.mkHome {
           hostname = "archlinux";
           isServer = true;
+          isPublic = true;
           smallNode = true;
         };
         "chin39@arch-lxc" = helpers.mkHome {
@@ -251,6 +252,7 @@
         "chin39@jd-cloud" = helpers.mkHome {
           hostname = "jd-cloud";
           isServer = true;
+          isPublic = true;
           noGUI = true;
 
           smallNode = true;

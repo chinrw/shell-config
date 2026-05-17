@@ -13,6 +13,7 @@
       noGUI ? true,
       platform ? "x86_64-linux",
       isServer ? false,
+      isPublic ? false,
       smallNode ? false,
     }:
     let
@@ -34,6 +35,7 @@
           isWsl
           isWork
           isServer
+          isPublic
           ;
       };
       modules = [ ../home-manager/home.nix ];

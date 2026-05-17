@@ -2,6 +2,7 @@
   config,
   lib,
   isServer,
+  isPublic,
   ...
 }:
 {
@@ -9,7 +10,7 @@
     age.keyFile = "${config.xdg.configHome}/sops/age/keys.txt"; # must have no password!
     # It's also possible to use a ssh key, but only when it has no password:
     #age.sshKeyPaths = [ "/home/user/path-to-ssh-key" ];
-    defaultSopsFile = if (!isServer) then ../../secrets/hosts.yaml else ../../secrets/server/hosts.yaml;
+    defaultSopsFile = if (!isPublic) then ../../secrets/hosts.yaml else ../../secrets/public/hosts.yaml;
     defaultSopsFormat = "yaml";
     secrets = {
       "proxy/work" = {
