@@ -5,7 +5,7 @@
 # macOS we run the same pinned `pkgs.xray` (overlays/default.nix) as a
 # per-user launchd agent that starts at login.
 #
-# Imported from home.nix on darwin only.
+# Imported via programs/darwin/default.nix (macOS only).
 { config, pkgs, ... }:
 let
   # Concrete on darwin, e.g. /Users/chin39/.config/sops-nix/secrets/xray.
@@ -18,7 +18,7 @@ in
   # for the `chin39` age key home-manager sops already uses; no re-keying.
   sops.secrets."xray" = {
     format = "binary";
-    sopsFile = ../../secrets/mac_xray.conf;
+    sopsFile = ../../../secrets/mac_xray.conf;
   };
 
   # `xray` on PATH for manual inspection (`xray version`, `xray run -test`).

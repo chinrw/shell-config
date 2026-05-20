@@ -93,7 +93,7 @@ in
     })
   ]
   ++ lib.optionals (hostname == "macos") [
-    (import ./programs/xray.nix { inherit config pkgs; })
+    ./programs/darwin
   ]
   ++ [
     (import ./programs/gitui { })

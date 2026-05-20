@@ -1,37 +1,17 @@
 {
   inputs,
-  username,
-  hostname,
   ...
 }:
 {
+  # home-manager is intentionally NOT wired in here: home.nix is managed
+  # standalone via homeConfigurations."chin39@macos" (`home-manager switch`).
+  # Importing the home-manager darwin module too would double-manage the
+  # same dotfiles and launchd agents. nix-darwin owns system config only.
   imports = [
     ./configuration.nix
     ./homebrew.nix
     ./system-packages.nix
 
-    inputs.home-manager.darwinModules.home-manager
     inputs.sops-nix.darwinModules.sops
-    {
-      home-manager = {
-        # home.nix manages its own nixpkgs overlays/config, so we let the
-        # home-manager-owned pkgs win rather than the system pkgs.
-        useGlobalPkgs = false;
-        useUserPackages = true;
-        backupFileExtension = "hm-backup";
-        extraSpecialArgs = {
-          inherit inputs hostname username;
-          inherit (inputs.self) outputs;
-          stateVersion = "25.05";
-          noGUI = false;
-          isWsl = false;
-          isWork = false;
-          isServer = false;
-          smallNode = false;
-          platform = "aarch64-darwin";
-        };
-        users.${username} = ../home-manager/home.nix;
-      };
-    }
   ];
 }
