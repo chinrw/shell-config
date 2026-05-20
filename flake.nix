@@ -107,6 +107,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # nix-darwin: NixOS-style system management for macOS
+    nix-darwin = {
+      url = "github:nix-darwin/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   outputs =
@@ -186,6 +192,14 @@
         "vm-nix" = helpers.mkNixos {
           hostname = "vm-nix";
           GPU = "amd";
+        };
+      };
+
+      # nix-darwin configuration entrypoint
+      # Available through 'darwin-rebuild switch --flake .#macos'
+      darwinConfigurations = {
+        "macos" = helpers.mkDarwin {
+          hostname = "macos";
         };
       };
       # Standalone home-manager configuration entrypoint

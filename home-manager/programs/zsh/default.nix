@@ -134,6 +134,16 @@ fi
         fi
         unset _nix_zsh
       fi
+    ''
+    + lib.optionalString pkgs.stdenv.isDarwin ''
+      # Homebrew shellenv on macOS — nix-darwin manages the brew manifest
+      # but does not put /opt/homebrew/bin (Apple Silicon) or
+      # /usr/local/bin (Intel) on PATH for us.
+      if [[ -x /opt/homebrew/bin/brew ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+      elif [[ -x /usr/local/bin/brew ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+      fi
     '';
 
     enableCompletion = true;
