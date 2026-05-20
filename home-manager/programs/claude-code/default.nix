@@ -178,7 +178,7 @@ let
       };
     };
     effortLevel = "high";
-    editorMode = "vim";
+    editorMode = "normal";
     skipAutoPermissionPrompt = true;
   };
 in
