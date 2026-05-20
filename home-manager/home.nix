@@ -92,6 +92,9 @@ in
       extraInstructions = "";
     })
   ]
+  ++ lib.optionals (hostname == "macos") [
+    (import ./programs/xray.nix { inherit config pkgs; })
+  ]
   ++ [
     (import ./programs/gitui { })
   ];
