@@ -15,16 +15,35 @@ let
   # the shim (going straight to 192.168.0.101:8087) means /model
   # switches no longer "just work" — they 400 on every cold model.
   #
-  # Loopback works because hermes-agent's upstream module pins the
-  # container to `--network=host` (see nix/nixosModules.nix:942), so
-  # 127.0.0.1 inside the container is this host's loopback. NO_PROXY
-  # already excludes 127.0.0.1 from the xray hop.
+  # The primary chat model is DeepSeek (see settings.model below); the
+  # shim now serves only the delegation subagents and the local-pinned
+  # auxiliary roles. Loopback works because hermes-agent's upstream
+  # module pins the container to `--network=host` (see
+  # nix/nixosModules.nix:942), so 127.0.0.1 inside the container is this
+  # host's loopback. NO_PROXY already excludes 127.0.0.1 from the xray hop.
   llamaEndpoint = "http://127.0.0.1:8088";
 
-  # Boot-time default model. Must match a section name (or alias)
-  # declared in the server-side models.ini — currently "default" is
-  # aliased there to the opus-distill GGUF.
+  # The local GGUF every local consumer shares. Must match a section
+  # name (or alias) in the server-side models.ini — currently "default"
+  # is aliased there to the opus-distill GGUF.
   preferredLocalModel = "default";
+
+  # Shared target for everything routed to the local llama.cpp: the
+  # delegation subagents and the local-pinned auxiliary roles. Pinning
+  # every local consumer to ONE GGUF (preferredLocalModel) means the
+  # shim's single model slot (--models-max 1) never thrashes between
+  # loads. api_key is a dummy — llama-server is keyless.
+  localTarget = {
+    base_url = "${llamaEndpoint}/v1";
+    api_key = "\${OPENAI_API_KEY}";
+    model = preferredLocalModel;
+  };
+
+  # Auxiliary variant: same local target plus a roomier timeout. The
+  # auxiliary default of 30s can fire mid-load when the shim cold-loads
+  # the GGUF (the upstream schema itself flags "increase for slow local
+  # models"). delegation has no `timeout` key, so it stays on localTarget.
+  localAuxTarget = localTarget // { timeout = 60; };
 in
 {
   imports = [ inputs.hermes-agent.nixosModules.default ];
@@ -97,27 +116,56 @@ in
     ];
 
     settings = {
-      # Primary model: local llama.cpp via the loader-shim. Every chat
-      # completion hits the shim first, which POSTs /models/load on the
-      # upstream if the requested model isn't already resident. That
-      # means `/model custom:local:<other>` actually works end-to-end —
-      # the routing change in Hermes + the shim's load injection cover
-      # the gap that llama-server's --no-models-autoload leaves.
-      # When the upstream itself is down (shim 502s or chat 5xx),
-      # fallback_providers (DeepSeek) takes over.
+      # Primary chat model: DeepSeek deepseek-v4-flash. `provider:
+      # "deepseek"` is a built-in named provider — it ships a hardcoded
+      # base_url (https://api.deepseek.com/v1) and reads DEEPSEEK_API_KEY
+      # from the env, so no base_url/api_key wiring is needed here. The
+      # orchestrator runs on this model and hands simpler sub-steps down
+      # to local subagents via `delegation` below. When DeepSeek errors
+      # out (5xx/timeout/rate-limit), fallback_providers takes over.
       model = {
-        default = preferredLocalModel;
-        provider = "custom";
-        base_url = "${llamaEndpoint}/v1";
-        api_key = "\${OPENAI_API_KEY}";
+        default = deepseekModel;
+        provider = "deepseek";
       };
 
-      # Compression: DeepSeek named provider (built-in base_url +
-      # DEEPSEEK_API_KEY env var; no extra wiring needed).
-      auxiliary.compression = {
-        provider = "deepseek";
-        model = deepseekModel;
-        timeout = 30;
+      # Subagent delegation — delegate_task spawns child agents on the
+      # LOCAL llama.cpp (via the loader-shim), not on the primary. This
+      # is the cheap executor tier: the DeepSeek orchestrator does the
+      # hard reasoning and delegates simpler sub-tasks to local
+      # subagents. delegate_tool.py uses delegation.base_url verbatim
+      # when set; `model` must be explicit, or an empty value would
+      # inherit the parent's "deepseek-v4-flash" name and send it to the
+      # local server, which does not know that name.
+      delegation = localTarget;
+
+      # Auxiliary side-task models. Hermes' `auxiliary` namespace exists
+      # to keep chores OFF the expensive path. Every auxiliary role's
+      # upstream schema comment recommends a cheap/fast model — none call
+      # for a strong one — so nothing here uses a Pro tier.
+      #
+      # The four below run on the local llama.cpp: tiny, high-frequency,
+      # privacy-sensitive chores that fit the local server's per-slot
+      # context. Same GGUF as delegation, so the shim's single slot never
+      # thrashes. web_extract, triage_specifier, approval, curator and
+      # vision are left unset — provider "auto" makes them follow the
+      # primary (DeepSeek flash); they are large-context or capability-
+      # sensitive, so deliberately not pinned local.
+      auxiliary = {
+        title_generation = localAuxTarget;
+        session_search = localAuxTarget;
+        skills_hub = localAuxTarget;
+        mcp = localAuxTarget;
+
+        # Compression summarises very large contexts — the local
+        # server's ~51k per-slot window would overflow — so it stays on
+        # DeepSeek flash (named provider: built-in base_url +
+        # DEEPSEEK_API_KEY, no extra wiring). Pinned explicitly rather
+        # than left "auto" so it stays cheap even if the primary changes.
+        compression = {
+          provider = "deepseek";
+          model = deepseekModel;
+          timeout = 30;
+        };
       };
 
       compression = {
@@ -161,6 +209,8 @@ in
       # (5xx, timeout, rate-limit, connection refused). Hermes' app-level
       # retry loop walks this list before surfacing the failure to the
       # agent. Reference: hermes_cli/fallback_cmd.py, gateway/run.py:714.
+      # Currently deepseek-v4-flash, the same model as the primary — a
+      # no-op safety net kept as the explicit slot to repoint later.
       fallback_providers = [
         {
           provider = "deepseek";
@@ -232,9 +282,10 @@ in
     restartSec = 5;
   };
 
-  # Start hermes after the loader-shim so the first chat request can
-  # reach an already-listening proxy. Loose ordering only — if the shim
-  # is unhealthy, fallback_providers (DeepSeek) still catches the call.
+  # Start hermes after the loader-shim. The shim serves the delegation
+  # subagents and the local-pinned auxiliary roles (not the primary chat
+  # model, which is DeepSeek). Loose ordering only — if the shim is down
+  # those local calls fail, but the primary DeepSeek path is unaffected.
   systemd.services.hermes-agent = {
     after = [ "llama-loader-shim.service" ];
     wants = [ "llama-loader-shim.service" ];
