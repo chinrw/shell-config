@@ -13,7 +13,7 @@
   # + their direct SKILL.md references (transitive closure not taken; the
   # configure-ecc installer catalog is intentionally excluded to avoid
   # re-linking every skill it advertises).
-  # Commands ($REPO/commands/) and plugin/built-in skills are unaffected.
+  # Plugin and built-in skills are unaffected; see commandDenylist below.
   skillAllowlist ? [
     "agent-sort"
     "agentic-engineering"
@@ -22,19 +22,14 @@
     "autonomous-agent-harness"
     "autonomous-loops"
     "benchmark"
-    "brand-voice"
     "code-tour"
     "codebase-onboarding"
     "coding-standards"
     "configure-ecc"
-    "connections-optimizer"
-    "content-engine"
     "context-budget"
     "continuous-agent-loop"
     "continuous-learning-v2"
     "council"
-    "crosspost"
-    "customer-billing-ops"
     "dashboard-builder"
     "deep-research"
     "design-system"
@@ -42,21 +37,14 @@
     "documentation-lookup"
     "ecc-guide"
     "ecc-tools-cost-audit"
-    "email-ops"
     "eval-harness"
     "exa-search"
-    "finance-billing-ops"
     "frontend-patterns"
     "git-workflow"
     "github-ops"
     "hermes-imports"
-    "investor-outreach"
     "iterative-retrieval"
     "knowledge-ops"
-    "lead-intelligence"
-    "manim-video"
-    "market-research"
-    "messages-ops"
     "nanoclaw-repl"
     "plan-orchestrate"
     "plankton-code-quality"
@@ -65,7 +53,6 @@
     "python-patterns"
     "python-testing"
     "ralphinho-rfc-pipeline"
-    "remotion-video-creation"
     "research-ops"
     "rust-patterns"
     "search-first"
@@ -76,17 +63,27 @@
     "strategic-compact"
     "tdd-workflow"
     "terminal-ops"
-    "unified-notifications-ops"
     "verification-loop"
-    "video-editing"
     "workspace-surface-audit"
-    "x-api"
+  ],
+  # Command denylist: basenames under $REPO/commands/ NOT linked into
+  # ~/.claude/commands/. Commands are otherwise linked wholesale (no
+  # allowlist). Use this to drop commands that duplicate Claude Code
+  # built-ins. Empty list = link every command.
+  commandDenylist ? [
+    "aside.md"
+    "checkpoint.md"
+    "code-review.md"
+    "plan.md"
+    "review-pr.md"
   ],
   ...
 }:
 let
   skillAllowlistShell =
     if skillAllowlist == null then "" else lib.concatStringsSep " " skillAllowlist;
+
+  commandDenylistShell = lib.concatStringsSep " " commandDenylist;
 
   baseClaudeMd = builtins.readFile ./CLAUDE.md;
   withHostExtra =
@@ -124,18 +121,6 @@ let
   '';
 
   defaultHooks = {
-    Stop = [
-      {
-        hooks = [
-          {
-            type = "command";
-            command = "${config.home.homeDirectory}/.claude/hooks/verify-complete.sh";
-            timeout = 300;
-            statusMessage = "Verifying task completion...";
-          }
-        ];
-      }
-    ];
     PreToolUse = [
       {
         matcher = "Bash";
@@ -160,7 +145,6 @@ let
       "context7@claude-plugins-official" = true;
       "commit-commands@claude-plugins-official" = true;
       "security-guidance@claude-plugins-official" = true;
-      "code-review@claude-plugins-official" = true;
       "greptile@claude-plugins-official" = false;
       "frontend-design@claude-plugins-official" = true;
       "pyright-lsp@claude-plugins-official" = true;
@@ -207,17 +191,27 @@ in
             # symlink at that target is removed so home-manager prunes
             # previously-linked entries.
             local allowlist="''${3-}"
+            # Optional 4th arg: space-separated denylist of basenames to skip
+            # even when no allowlist is set — used to drop commands that
+            # duplicate Claude Code built-ins.
+            local denylist="''${4-}"
             [ -d "$src" ] || return 0
             run mkdir -p "$dst"
             if [ -L "$dst" ]; then
               run rm "$dst"
               run mkdir -p "$dst"
             fi
-            # Sweep stale symlinks pointing at either the current $REPO or the legacy
-            # ~/Documents/play/everything-claude-code/* location whose target no longer exists.
+            # Sweep stale symlinks. (a) Links into the current $REPO whose
+            # target no longer exists (entries pruned/renamed upstream).
+            # (b) ANY link into the legacy ~/Documents/play/everything-claude-code
+            # clone — that path is no longer the managed source, so such links
+            # are always stale even when the old clone still exists on disk.
             run ${pkgs.findutils}/bin/find "$dst" -maxdepth 1 -type l \
-              \( -lname "$REPO/*" -o -lname "*/Documents/play/everything-claude-code/*" \) \
+              -lname "$REPO/*" \
               -exec sh -c '[ ! -e "$1" ] && rm "$1"' _ {} \;
+            run ${pkgs.findutils}/bin/find "$dst" -maxdepth 1 -type l \
+              -lname "*/Documents/play/everything-claude-code/*" \
+              -delete
             for entry in "$src"/*; do
               [ -e "$entry" ] || continue
               local name target
@@ -236,6 +230,18 @@ in
                     ;;
                 esac
               fi
+              if [ -n "$denylist" ]; then
+                case " $denylist " in
+                  *" $name "*)
+                    # In denylist: drop any pre-existing symlink so the next
+                    # switch prunes it. Leave non-symlink files alone.
+                    if [ -L "$target" ]; then
+                      run rm "$target"
+                    fi
+                    continue
+                    ;;
+                esac
+              fi
               # Don't clobber a non-symlink file at this path.
               if [ -e "$target" ] && [ ! -L "$target" ]; then
                 continue
@@ -245,7 +251,7 @@ in
           }
 
           link_children "$REPO/agents"   "$CLAUDE/agents"
-          link_children "$REPO/commands" "$CLAUDE/commands"
+          link_children "$REPO/commands" "$CLAUDE/commands" "" "${commandDenylistShell}"
           link_children "$REPO/skills"   "$CLAUDE/skills"   "${skillAllowlistShell}"
           link_children "$REPO/rules"    "$CLAUDE/rules"
 
