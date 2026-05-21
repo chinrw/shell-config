@@ -328,6 +328,11 @@ in
         style = "compact";
         update_check = false;
         filter_mode = "host";
+        search = {
+          # order = ctrl-r cycle order; first one is the initial mode
+          filters = ["host" "session-preload" "global"];
+        };
+
       }
       //
         lib.optionalAttrs
