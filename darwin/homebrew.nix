@@ -6,9 +6,7 @@
     enable = true;
 
     onActivation = {
-      # Keep "none" for now so an unexpected delta does not vaporize apps.
-      # Switch to "zap" once the declarative list is trusted to match reality.
-      cleanup = "uninstall";
+      cleanup = "zap";
       autoUpdate = true;
       upgrade = true;
     };
