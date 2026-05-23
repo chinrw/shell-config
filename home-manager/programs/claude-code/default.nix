@@ -178,6 +178,14 @@ in
     force = true;
   };
 
+  # User-authored skills kept in this repo (not from the ECC source flake).
+  # link_children only sweeps symlinks pointing at $REPO/*, so a Nix-managed
+  # skill directory here coexists with the allowlisted ECC skill symlinks.
+  home.file.".claude/skills/fable-writing" = {
+    source = ./skills/fable-writing;
+    recursive = true;
+  };
+
   home.activation.claudeCodeAssets = lib.hm.dag.entryAfter [ "linkGeneration" ] (
     ''
           REPO="${source}"
