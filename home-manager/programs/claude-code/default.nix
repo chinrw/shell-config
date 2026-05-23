@@ -145,7 +145,6 @@ let
       "context7@claude-plugins-official" = true;
       "commit-commands@claude-plugins-official" = true;
       "security-guidance@claude-plugins-official" = true;
-      "greptile@claude-plugins-official" = false;
       "frontend-design@claude-plugins-official" = true;
       "pyright-lsp@claude-plugins-official" = true;
       "clangd-lsp@claude-plugins-official" = true;
@@ -164,6 +163,22 @@ let
     effortLevel = "high";
     editorMode = "normal";
     skipAutoPermissionPrompt = true;
+    # Drop descriptions for high-inbound hubs and isolated leaves to reclaim
+    # system-prompt tokens. Names stay listed so cross-skill references and
+    # slash-command invocations keep working.
+    skillOverrides = {
+      "verification-loop" = "name-only";
+      "tdd-workflow" = "name-only";
+      "knowledge-ops" = "name-only";
+      "configure-ecc" = "name-only";
+      "autonomous-agent-harness" = "name-only";
+      "context-budget" = "name-only";
+      "plan-orchestrate" = "name-only";
+      "design-system" = "name-only";
+      "hermes-imports" = "name-only";
+      "plankton-code-quality" = "name-only";
+      "product-capability" = "name-only";
+    };
   };
 in
 {
