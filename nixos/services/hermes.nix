@@ -5,7 +5,9 @@
   ...
 }:
 let
-  deepseekModel = "deepseek-v4-flash";
+  # DeepSeek tiers used in this config.
+  deepseekPro = "deepseek-v4-pro";       # strongest — primary, reserved for the hardest tasks
+  deepseekFlash = "deepseek-v4-flash";   # mid — auxiliary chores + first fallback
 
   # Local llama.cpp endpoint — points at the loader-shim
   # (services/llama-loader-shim.nix) on this host, NOT directly at the
@@ -25,7 +27,7 @@ let
 
   # The local GGUF every local consumer shares. Must match a section
   # name (or alias) in the server-side models.ini — currently "default"
-  # is aliased there to the opus-distill GGUF.
+  # is aliased there to the qwen3.6 27b GGUF.
   preferredLocalModel = "default";
 
   # Shared target for everything routed to the local llama.cpp: the
@@ -44,6 +46,17 @@ let
   # the GGUF (the upstream schema itself flags "increase for slow local
   # models"). delegation has no `timeout` key, so it stays on localTarget.
   localAuxTarget = localTarget // { timeout = 60; };
+
+  # Shared target for auxiliary roles pinned to DeepSeek flash —
+  # web_extract, triage_specifier, approval, curator, vision and
+  # compression. flash is the right tier for these per the upstream
+  # schema comments (large-context or capability-sensitive, but
+  # explicitly NOT main-model-grade). With the primary now on Pro,
+  # leaving these on `auto` would silently route them to Pro = $$.
+  flashAuxTarget = {
+    provider = "deepseek";
+    model = deepseekFlash;
+  };
 in
 {
   imports = [ inputs.hermes-agent.nixosModules.default ];
@@ -116,15 +129,17 @@ in
     ];
 
     settings = {
-      # Primary chat model: DeepSeek deepseek-v4-flash. `provider:
-      # "deepseek"` is a built-in named provider — it ships a hardcoded
-      # base_url (https://api.deepseek.com/v1) and reads DEEPSEEK_API_KEY
-      # from the env, so no base_url/api_key wiring is needed here. The
-      # orchestrator runs on this model and hands simpler sub-steps down
-      # to local subagents via `delegation` below. When DeepSeek errors
-      # out (5xx/timeout/rate-limit), fallback_providers takes over.
+      # Primary chat model: DeepSeek deepseek-v4-pro — the strongest
+      # tier, reserved for the hardest tasks (main conversations and
+      # orchestration). `provider: "deepseek"` is a built-in named
+      # provider with hardcoded base_url and DEEPSEEK_API_KEY pickup, so
+      # no base_url/api_key wiring is needed here. The orchestrator runs
+      # on this model and hands simpler sub-steps down to local
+      # subagents via `delegation` below. When Pro errors out
+      # (5xx/timeout/rate-limit), fallback_providers gracefully degrades
+      # to DeepSeek flash, then to the local llama.
       model = {
-        default = deepseekModel;
+        default = deepseekPro;
         provider = "deepseek";
       };
 
@@ -138,34 +153,42 @@ in
       # local server, which does not know that name.
       delegation = localTarget;
 
-      # Auxiliary side-task models. Hermes' `auxiliary` namespace exists
-      # to keep chores OFF the expensive path. Every auxiliary role's
-      # upstream schema comment recommends a cheap/fast model — none call
-      # for a strong one — so nothing here uses a Pro tier.
+      # Auxiliary side-task models. With the primary now on Pro, leaving
+      # any auxiliary role as `auto` would silently route it to Pro and
+      # burn the most expensive tier on chores. Every role is therefore
+      # pinned explicitly — to local (tiny, private, high-frequency) or
+      # flash (large-context or capability-sensitive). NO role uses Pro:
+      # the upstream schema comments uniformly recommend cheap/fast
+      # models for these.
       #
-      # The four below run on the local llama.cpp: tiny, high-frequency,
-      # privacy-sensitive chores that fit the local server's per-slot
-      # context. Same GGUF as delegation, so the shim's single slot never
-      # thrashes. web_extract, triage_specifier, approval, curator and
-      # vision are left unset — provider "auto" makes them follow the
-      # primary (DeepSeek flash); they are large-context or capability-
-      # sensitive, so deliberately not pinned local.
+      # Note: auxiliary clients (agent/auxiliary_client.py) do NOT walk
+      # the top-level fallback_providers chain — they have their own
+      # credential/payment fallback machinery. A local-pinned aux call
+      # therefore fails locally when the shim is down (title generation
+      # silently absent, session_search errors); these are deliberately
+      # non-critical chores.
       auxiliary = {
+        # Local-pinned (qwen3.6 27b via the shim): zero-cost, private,
+        # small fixed context. Same GGUF as delegation so the shim's
+        # single slot never thrashes.
         title_generation = localAuxTarget;
         session_search = localAuxTarget;
         skills_hub = localAuxTarget;
         mcp = localAuxTarget;
 
-        # Compression summarises very large contexts — the local
-        # server's ~51k per-slot window would overflow — so it stays on
-        # DeepSeek flash (named provider: built-in base_url +
-        # DEEPSEEK_API_KEY, no extra wiring). Pinned explicitly rather
-        # than left "auto" so it stays cheap even if the primary changes.
-        compression = {
-          provider = "deepseek";
-          model = deepseekModel;
-          timeout = 30;
-        };
+        # Flash-pinned: web summarisation, spec expansion, danger
+        # classification, skill-curation review, image understanding —
+        # all sized for flash's 1M context and capability tier.
+        approval = flashAuxTarget;
+        web_extract = flashAuxTarget;
+        triage_specifier = flashAuxTarget;
+        curator = flashAuxTarget;
+        vision = flashAuxTarget;
+
+        # Compression: same flash target plus the existing 30s timeout
+        # override carried forward from the prior config (the per-role
+        # default is 120s; 30s keeps compression latency tight).
+        compression = flashAuxTarget // { timeout = 30; };
       };
 
       compression = {
@@ -175,13 +198,13 @@ in
         protect_last_n = 20;
       };
 
-      # Quick-switch alias for DeepSeek (`/model deepseek`). The local
-      # alias was dropped — with multi-model discovery below, every llama
-      # model already appears in the picker as `custom:local:<name>`, so
-      # a single-model `local` alias would be both redundant and misleading.
+      # Quick-switch alias `/model deepseek` — manually drop from Pro to
+      # the cheaper DeepSeek flash tier in non-critical sessions. The
+      # local alias stays absent: multi-model discovery (custom_providers
+      # below) already exposes every local GGUF as `custom:local:<name>`.
       model_aliases = {
         deepseek = {
-          model = deepseekModel;
+          model = deepseekFlash;
           provider = "deepseek";
         };
       };
@@ -205,17 +228,19 @@ in
         }
       ];
 
-      # Fallback chain — tried in order when the primary model errors out
-      # (5xx, timeout, rate-limit, connection refused). Hermes' app-level
-      # retry loop walks this list before surfacing the failure to the
-      # agent. Reference: hermes_cli/fallback_cmd.py, gateway/run.py:714.
-      # Currently deepseek-v4-flash, the same model as the primary — a
-      # no-op safety net kept as the explicit slot to repoint later.
+      # Fallback chain — walked when the primary errors (5xx, timeout,
+      # rate-limit, auth, connection refused). Hermes' app-level retry
+      # loop tries each entry in order before surfacing failure.
+      # References: hermes_cli/fallback_cmd.py, gateway/run.py:712.
+      # This chain ALSO governs delegation subagents: delegate_tool.py
+      # inherits the parent's _fallback_chain into spawned children
+      # (see tools/delegate_tool.py:1078 / :1113), so a local-llama
+      # subagent call that errors out walks this same list.
+      # Graceful degradation: Pro → flash (capability-close, different
+      # rate-limit state) → local (offline-resilient last resort).
       fallback_providers = [
-        {
-          provider = "deepseek";
-          model = deepseekModel;
-        }
+        { provider = "deepseek"; model = deepseekFlash; }
+        (localTarget // { provider = "custom"; })
       ];
 
       terminal = {
