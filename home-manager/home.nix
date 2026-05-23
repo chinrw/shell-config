@@ -29,6 +29,8 @@ let
       ""
     else if (hostname == "wsl-mini") then
       config.sops.secrets."proxy/clash_mini".path
+    else if (hostname == "macos") then
+      pkgs.writeText "proxy-url" "http://127.0.0.1:10809"
     else
       "";
 in
