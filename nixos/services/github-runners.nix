@@ -33,6 +33,7 @@ in
   services.github-runners = {
     runner1 = {
       enable = true;
+      nodeRuntimes = [ "node24" ];
       name = thisHostCfg.name;
       tokenFile = config.sops.secrets."github-runners/${thisHostCfg.name}".path;
       url = "https://github.com/rex-rs/rex";
