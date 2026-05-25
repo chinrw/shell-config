@@ -166,12 +166,6 @@ in
         tcpdump # monitor tcp
         inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
 
-        # (pkgs.dstask.overrideAttrs ({ meta ? { }, ... }: {
-        #   meta = meta // {
-        #     platforms = pkgs.lib.platforms.unix;
-        #   };
-        # }))
-
         btop # system monitor
         htop
         glances # same thing
@@ -221,7 +215,6 @@ in
         ffmpeg # yazi deps
         exiftool
         yt-dlp # website video downloader
-        ueberzugpp # terminal image preview
         sampler # Tool for shell commands execution, visualization and alerting
         nmap # port scanner
         circumflex # 🌿 It's Hacker News in your terminal
@@ -238,6 +231,7 @@ in
         rustscan # modern scanner
         marksman
         pyrefly
+        mypy # Optional static typing for Python
       ]
       ++ lib.optionals (hostname != "macos" && !smallNode) [
         conda
@@ -246,7 +240,6 @@ in
         mpv
       ]
       ++ lib.optionals isDesktop [
-        openapi-tui
         inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLDefault
         jellyfin-media-player
       ]
@@ -254,9 +247,6 @@ in
         rustup
       ]
       ++ lib.optionals isWork [
-        mypy # Optional static typing for Python
-        asciinema_3
-        asciinema-agg
       ]
       ++ lib.optionals (!isWork) [
       ]
