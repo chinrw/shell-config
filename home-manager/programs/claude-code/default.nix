@@ -78,6 +78,16 @@
     "plan.md"
     "review-pr.md"
   ],
+  # Rule denylist: subdirectory names (or filenames) under $REPO/rules/
+  # NOT linked into ~/.claude/rules/. Rules are otherwise linked wholesale
+  # (no allowlist). Use this to drop unscoped rule packs (those without
+  # `paths:` frontmatter) that would otherwise load as memory for every
+  # project regardless of stack. Language-specific dirs declare `paths:`
+  # and self-gate, so they don't need to be listed here. Empty list =
+  # link every entry under $REPO/rules/.
+  ruleDenylist ? [
+    "zh"
+  ],
   ...
 }:
 let
@@ -85,6 +95,8 @@ let
     if skillAllowlist == null then "" else lib.concatStringsSep " " skillAllowlist;
 
   commandDenylistShell = lib.concatStringsSep " " commandDenylist;
+
+  ruleDenylistShell = lib.concatStringsSep " " ruleDenylist;
 
   baseClaudeMd = builtins.readFile ./CLAUDE.md;
   withHostExtra =
@@ -139,8 +151,40 @@ let
     (lib.mapAttrs (event: defaults: defaults ++ (extraHooks.${event} or [ ])) defaultHooks)
     // (lib.removeAttrs extraHooks (lib.attrNames defaultHooks));
 
+  # statusLine wrapper for the claude-hud plugin. The plugin is installed by
+  # Claude Code itself into ~/.claude/plugins/cache/<marketplace>/claude-hud/<version>/,
+  # so the path is discovered dynamically at runtime. COLUMNS is exported so the
+  # HUD knows the real terminal width — Claude Code pipes the subprocess stdout,
+  # which makes process.stdout.columns unavailable.
+  claudeHudStatusline = pkgs.writeShellScript "claude-hud-statusline" ''
+    cols=$(${pkgs.coreutils}/bin/stty size </dev/tty 2>/dev/null | ${pkgs.gawk}/bin/awk '{print $2}')
+    export COLUMNS=$(( ''${cols:-120} > 4 ? ''${cols:-120} - 4 : 1 ))
+    plugin_dir=$(${pkgs.coreutils}/bin/ls -d "''${CLAUDE_CONFIG_DIR:-$HOME/.claude}"/plugins/cache/*/claude-hud/*/ 2>/dev/null \
+      | ${pkgs.gawk}/bin/awk -F/ '{ print $(NF-1) "\t" $0 }' \
+      | ${pkgs.gnugrep}/bin/grep -E '^[0-9]+\.[0-9]+\.[0-9]+[[:space:]]' \
+      | ${pkgs.coreutils}/bin/sort -t. -k1,1n -k2,2n -k3,3n -k4,4n \
+      | ${pkgs.coreutils}/bin/tail -1 \
+      | ${pkgs.coreutils}/bin/cut -f2-)
+    [ -n "$plugin_dir" ] || exit 0
+    exec ${pkgs.nodejs}/bin/node "''${plugin_dir}dist/index.js"
+  '';
+
+  claudeHudConfig = {
+    lineLayout = "compact";
+    showSeparators = true;
+    display = {
+      showTools = false;
+      # Hide the 7d window unless usage hits 100%; keep the 5h window visible.
+      sevenDayThreshold = 100;
+    };
+  };
+
   settings = {
     hooks = mergedHooks;
+    statusLine = {
+      type = "command";
+      command = "${claudeHudStatusline}";
+    };
     enabledPlugins = {
       "rust-analyzer-lsp@claude-plugins-official" = true;
       "context7@claude-plugins-official" = true;
@@ -198,6 +242,13 @@ in
 
   home.file.".claude/settings.json" = {
     source = pkgs.writeText "claude-settings.json" (builtins.toJSON settings);
+    force = true;
+  };
+
+  # claude-hud reads this file at runtime to toggle optional HUD features.
+  # The plugin's own state lives in sibling ~/.claude/plugins/claude-hud/config-cache/.
+  home.file.".claude/plugins/claude-hud/config.json" = {
+    source = pkgs.writeText "claude-hud-config.json" (builtins.toJSON claudeHudConfig);
     force = true;
   };
 
@@ -297,7 +348,7 @@ in
           link_children "$REPO/agents"   "$CLAUDE/agents"
           link_children "$REPO/commands" "$CLAUDE/commands" "" "${commandDenylistShell}"
           link_children "$REPO/skills"   "$CLAUDE/skills"   "${skillAllowlistShell}"
-          link_children "$REPO/rules"    "$CLAUDE/rules"
+          link_children "$REPO/rules"    "$CLAUDE/rules"   "" "${ruleDenylistShell}"
 
           CLAUDE_MD_BASE="${baseClaudeMdFile}"
           LOCAL_MD="$CLAUDE/CLAUDE.local.md"
