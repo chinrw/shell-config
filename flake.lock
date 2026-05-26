@@ -488,6 +488,23 @@
         "url": "git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
       }
     },
+    "mtg-agent-skill": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779728767,
+        "narHash": "sha256-2Doig8euirz5P89c1h2TsUmO+RLvw2WQHymtLLxiWBo=",
+        "owner": "chinrw",
+        "repo": "mtg-agent-skill",
+        "rev": "f2c471abfc59109598a5bc25462cf32219e61bb5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "chinrw",
+        "ref": "main",
+        "repo": "mtg-agent-skill",
+        "type": "github"
+      }
+    },
     "neovim-nightly-overlay": {
       "inputs": {
         "flake-parts": "flake-parts_3",
@@ -894,6 +911,7 @@
         "hermes-agent": "hermes-agent",
         "home-manager": "home-manager_2",
         "linux-src": "linux-src",
+        "mtg-agent-skill": "mtg-agent-skill",
         "neovim-nightly-overlay": "neovim-nightly-overlay",
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",

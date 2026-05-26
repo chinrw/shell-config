@@ -102,6 +102,11 @@
       flake = false;
     };
 
+    mtg-agent-skill = {
+      url = "github:chinrw/mtg-agent-skill?ref=main";
+      flake = false;
+    };
+
     claude-code-nix = {
       url = "github:chinrw/claude-code-nix";
       inputs.nixpkgs.follows = "nixpkgs";

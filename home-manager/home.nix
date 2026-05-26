@@ -88,6 +88,7 @@ in
         pkgs
         config
         hostname
+        inputs
         ;
       source = inputs.everything-claude-code;
       # Per-host CLAUDE.md additions; default empty. Override per host as needed.

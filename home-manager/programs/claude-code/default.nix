@@ -4,6 +4,7 @@
   pkgs,
   hostname,
   source,
+  inputs,
   mcpServers ? { },
   extraHooks ? { },
   extraInstructions ? "",
@@ -151,12 +152,19 @@ let
       "andrej-karpathy-skills@karpathy-skills" = true;
       "superpowers@claude-plugins-official" = true;
       "github@claude-plugins-official" = true;
+      "claude-hud@claude-hud" = true;
     };
     extraKnownMarketplaces = {
       karpathy-skills = {
         source = {
           source = "github";
           repo = "forrestchang/andrej-karpathy-skills";
+        };
+      };
+      claude-hud = {
+        source = {
+          source = "github";
+          repo = "jarrodwatts/claude-hud";
         };
       };
     };
@@ -198,6 +206,19 @@ in
   # skill directory here coexists with the allowlisted ECC skill symlinks.
   home.file.".claude/skills/fable-writing" = {
     source = ./skills/fable-writing;
+    recursive = true;
+  };
+
+  # mtg-agent-skill repo contains two sibling skills at its root.
+  # Map each subfolder into its own ~/.claude/skills/<name> location so the
+  # folder name matches the `name:` field in each SKILL.md frontmatter.
+  home.file.".claude/skills/mtg-deck-analysis" = {
+    source = "${inputs.mtg-agent-skill}/mtg-deck-analysis";
+    recursive = true;
+  };
+
+  home.file.".claude/skills/mtg-card-evaluation" = {
+    source = "${inputs.mtg-agent-skill}/mtg-card-evaluation";
     recursive = true;
   };
 
