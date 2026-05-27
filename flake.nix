@@ -112,6 +112,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    pwndbg = {
+      url = "github:pwndbg/pwndbg";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # nix-darwin: NixOS-style system management for macOS
     nix-darwin = {
       url = "github:nix-darwin/nix-darwin/master";

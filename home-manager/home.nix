@@ -251,14 +251,20 @@ in
       ]
       ++ lib.optionals (!isWork) [
       ]
+      ++ lib.optionals (!smallNode && isLinux) [
+        gdb
+        gef # GEF (GDB Enhanced Features) - a modern experience for GDB with advanced debugging capabilities for exploit devs & reverse engineers on Linux
+        inputs.pwndbg.packages.${pkgs.stdenv.hostPlatform.system}.default
+      ]
+      ++ lib.optionals (!smallNode && isDarwin) [
+        inputs.pwndbg.packages.${pkgs.stdenv.hostPlatform.system}.pwndbg-lldb
+      ]
       ++ lib.optionals (isWsl || hostname == "vm-nix") [
         iperf3
         # Clangd from clang-tools must come first.
         (lib.hiPrio clang-tools)
         par2cmdline
         marksman
-        gdb
-        gef # GEF (GDB Enhanced Features) - a modern experience for GDB with advanced debugging capabilities for exploit devs & reverse engineers on Linux
         asciinema_3
         asciinema-agg
       ];
