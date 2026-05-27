@@ -164,7 +164,6 @@ in
         fzf
         unstable.zellij
         duf # better df
-        tcpdump # monitor tcp
         inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
 
         btop # system monitor
@@ -173,8 +172,6 @@ in
 
         rclone
         dua
-        cachix
-        nix-search-cli
         age # A simple, modern and secure encryption tool
         sops
         delta # A syntax-highlighting pager for git, diff, grep, and blame output
@@ -182,7 +179,9 @@ in
         jq # json parser
       ]
       ++ lib.optionals (!smallNode) [
-
+        tcpdump # monitor tcp
+        cachix
+        nix-search-cli
         lua51Packages.lua
         uv # An extremely fast Python package and project manager, written in Rust.
         gh # github shell
@@ -234,7 +233,7 @@ in
         pyrefly
         mypy # Optional static typing for Python
       ]
-      ++ lib.optionals (hostname != "macos" && !smallNode) [
+      ++ lib.optionals (!smallNode && isLinux) [
         conda
       ]
       ++ lib.optionals (!noGUI) [
@@ -264,7 +263,6 @@ in
         # Clangd from clang-tools must come first.
         (lib.hiPrio clang-tools)
         par2cmdline
-        marksman
         asciinema_3
         asciinema-agg
       ];
