@@ -8,6 +8,7 @@ let
   enabledHosts = [
     "vm-nix"
     "proxmox"
+    "macos"
   ];
   isEnabled = builtins.elem hostname enabledHosts;
 in
@@ -18,7 +19,8 @@ in
 
   services.syncthing = lib.mkIf isEnabled {
     enable = true;
-    guiAddress = "0.0.0.0:8384";
+    # Loopback-only on the laptop; servers stay on LAN.
+    guiAddress = if hostname == "macos" then "127.0.0.1:8384" else "0.0.0.0:8384";
     overrideFolders = false;
 
     guiCredentials = {
