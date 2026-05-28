@@ -70,7 +70,7 @@
     };
 
     linux-src = {
-      url = "git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git?ref=linux-rolling-stable&shallow=1";
+      url = "git+https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git?ref=linux-rolling-stable&shallow=1";
       flake = false;
     };
 

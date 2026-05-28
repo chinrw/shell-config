@@ -479,13 +479,13 @@
         "rev": "55f3722fc694d6478eca3020b12a4d6a79b06f27",
         "shallow": true,
         "type": "git",
-        "url": "git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
+        "url": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
       },
       "original": {
         "ref": "linux-rolling-stable",
         "shallow": true,
         "type": "git",
-        "url": "git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
+        "url": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
       }
     },
     "mtg-agent-skill": {
