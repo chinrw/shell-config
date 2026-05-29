@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   # Triggered by systemd's OnFailure when a restic unit fails.
   # Argument $1 = name of the failed unit (passed via %i).
@@ -21,8 +26,8 @@ in
   services.restic.enable = true;
 
   services.restic.backups.vm-nix = {
-    initialize   = false;
-    repository   = "rclone:alist:115-open/backup";
+    initialize = false;
+    repository = "rclone:alist:115-open/backup";
     passwordFile = config.sops.secrets.restic_password.path;
 
     rcloneOptions = {
@@ -48,16 +53,30 @@ in
     ];
 
     exclude = [
-      ".cache" "node_modules" "target" "__pycache__"
-      "*.tmp" "Trash" ".git/objects/pack"
-      "build" "dist" ".venv"
+      ".cache"
+      "node_modules"
+      "target"
+      "__pycache__"
+      "*.tmp"
+      "Trash"
+      ".git/objects/pack"
+      "build"
+      "dist"
+      ".venv"
       # perf records often have restrictive perms; without excluding them
       # restic logs "permission denied" and exits 3 ("succeeded with
       # warnings") on every backup.
-      "*.perf.data" "perf.data"
+      "*.perf.data"
+      "perf.data"
     ];
 
-    extraBackupArgs = [ "--tag" "vm-nix" "--tag" "daily" "-v" ];
+    extraBackupArgs = [
+      "--tag"
+      "vm-nix"
+      "--tag"
+      "daily"
+      "-v"
+    ];
 
     # Force the progress meter on under systemd (restic suppresses it
     # when stdout is not a TTY). 0.2 = one update every 5 seconds —
@@ -70,15 +89,18 @@ in
     backupPrepareCommand = "${pkgs.coreutils}/bin/ls /mnt/data >/dev/null";
 
     timerConfig = {
-      OnCalendar  = "*-*-* 03:00:00";
-      Persistent  = true;
+      OnCalendar = "*-*-* 03:00:00";
+      Persistent = true;
       AccuracySec = "1min";
     };
 
     pruneOpts = [
-      "--keep-daily" "4"
-      "--keep-weekly" "3"
-      "--keep-monthly" "2"
+      "--keep-daily"
+      "4"
+      "--keep-weekly"
+      "3"
+      "--keep-monthly"
+      "2"
       "-v"
     ];
 
@@ -89,16 +111,14 @@ in
   };
 
   # Ordering: HM sops-nix renders secrets via a user service; wait for it.
-  systemd.user.services.restic-backups-vm-nix.Unit.After =
-    [ "sops-nix.service" ];
+  systemd.user.services.restic-backups-vm-nix.Unit.After = [ "sops-nix.service" ];
 
   # restic returns exit code 3 when it succeeded but some source files
   # were unreadable (e.g. permission-denied perf.data inside a kernel
   # source tree). The snapshot IS saved on exit 3 — only "real" errors
   # are exit 1. Without this, systemd marks the unit failed, short-
   # circuiting the forget/prune/check chain, and OnFailure fires.
-  systemd.user.services.restic-backups-vm-nix.Service.SuccessExitStatus =
-    "3";
+  systemd.user.services.restic-backups-vm-nix.Service.SuccessExitStatus = "3";
 
   # Leave the unit completely alone on `home-manager switch`. sd-switch
   # (the default HM activator) honours X-SwitchMethod=keep-old and will
@@ -110,23 +130,20 @@ in
   # unit definition still gets installed on disk; it takes effect on
   # the next trigger (timer at 03:00, or manual
   # `systemctl --user start --no-block`).
-  systemd.user.services.restic-backups-vm-nix.Service."X-SwitchMethod" =
-    "keep-old";
+  systemd.user.services.restic-backups-vm-nix.Service."X-SwitchMethod" = "keep-old";
 
   # Also keep the restart guard as belt-and-braces (some sd-switch
   # versions check both).
-  systemd.user.services.restic-backups-vm-nix.Service."X-RestartIfChanged" =
-    lib.mkForce false;
+  systemd.user.services.restic-backups-vm-nix.Service."X-RestartIfChanged" = lib.mkForce false;
 
   # Failure alert: emit emerg-priority journal entry so any future log
   # shipper / alert listener picks it up by priority.
-  systemd.user.services.restic-backups-vm-nix.Unit.OnFailure =
-    [ "restic-backup-failed@%p.service" ];
+  systemd.user.services.restic-backups-vm-nix.Unit.OnFailure = [ "restic-backup-failed@%p.service" ];
 
   systemd.user.services."restic-backup-failed@" = {
     Unit.Description = "Log restic backup failure for %i";
     Service = {
-      Type      = "oneshot";
+      Type = "oneshot";
       ExecStart = "${failureScript} %i";
     };
   };
@@ -134,7 +151,7 @@ in
   assertions = [
     {
       assertion = config.services.restic.backups.vm-nix.paths != [ ];
-      message   =
+      message =
         "services.restic.backups.vm-nix.paths is empty. "
         + "Add paths in home-manager/programs/restic.nix before activating.";
     }

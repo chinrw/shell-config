@@ -194,12 +194,12 @@ in
       "CAPTCHA_SOLVER" = "none";
       "TZ" = "Asia/Shanghai";
 
-      "http_proxy"  = "http://192.168.0.240:10809";
+      "http_proxy" = "http://192.168.0.240:10809";
       "https_proxy" = "http://192.168.0.240:10809";
-      "no_proxy"    = "127.0.0.1,localhost,192.168.0.0/24";
-      "HTTP_PROXY"  = "http://192.168.0.240:10809";
+      "no_proxy" = "127.0.0.1,localhost,192.168.0.0/24";
+      "HTTP_PROXY" = "http://192.168.0.240:10809";
       "HTTPS_PROXY" = "http://192.168.0.240:10809";
-      "NO_PROXY"    = "127.0.0.1,localhost,192.168.0.0/24";
+      "NO_PROXY" = "127.0.0.1,localhost,192.168.0.0/24";
     };
 
     # LAN-accessible bind on all interfaces (0.0.0.0:8191). Anything on

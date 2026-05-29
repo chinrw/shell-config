@@ -16,7 +16,11 @@ in
     autoPrune = {
       enable = true;
       dates = "weekly";
-      flags = [ "--all" "--filter" "until=720h" ];
+      flags = [
+        "--all"
+        "--filter"
+        "until=720h"
+      ];
     };
   };
   virtualisation.oci-containers.backend = "docker";
@@ -56,7 +60,10 @@ in
   };
   systemd.services."jellyfin-mount-ready" = {
     description = "Wait for user-scope rclone FUSE mounts to be ready";
-    path = [ pkgs.coreutils pkgs.util-linux ];
+    path = [
+      pkgs.coreutils
+      pkgs.util-linux
+    ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;

@@ -63,7 +63,14 @@ in
         ;
     })
     (import ./programs/zellij { inherit lib pkgs config; })
-    (import ./programs/sops.nix { inherit lib config isServer isPublic; })
+    (import ./programs/sops.nix {
+      inherit
+        lib
+        config
+        isServer
+        isPublic
+        ;
+    })
     (import ./programs/syncthing.nix { inherit lib config hostname; })
 
     # You can also split up your configuration and import pieces of it here:
@@ -327,7 +334,11 @@ in
         filter_mode = "host";
         search = {
           # order = ctrl-r cycle order; first one is the initial mode
-          filters = ["host" "session-preload" "global"];
+          filters = [
+            "host"
+            "session-preload"
+            "global"
+          ];
         };
 
       }

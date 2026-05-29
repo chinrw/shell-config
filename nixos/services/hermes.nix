@@ -6,8 +6,8 @@
 }:
 let
   # DeepSeek tiers used in this config.
-  deepseekPro = "deepseek-v4-pro";       # strongest — primary, reserved for the hardest tasks
-  deepseekFlash = "deepseek-v4-flash";   # mid — auxiliary chores + first fallback
+  deepseekPro = "deepseek-v4-pro"; # strongest — primary, reserved for the hardest tasks
+  deepseekFlash = "deepseek-v4-flash"; # mid — auxiliary chores + first fallback
 
   # Local llama.cpp endpoint — points at the loader-shim
   # (services/llama-loader-shim.nix) on this host, NOT directly at the
@@ -45,7 +45,9 @@ let
   # auxiliary default of 30s can fire mid-load when the shim cold-loads
   # the GGUF (the upstream schema itself flags "increase for slow local
   # models"). delegation has no `timeout` key, so it stays on localTarget.
-  localAuxTarget = localTarget // { timeout = 60; };
+  localAuxTarget = localTarget // {
+    timeout = 60;
+  };
 
   # Shared target for auxiliary roles pinned to DeepSeek flash —
   # web_extract, triage_specifier, approval, curator, vision and
@@ -98,9 +100,9 @@ in
     # eliminates the user-mismatch collisions the previous
     # native-mode setup suffered from.
     container = {
-      enable    = true;
-      backend   = "docker";
-      image     = "ubuntu:24.04";
+      enable = true;
+      backend = "docker";
+      image = "ubuntu:24.04";
       hostUsers = [ "chin39" ];
 
       # Proxy env passed via `docker create --env` so it lands in the
@@ -117,10 +119,14 @@ in
       #   - 127.0.0.1 / localhost — loopback
       #   - api.deepseek.com — direct-reachable from CN; bypass proxy
       extraOptions = [
-        "--env" "HTTP_PROXY=http://192.168.0.240:10809"
-        "--env" "HTTPS_PROXY=http://192.168.0.240:10809"
-        "--env" "NO_PROXY=192.168.0.0/24,127.0.0.1,localhost,api.deepseek.com"
-        "--env" "TELEGRAM_PROXY=http://192.168.0.240:10809"
+        "--env"
+        "HTTP_PROXY=http://192.168.0.240:10809"
+        "--env"
+        "HTTPS_PROXY=http://192.168.0.240:10809"
+        "--env"
+        "NO_PROXY=192.168.0.0/24,127.0.0.1,localhost,api.deepseek.com"
+        "--env"
+        "TELEGRAM_PROXY=http://192.168.0.240:10809"
       ];
     };
 
@@ -188,7 +194,9 @@ in
         # Compression: same flash target plus the existing 30s timeout
         # override carried forward from the prior config (the per-role
         # default is 120s; 30s keeps compression latency tight).
-        compression = flashAuxTarget // { timeout = 30; };
+        compression = flashAuxTarget // {
+          timeout = 30;
+        };
       };
 
       compression = {
@@ -239,7 +247,10 @@ in
       # Graceful degradation: Pro → flash (capability-close, different
       # rate-limit state) → local (offline-resilient last resort).
       fallback_providers = [
-        { provider = "deepseek"; model = deepseekFlash; }
+        {
+          provider = "deepseek";
+          model = deepseekFlash;
+        }
         (localTarget // { provider = "custom"; })
       ];
 
@@ -300,7 +311,7 @@ in
     extraPythonPackages = [ ];
 
     # Bake the `messaging` extra into the sealed uv2nix venv so the
-    # Telegram adapter's `from telegram import …` 
+    # Telegram adapter's `from telegram import …`
     extraDependencyGroups = [ "messaging" ];
 
     restart = "always";

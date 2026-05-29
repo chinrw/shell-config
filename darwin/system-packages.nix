@@ -24,10 +24,12 @@
     # only here to back `openai-whisper`; both removed since whisper is no
     # longer needed.
     opam
-    (python312.withPackages (ps: with ps; [
-      certifi
-      numpy
-    ]))
+    (python312.withPackages (
+      ps: with ps; [
+        certifi
+        numpy
+      ]
+    ))
 
     # Dev tools
     cloc
