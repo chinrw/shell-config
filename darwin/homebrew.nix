@@ -5,6 +5,9 @@
   homebrew = {
     enable = true;
 
+    # force to update the cask bundles
+    greedyCasks = true;
+
     onActivation = {
       cleanup = "zap";
       autoUpdate = true;
@@ -44,7 +47,11 @@
       "adobe-acrobat-pro"
       "android-file-transfer"
       "discord"
-      "docker-desktop"
+      # Opt out of greedy
+      {
+        name = "docker-desktop";
+        greedy = false;
+      }
       "firefox"
       "google-chrome"
       "iina"
@@ -66,7 +73,11 @@
       "utm"
       "visual-studio-code"
       "vnc-viewer"
-      "wezterm@nightly"
+      # Opt out of greedy
+      {
+        name = "wezterm@nightly";
+        greedy = false;
+      }
       "wireshark-app"
       "zed@preview"
       "zoom"
