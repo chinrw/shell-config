@@ -138,15 +138,29 @@ in
       # Primary chat model: DeepSeek deepseek-v4-pro — the strongest
       # tier, reserved for the hardest tasks (main conversations and
       # orchestration). `provider: "deepseek"` is a built-in named
-      # provider with hardcoded base_url and DEEPSEEK_API_KEY pickup, so
-      # no base_url/api_key wiring is needed here. The orchestrator runs
-      # on this model and hands simpler sub-steps down to local
-      # subagents via `delegation` below. When Pro errors out
-      # (5xx/timeout/rate-limit), fallback_providers gracefully degrades
-      # to DeepSeek flash, then to the local llama.
+      # provider that already ships a hardcoded base_url and reads
+      # DEEPSEEK_API_KEY, so base_url/api_key would normally be redundant.
+      #
+      # They are pinned explicitly ON PURPOSE. An earlier generation ran
+      # the PRIMARY on the local llama (base_url 127.0.0.1:8088 +
+      # OPENAI_API_KEY). Hermes reconciles these managed settings into the
+      # stateful ~/.hermes/config.yaml with an additive deep-merge
+      # (hermes_cli/config.py: _deep_merge / get_missing_config_fields):
+      # it OVERWRITES keys we set but NEVER prunes keys we drop. Simply
+      # omitting base_url/api_key here left those two behind as orphans,
+      # so deepseek-v4-pro kept routing through the dead local shim (256K
+      # window + HTTP 500s). Setting them to the real DeepSeek endpoint
+      # gives the merge a value to overwrite the orphan with on rebuild.
+      #
+      # The orchestrator runs on this model and hands simpler sub-steps
+      # down to local subagents via `delegation` below. When Pro errors
+      # out (5xx/timeout/rate-limit), fallback_providers gracefully
+      # degrades to DeepSeek flash, then to the local llama.
       model = {
         default = deepseekPro;
         provider = "deepseek";
+        base_url = "https://api.deepseek.com/v1";
+        api_key = "\${DEEPSEEK_API_KEY}";
       };
 
       # Subagent delegation — delegate_task spawns child agents on the
@@ -157,7 +171,22 @@ in
       # when set; `model` must be explicit, or an empty value would
       # inherit the parent's "deepseek-v4-flash" name and send it to the
       # local server, which does not know that name.
-      delegation = localTarget;
+      #
+      # Tuning merged onto localTarget (schema defaults live in
+      # hermes_cli/config.py:1388 "delegation"):
+      #   max_concurrent_children 4 — parallel children per batch (def 3).
+      #   max_spawn_depth 2 — let depth-1 children spawn their OWN workers
+      #     for nested orchestration (def 1 = flat, leaf children only;
+      #     clamped to [1,3]). Kept at 2, not 3: every child shares the one
+      #     local llama-server (--models-max 1), so deeper trees just pile
+      #     more concurrent load onto a single slot.
+      #   child_timeout_seconds 900 — roomier per-child wall-clock cap
+      #     (def 600) for the slow local model on large delegated tasks.
+      delegation = localTarget // {
+        max_concurrent_children = 4;
+        max_spawn_depth = 2;
+        child_timeout_seconds = 900;
+      };
 
       # Auxiliary side-task models. With the primary now on Pro, leaving
       # any auxiliary role as `auto` would silently route it to Pro and
