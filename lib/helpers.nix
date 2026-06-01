@@ -57,7 +57,7 @@
       # isLima = builtins.substring 0 5 hostname == "lima-";
       isWorkstation = builtins.isString desktop;
     in
-    inputs.nixpkgs.lib.nixosSystem {
+    inputs.nixos.lib.nixosSystem {
       system = platform;
       specialArgs = {
         inherit
@@ -76,7 +76,7 @@
       modules = [
         ../nixos/configuration.nix
       ]
-      ++ inputs.nixpkgs.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
+      ++ inputs.nixos.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
     };
 
   mkDarwin =
