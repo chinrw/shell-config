@@ -270,7 +270,7 @@ in
         # Clangd from clang-tools must come first.
         (lib.hiPrio clang-tools)
         par2cmdline
-        asciinema_3
+        asciinema
         asciinema-agg
       ];
   };
