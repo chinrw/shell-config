@@ -234,7 +234,7 @@ in
         inputs.rustowl-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
         unstable.gemini-cli
         inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
-        # unstable.codex
+        unstable.codex
         rustscan # modern scanner
         marksman
         pyrefly
