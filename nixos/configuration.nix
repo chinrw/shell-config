@@ -90,8 +90,18 @@
       # Opinionated: disable channels
       channel.enable = false;
 
-      # Opinionated: make flake registry and nix path match flake inputs
-      registry = lib.mapAttrs (_: flake: { inherit flake; }) flakeInputs;
+      # Opinionated: make flake registry and nix path match flake inputs.
+      # `nixpkgs` is dropped from the map on purpose: nixpkgs' own
+      # misc/nixpkgs-flake.nix pins the `nixpkgs` registry key to whichever
+      # nixpkgs built this system, so we let it be the sole owner of that key
+      # (same approach as darwin/configuration.nix). This avoids a conflicting
+      # `nix.registry.nixpkgs` definition and stays correct regardless of how the
+      # system's nixpkgs input is named or which channel a host builds from.
+      # nixPath still maps `nixpkgs` (a registry indirection) so `<nixpkgs>` stays
+      # defined — our normal-priority list would otherwise suppress the module's
+      # mkDefault nixPath entry.
+      registry =
+        lib.mapAttrs (_: flake: { inherit flake; }) (removeAttrs flakeInputs [ "nixpkgs" ]);
       nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
     };
 

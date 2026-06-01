@@ -21,7 +21,7 @@
       isWork = builtins.substring 0 4 hostname == "work";
     in
     inputs.home-manager.lib.homeManagerConfiguration {
-      pkgs = inputs.nixpkgs.legacyPackages.${platform};
+      pkgs = inputs.nixpkgs-unstable.legacyPackages.${platform};
       extraSpecialArgs = {
         inherit
           inputs
@@ -57,7 +57,7 @@
       # isLima = builtins.substring 0 5 hostname == "lima-";
       isWorkstation = builtins.isString desktop;
     in
-    inputs.nixos.lib.nixosSystem {
+    inputs.nixpkgs.lib.nixosSystem {
       system = platform;
       specialArgs = {
         inherit
@@ -76,7 +76,7 @@
       modules = [
         ../nixos/configuration.nix
       ]
-      ++ inputs.nixos.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
+      ++ inputs.nixpkgs.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
     };
 
   mkDarwin =

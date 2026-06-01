@@ -41,9 +41,15 @@
         keep-derivations = true;
       };
 
-      # Make `nix run nixpkgs#…` resolve to the same nixpkgs the system was
-      # built from. Mirrors the NixOS configuration.
-      registry = lib.mapAttrs (_: flake: { inherit flake; }) flakeInputs;
+      # Make `nix run nixpkgs#…` resolve to the same nixpkgs the system was built
+      # from. As on the NixOS hosts, `nixpkgs` is dropped from this map so that the
+      # platform's own nixpkgs-flake module (here nix-darwin's
+      # modules/nix/nixpkgs-flake.nix) is the sole owner of the `nixpkgs` registry
+      # key. On darwin that resolves to `inputs.nixpkgs-unstable` (the darwin/HM
+      # build channel), NOT the input named `nixpkgs` (which is nixos-unstable).
+      # nixPath still maps it (a registry indirection) so `<nixpkgs>` stays defined.
+      registry =
+        lib.mapAttrs (_: flake: { inherit flake; }) (removeAttrs flakeInputs [ "nixpkgs" ]);
       nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
 
       gc = {

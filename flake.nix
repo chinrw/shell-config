@@ -24,12 +24,10 @@
   };
 
   inputs = {
-    # nixpkgs-unstable channel: drives home-manager and non-NixOS (darwin) builds
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    # nixos-unstable channel: drives the NixOS system configurations
-    # NOTE: nixos-unstable has additional tests, so the nixpkgs-unstable is
-    # usually newer than the nixos-unstable
-    nixos.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # NOTE: nixos-unstable carries extra tests, so nixpkgs-unstable is usually
+    # newer — use it where we want the latest packages.
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs-master.url = "github:nixos/nixpkgs";
     # NOTE: checking the repo for the latest stable release
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.11";
@@ -41,35 +39,35 @@
     # Home manager
     home-manager = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     _1password-shell-plugins = {
       url = "github:1Password/shell-plugins";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     flake-utils.url = "github:numtide/flake-utils";
 
     neovim-nightly-overlay = {
       url = "github:chinrw/neovim-nightly-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     rustowl-overlay = {
       url = "github:nix-community/rustowl-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     yazi.url = "github:sxyazi/yazi";
-    yazi.inputs.nixpkgs.follows = "nixpkgs";
+    yazi.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     nixgl.url = "github:nix-community/nixGL";
-    nixgl.inputs.nixpkgs.follows = "nixpkgs";
+    nixgl.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     nix-index-database = {
       url = "github:Mic92/nix-index-database";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     linux-src = {
@@ -80,27 +78,27 @@
     # support for wsl
     nixos-wsl = {
       url = "github:nix-community/NixOS-WSL/main";
-      inputs.nixpkgs.follows = "nixos";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     # Rust development
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     sops-nix = {
       url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixos";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     cachix-deploy-flake = {
       url = "github:cachix/cachix-deploy-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # Zellij plugin
     zjstatus.url = "github:dj95/zjstatus";
-    zjstatus.inputs.nixpkgs.follows = "nixpkgs";
+    zjstatus.inputs.nixpkgs.follows = "nixpkgs-unstable";
     zjstatus.inputs.rust-overlay.follows = "rust-overlay";
 
     everything-claude-code = {
@@ -115,18 +113,18 @@
 
     claude-code-nix = {
       url = "github:chinrw/claude-code-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     pwndbg = {
       url = "github:pwndbg/pwndbg";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # nix-darwin: NixOS-style system management for macOS
     nix-darwin = {
       url = "github:nix-darwin/nix-darwin/master";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
   };
