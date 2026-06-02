@@ -133,19 +133,13 @@ let
     run ${pkgs.coreutils}/bin/mv "$TMP" "$CLAUDE_JSON"
   '';
 
-  defaultHooks = {
-    PreToolUse = [
-      {
-        matcher = "Bash";
-        hooks = [
-          {
-            type = "command";
-            command = "${config.home.homeDirectory}/.claude/hooks/block-destructive.sh";
-          }
-        ];
-      }
-    ];
-  };
+  # No bundled default hooks. The former PreToolUse "block-destructive.sh"
+  # guard was dropped in favour of native protection: secret-file access is
+  # denied through settings.permissions.deny (below) — which, unlike the old
+  # Bash-matcher hook, actually covers the Read/Edit tools and Claude's Bash
+  # file commands — and destructive shell commands fall through to the normal
+  # permission prompt. Per-host hooks still merge in via the extraHooks arg.
+  defaultHooks = { };
 
   mergedHooks =
     (lib.mapAttrs (event: defaults: defaults ++ (extraHooks.${event} or [ ])) defaultHooks)
@@ -215,6 +209,29 @@ let
     effortLevel = "high";
     editorMode = "normal";
     skipAutoPermissionPrompt = true;
+    # Deny access to secret-bearing paths natively. Read() rules cover the
+    # Read/Grep/Glob tools and Claude-recognised Bash file commands (cat, head,
+    # tail, sed); Edit() rules cover the built-in file editors. This replaces
+    # the old block-destructive.sh hook, whose file-path checks never fired
+    # because it was registered with a Bash-only matcher. Residual gap: `less`
+    # and scripts that open files themselves (python/node) are NOT covered —
+    # closing that needs the OS-level sandbox (sandbox.filesystem.denyRead).
+    permissions = {
+      deny = [
+        "Read(.env)"
+        "Read(.env.*)"
+        "Read(id_rsa)"
+        "Read(credentials.json)"
+        "Read(.git/**)"
+        "Read(~/.ssh/**)"
+        "Edit(.env)"
+        "Edit(.env.*)"
+        "Edit(id_rsa)"
+        "Edit(credentials.json)"
+        "Edit(.git/**)"
+        "Edit(~/.ssh/**)"
+      ];
+    };
     # Drop descriptions for high-inbound hubs and isolated leaves to reclaim
     # system-prompt tokens. Names stay listed so cross-skill references and
     # slash-command invocations keep working.
