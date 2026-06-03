@@ -4,6 +4,27 @@
   stateVersion,
   ...
 }:
+let
+  # Local binary cache registry (name -> { url; publicKey; }); see lib/caches.nix.
+  caches = import ./caches.nix;
+  # Resolve cache names to { substituters; trustedKeys; }, failing loudly on a
+  # typo or unknown name. Shared by mkHome and mkNixos.
+  resolveCaches =
+    hostname: names:
+    let
+      known = builtins.attrNames caches;
+      lookup =
+        name:
+        caches.${name} or (throw
+          "unknown localCache '${name}' for host '${hostname}'; known caches: ${toString known}"
+        );
+      resolved = map lookup names;
+    in
+    {
+      substituters = map (c: c.url) resolved;
+      trustedKeys = map (c: c.publicKey) resolved;
+    };
+in
 {
   # Helper function for generating home-manager configs
   mkHome =
@@ -15,10 +36,15 @@
       isServer ? false,
       isPublic ? false,
       smallNode ? false,
+      # Names of local binary caches (from lib/caches.nix) this host should use.
+      localCaches ? [ ],
     }:
     let
       isWsl = builtins.substring 0 3 hostname == "wsl";
       isWork = builtins.substring 0 4 hostname == "work";
+      cacheCfg = resolveCaches hostname localCaches;
+      localCacheSubstituters = cacheCfg.substituters;
+      localCacheTrustedKeys = cacheCfg.trustedKeys;
     in
     inputs.home-manager.lib.homeManagerConfiguration {
       pkgs = inputs.nixpkgs-unstable.legacyPackages.${platform};
@@ -36,6 +62,8 @@
           isWork
           isServer
           isPublic
+          localCacheSubstituters
+          localCacheTrustedKeys
           ;
       };
       modules = [ ../home-manager/home.nix ];
@@ -49,6 +77,8 @@
       desktop ? null,
       GPU ? null,
       platform ? "x86_64-linux",
+      # Names of local binary caches (from lib/caches.nix) this host should use.
+      localCaches ? [ ],
     }:
     let
       isWsl = builtins.substring 0 3 hostname == "wsl";
@@ -56,6 +86,9 @@
       # isInstall = !isISO;
       # isLima = builtins.substring 0 5 hostname == "lima-";
       isWorkstation = builtins.isString desktop;
+      cacheCfg = resolveCaches hostname localCaches;
+      localCacheSubstituters = cacheCfg.substituters;
+      localCacheTrustedKeys = cacheCfg.trustedKeys;
     in
     inputs.nixpkgs.lib.nixosSystem {
       system = platform;
@@ -71,6 +104,8 @@
           isWsl
           GPU
           isWorkstation
+          localCacheSubstituters
+          localCacheTrustedKeys
           ;
       };
       modules = [

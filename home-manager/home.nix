@@ -16,6 +16,8 @@
   isServer,
   isPublic,
   platform,
+  localCacheSubstituters,
+  localCacheTrustedKeys,
   ...
 }:
 let
@@ -108,6 +110,18 @@ in
   ++ [
     (import ./programs/gitui { })
   ];
+
+  # Local binary caches, selected per-host via `localCaches` in flake.nix and
+  # resolved from lib/caches.nix. `extra-*` appends to the system caches.
+  # NOTE: on non-NixOS hosts the daemon honors these only if `username` is a
+  # trusted-user in that machine's /etc/nix/nix.conf.
+  nix = lib.mkIf (localCacheSubstituters != [ ]) {
+    package = pkgs.nix;
+    settings = {
+      extra-substituters = localCacheSubstituters;
+      extra-trusted-public-keys = localCacheTrustedKeys;
+    };
+  };
 
   nixpkgs = {
     # You can add overlays here

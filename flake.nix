@@ -4,7 +4,6 @@
   nixConfig = {
     substituters = [
       # local LAN binary cache (vm-nix nix-serve)
-      "http://192.168.0.240:5000"
       # personal cache server
       "https://chinrw.cachix.org"
       # cache mirror located in China
@@ -19,7 +18,6 @@
     trusted-public-keys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       "chinrw.cachix.org-1:TShvVLuNeWsGoLW2/VGdUT4k8T+03RuQEXA6ZiN16Rw="
-      "vm-nix:5SZMXyCcqGm5z/GJNdx+wRyyE8CKtcvSsaDY0uFp25s="
     ];
   };
 
@@ -253,7 +251,7 @@
         "chin39@proxmox" = helpers.mkHome {
           hostname = "proxmox";
           isServer = true;
-
+          localCaches = [ "home" ];
         };
         "chin39@arch-vm" = helpers.mkHome {
           hostname = "arch";
@@ -270,12 +268,13 @@
         "chin39@gentoo-server" = helpers.mkHome {
           hostname = "gentoo-server";
           isServer = true;
-
+          localCaches = [ "home" ];
         };
         "chin39@vm-nix" = helpers.mkHome {
           hostname = "vm-nix";
           isServer = true;
           noGUI = true;
+          localCaches = [ "home" ];
         };
         "chin39@jd-cloud" = helpers.mkHome {
           hostname = "jd-cloud";
@@ -291,6 +290,7 @@
         };
         "chin39@work" = helpers.mkHome {
           hostname = "work";
+          localCaches = [ "home" ];
         };
       };
     };

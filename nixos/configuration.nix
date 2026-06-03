@@ -11,6 +11,8 @@
   platform,
   hostname,
   username,
+  localCacheSubstituters,
+  localCacheTrustedKeys,
   ...
 }:
 {
@@ -86,6 +88,14 @@
         keep-outputs = true;
         keep-derivations = true;
         # access-tokens = "@config.sops.secrets.path";
+      }
+      # Local binary caches selected per-host via `localCaches` in flake.nix and
+      # resolved from lib/caches.nix. No-op unless a host opts in. This writes the
+      # daemon's own /etc/nix/nix.conf, so it is honored without the trusted-user
+      # dance the home-manager path needs.
+      // lib.optionalAttrs (localCacheSubstituters != [ ]) {
+        extra-substituters = localCacheSubstituters;
+        extra-trusted-public-keys = localCacheTrustedKeys;
       };
       # Opinionated: disable channels
       channel.enable = false;
