@@ -251,12 +251,6 @@ let
   };
 in
 {
-  home.file.".claude/hooks" = {
-    source = ./hooks;
-    recursive = true;
-    force = true;
-  };
-
   home.file.".claude/settings.json" = {
     source = pkgs.writeText "claude-settings.json" (builtins.toJSON settings);
     force = true;
