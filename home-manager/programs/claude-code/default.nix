@@ -271,6 +271,11 @@ in
     recursive = true;
   };
 
+  # User-authored slash command kept in this repo. Maps to user scope so `/ship`
+  # is available in every repo. link_children only sweeps symlinks into $REPO
+  # (the ECC source), so this Nix-managed file coexists with the ECC commands.
+  home.file.".claude/commands/ship.md".source = ./commands/ship.md;
+
   # mtg-agent-skill repo contains two sibling skills at its root.
   # Map each subfolder into its own ~/.claude/skills/<name> location so the
   # folder name matches the `name:` field in each SKILL.md frontmatter.
