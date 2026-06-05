@@ -3,7 +3,6 @@
 ## Git Commits
 - Always add `Signed-off-by: <Current repo email config>` as the very last line of all commit messages
 - Create bullet points to describe the content of commit rather than a long paragraph
-- Never automatically push to remote. Let the user push manually.
 
 ## Decision-Making When Uncertain
 - When the user's request leaves real choices open, STOP and ask with a questionnaire before implementing — do not guess and proceed
