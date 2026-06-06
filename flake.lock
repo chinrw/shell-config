@@ -53,11 +53,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780709171,
-        "narHash": "sha256-n6lxZDyIrKj/mtGgKQ5wwKgGTy/d2JytCR4LHIGjoHI=",
+        "lastModified": 1780713322,
+        "narHash": "sha256-FaJd4Spdt1q2muZ9X5W02wtG+TRC8IKSQD/Sdirhh7I=",
         "owner": "chinrw",
         "repo": "claude-code-nix",
-        "rev": "e6ec28be3d59870fd011eaf26413bf26b3aee780",
+        "rev": "cafe6656cbb82eaab90fc9d0a50a383b278bb44f",
         "type": "github"
       },
       "original": {
@@ -1059,11 +1059,11 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1780543271,
-        "narHash": "sha256-oPJ7eJN1sM37v92Rp/eyQL7/rUm0BOvXEBAoq/zN0cM=",
+        "lastModified": 1780629589,
+        "narHash": "sha256-oHysjxZdaEqkmyDpN8G1bl3V+r9uyRD1O66bH0bq0Cs=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "c30ca201c5093540cf792f6982f81ba1aa0f3514",
+        "rev": "7a5a1c0a5cb86a28224304309b68f050835fd1f6",
         "type": "github"
       },
       "original": {
@@ -1120,11 +1120,11 @@
         "rustowl": "rustowl"
       },
       "locked": {
-        "lastModified": 1780628200,
-        "narHash": "sha256-nEJ+4U9oswHXbbQshZapshWwai9Q33PWazIQG7i2FoQ=",
+        "lastModified": 1780713829,
+        "narHash": "sha256-gTrPltnWL+KCabYt2MCNThiIT3oQYumOJsEha8uMhGw=",
         "owner": "nix-community",
         "repo": "rustowl-flake",
-        "rev": "ad3d5e6a2803b1d4cd576aff576c7ad881f1d7f5",
+        "rev": "af7bca5c26e49e3bfcb4b8b376e73a40ccf27ad6",
         "type": "github"
       },
       "original": {
