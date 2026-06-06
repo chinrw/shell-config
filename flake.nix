@@ -1,21 +1,27 @@
 {
   description = "chin39-config";
 
+  # IMPORTANT: use the appending `extra-*` keys, NOT the replacing
+  # `substituters` / `trusted-public-keys` keys. A flake's nixConfig is applied
+  # on every `--flake` build (e.g. `home-manager switch --flake`), and the
+  # replacing form overwrites each host's nix.conf — which would discard the
+  # per-host LAN cache + signing key that `localCaches` (lib/caches.nix) writes
+  # via home-manager's `extra-substituters`.
   nixConfig = {
-    substituters = [
-      # local LAN binary cache (vm-nix nix-serve)
-      # personal cache server
+    extra-substituters = [
+      # NOTE: per-host LAN caches (e.g. vm-nix nix-serve) are NOT listed here —
+      # per host via `localCaches` in flake.nix -> lib/caches.nix
       "https://chinrw.cachix.org"
       # cache mirror located in China
       # status: https://mirror.sjtu.edu.cn/
       # "https://mirror.sjtu.edu.cn/nix-channels/store"
       # status: https://mirrors.ustc.edu.cn/status/
       # "https://mirrors.ustc.edu.cn/nix-channels/store"
-      # Tuna mirror
-      "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store/"
+      # Tuna mirror — ?priority=39 ranks it above cache.nixos.org (40);
+      "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store/?priority=39"
       "https://cache.nixos.org"
     ];
-    trusted-public-keys = [
+    extra-trusted-public-keys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       "chinrw.cachix.org-1:TShvVLuNeWsGoLW2/VGdUT4k8T+03RuQEXA6ZiN16Rw="
     ];
