@@ -1,4 +1,8 @@
-{ ... }:
+{ lib, ... }:
+let
+  # Same local proxy the nix-daemon uses (see ./nix-daemon-proxy.nix).
+  proxyURL = "http://127.0.0.1:10809";
+in
 {
   # nix-darwin's built-in homebrew module talks to the existing /opt/homebrew
   # install; it does not bootstrap brew itself.
@@ -12,6 +16,11 @@
       cleanup = "zap";
       autoUpdate = true;
       upgrade = true;
+      # Homebrew 5.1+ refuses `brew bundle --cleanup` unless one of --force,
+      # --force-cleanup or $HOMEBREW_ASK is given. nix-darwin doesn't pass one,
+      # so add it here. --force-cleanup runs the zap cleanup non-interactively
+      # and, unlike --force, doesn't also imply install --overwrite.
+      extraFlags = [ "--force-cleanup" ];
     };
 
     global = {
@@ -86,4 +95,25 @@
     # No Mac App Store apps in the brew dump — leave masApps empty.
     masApps = { };
   };
+
+  # Route Homebrew through the local proxy.
+  #
+  # Interactive `brew` already inherits http_proxy/https_proxy from the zsh
+  # session (see home-manager/programs/zsh), but set the Homebrew-specific
+  # variants too: they survive brew's environment sanitization and make the
+  # intent explicit for login shells.
+  environment.variables = {
+    HOMEBREW_HTTP_PROXY = proxyURL;
+    HOMEBREW_HTTPS_PROXY = proxyURL;
+  };
+
+  # The nix-darwin homebrew activation runs `brew bundle` during
+  # `darwin-rebuild switch` with a sanitized environment (sudo strips the
+  # caller's http_proxy), so the auto-update / upgrade / bundle would otherwise
+  # bypass the proxy. Export it right before the bundle command runs — mkBefore
+  # prepends into the same activation shell as the module's `brew bundle` line.
+  system.activationScripts.homebrew.text = lib.mkBefore ''
+    export HOMEBREW_HTTP_PROXY="${proxyURL}"
+    export HOMEBREW_HTTPS_PROXY="${proxyURL}"
+  '';
 }
