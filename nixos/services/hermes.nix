@@ -6,8 +6,8 @@
 }:
 let
   # DeepSeek tiers used in this config.
-  deepseekPro = "deepseek-v4-pro"; # strongest — primary, reserved for the hardest tasks
-  deepseekFlash = "deepseek-v4-flash"; # mid — auxiliary chores + first fallback
+  deepseekPro = "deepseek-v4-pro"; # strongest — fallback + manual /model pro escalation
+  deepseekFlash = "deepseek-v4-flash"; # mid — primary chat model + auxiliary chores
 
   # Local llama.cpp endpoint — points at the loader-shim
   # (services/llama-loader-shim.nix) on this host, NOT directly at the
@@ -53,8 +53,9 @@ let
   # web_extract, triage_specifier, approval, curator, vision and
   # compression. flash is the right tier for these per the upstream
   # schema comments (large-context or capability-sensitive, but
-  # explicitly NOT main-model-grade). With the primary now on Pro,
-  # leaving these on `auto` would silently route them to Pro = $$.
+  # explicitly NOT main-model-grade). These match the primary tier now,
+  # but stay pinned explicitly so a future primary bump to Pro can't
+  # silently drag these chores onto the most expensive tier.
   flashAuxTarget = {
     provider = "deepseek";
     model = deepseekFlash;
@@ -135,11 +136,11 @@ in
     ];
 
     settings = {
-      # Primary chat model: DeepSeek deepseek-v4-pro — the strongest
-      # tier, reserved for the hardest tasks (main conversations and
-      # orchestration). `provider: "deepseek"` is a built-in named
-      # provider that already ships a hardcoded base_url and reads
-      # DEEPSEEK_API_KEY, so base_url/api_key would normally be redundant.
+      # Primary chat model: DeepSeek deepseek-v4-flash — the mid tier,
+      # carrying main conversations and orchestration. `provider:
+      # "deepseek"` is a built-in named provider that already ships a
+      # hardcoded base_url and reads DEEPSEEK_API_KEY, so base_url/api_key
+      # would normally be redundant.
       #
       # They are pinned explicitly ON PURPOSE. An earlier generation ran
       # the PRIMARY on the local llama (base_url 127.0.0.1:8088 +
@@ -148,16 +149,16 @@ in
       # (hermes_cli/config.py: _deep_merge / get_missing_config_fields):
       # it OVERWRITES keys we set but NEVER prunes keys we drop. Simply
       # omitting base_url/api_key here left those two behind as orphans,
-      # so deepseek-v4-pro kept routing through the dead local shim (256K
+      # so the primary kept routing through the dead local shim (256K
       # window + HTTP 500s). Setting them to the real DeepSeek endpoint
       # gives the merge a value to overwrite the orphan with on rebuild.
       #
       # The orchestrator runs on this model and hands simpler sub-steps
-      # down to local subagents via `delegation` below. When Pro errors
-      # out (5xx/timeout/rate-limit), fallback_providers gracefully
-      # degrades to DeepSeek flash, then to the local llama.
+      # down to local subagents via `delegation` below. When flash errors
+      # out (5xx/timeout/rate-limit), fallback_providers escalates to
+      # DeepSeek Pro (the stronger tier), then degrades to the local llama.
       model = {
-        default = deepseekPro;
+        default = deepseekFlash;
         provider = "deepseek";
         base_url = "https://api.deepseek.com/v1";
         api_key = "\${DEEPSEEK_API_KEY}";
@@ -188,13 +189,12 @@ in
         child_timeout_seconds = 900;
       };
 
-      # Auxiliary side-task models. With the primary now on Pro, leaving
-      # any auxiliary role as `auto` would silently route it to Pro and
-      # burn the most expensive tier on chores. Every role is therefore
-      # pinned explicitly — to local (tiny, private, high-frequency) or
-      # flash (large-context or capability-sensitive). NO role uses Pro:
-      # the upstream schema comments uniformly recommend cheap/fast
-      # models for these.
+      # Auxiliary side-task models. Every role is pinned explicitly — to
+      # local (tiny, private, high-frequency) or flash (large-context or
+      # capability-sensitive) — rather than left on `auto`. NO role uses
+      # Pro: the upstream schema comments uniformly recommend cheap/fast
+      # models for these, and the explicit flash pins keep chores off Pro
+      # even if the primary tier is later raised.
       #
       # Note: auxiliary clients (agent/auxiliary_client.py) do NOT walk
       # the top-level fallback_providers chain — they have their own
@@ -235,13 +235,13 @@ in
         protect_last_n = 20;
       };
 
-      # Quick-switch alias `/model deepseek` — manually drop from Pro to
-      # the cheaper DeepSeek flash tier in non-critical sessions. The
-      # local alias stays absent: multi-model discovery (custom_providers
+      # Quick-switch alias `/model pro` — manually escalate from the flash
+      # primary up to the stronger DeepSeek Pro tier for a hard session.
+      # The local alias stays absent: multi-model discovery (custom_providers
       # below) already exposes every local GGUF as `custom:local:<name>`.
       model_aliases = {
-        deepseek = {
-          model = deepseekFlash;
+        pro = {
+          model = deepseekPro;
           provider = "deepseek";
         };
       };
@@ -273,12 +273,12 @@ in
       # inherits the parent's _fallback_chain into spawned children
       # (see tools/delegate_tool.py:1078 / :1113), so a local-llama
       # subagent call that errors out walks this same list.
-      # Graceful degradation: Pro → flash (capability-close, different
-      # rate-limit state) → local (offline-resilient last resort).
+      # Escalating degradation: flash primary → Pro (stronger tier,
+      # different rate-limit state) → local (offline-resilient last resort).
       fallback_providers = [
         {
           provider = "deepseek";
-          model = deepseekFlash;
+          model = deepseekPro;
         }
         (localTarget // { provider = "custom"; })
       ];

@@ -236,6 +236,7 @@
           username = "chin39";
           hostname = "wsl";
           noGUI = false;
+          localCaches = [ "home" ];
         };
         "ruowen@ringo" = helpers.mkHome {
           username = "ruowen";
