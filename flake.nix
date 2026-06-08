@@ -294,6 +294,7 @@
         "chin39@macos" = helpers.mkHome {
           hostname = "macos";
           platform = "aarch64-darwin";
+          localCaches = [ "home" ];
         };
         "chin39@work" = helpers.mkHome {
           hostname = "work";
