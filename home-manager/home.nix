@@ -115,9 +115,43 @@ in
   # resolved from lib/caches.nix. `extra-*` appends to the system caches.
   # NOTE: on non-NixOS hosts the daemon honors these only if `username` is a
   # trusted-user in that machine's /etc/nix/nix.conf.
+  #
+  # IMPORTANT: enabling this block makes home-manager OWN ~/.config/nix/nix.conf
+  # (it becomes a store symlink). On single-user / non-NixOS hosts (e.g. WSL)
+  # that file is the only place these base settings live, so they MUST be
+  # declared here too — otherwise the generated cache-only file silently drops
+  # `experimental-features` and the next `home-manager switch --flake` can no
+  # longer run `nix`. The cache itself stays in appending `extra-*` form on top.
   nix = lib.mkIf (localCacheSubstituters != [ ]) {
     package = pkgs.nix;
     settings = {
+      # Base config preserved across the home-manager-managed nix.conf.
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
+      auto-optimise-store = true;
+      keep-outputs = true;
+      keep-derivations = true;
+
+      # Network resilience: the LAN cache (192.168.0.240) is unreachable
+      # whenever this host roams off the home network, so fail over fast
+      # instead of hanging per-path, and never let a flaky cache hard-fail.
+      connect-timeout = 5; # seconds to give up on an unreachable substituter
+      fallback = true; # build from source if substitution fails
+
+      # Build performance.
+      max-jobs = "auto"; # parallel derivations (Nix defaults to 1)
+      log-lines = 25; # lines of a failed build's log to show (default 10)
+      http-connections = 50; # parallel substitution downloads (default 25)
+
+      # Disk auto-GC: free store space mid-build when low, so the WSL vhdx
+      # never hits "no space left". Daemon-policy — fully effective on this
+      # single-user host; redundant on NixOS hosts (system GC governs there).
+      min-free = 1073741824; # 1 GiB: trigger GC below this free space
+      max-free = 5368709120; # 5 GiB: free up to this much per sweep
+
+      # Local LAN cache appended on top of the base + flake `nixConfig`.
       extra-substituters = localCacheSubstituters;
       extra-trusted-public-keys = localCacheTrustedKeys;
     };
