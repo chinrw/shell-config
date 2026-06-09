@@ -173,6 +173,11 @@
     fuse.userAllowOther = true;
   };
 
+  # clean the /tmp entries older than 3 days
+  systemd.tmpfiles.rules = [
+    "d /tmp 1777 root root 3d"
+  ];
+
   # zramSwap = {
   #   enable = true;
   # };
