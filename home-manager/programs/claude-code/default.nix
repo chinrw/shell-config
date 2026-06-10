@@ -173,7 +173,11 @@ let
     };
   };
 
-  settings = {
+  # Structural settings Nix always owns. These are re-asserted on every switch
+  # (enforced wins the merge in settingsActivation below). Runtime-mutable keys
+  # like effortLevel / model / editorMode are intentionally NOT here — they live
+  # in seedSettings and are preserved across switches.
+  enforcedSettings = {
     hooks = mergedHooks;
     statusLine = {
       type = "command";
@@ -206,8 +210,6 @@ let
         };
       };
     };
-    effortLevel = "high";
-    editorMode = "normal";
     skipAutoPermissionPrompt = true;
     # Deny access to secret-bearing paths natively. Read() rules cover the
     # Read/Grep/Glob tools and Claude-recognised Bash file commands (cat, head,
@@ -249,12 +251,62 @@ let
       "product-capability" = "name-only";
     };
   };
+
+  # Runtime-mutable defaults. Seeded into settings.json only when the file does
+  # not already define them; once /effort, /model, or the vim toggle writes a
+  # value, the existing file wins and the choice persists across switches.
+  # (model is intentionally absent — we don't seed a default model.)
+  seedSettings = {
+    effortLevel = "high";
+    editorMode = "normal";
+  };
+
+  enforcedSettingsFile = pkgs.writeText "claude-settings-enforced.json" (
+    builtins.toJSON enforcedSettings
+  );
+  seedSettingsFile = pkgs.writeText "claude-settings-seed.json" (builtins.toJSON seedSettings);
+
+  # Materialize ~/.claude/settings.json as a REAL, user-writable file instead of
+  # a read-only Nix-store symlink. Claude Code writes this file at runtime
+  # (/effort, /model, vim toggle); a store symlink makes those writes fail with
+  # EROFS. The merge is (seed * existing) * enforced:
+  #   - seed * existing : existing values win, so runtime tweaks persist; seed
+  #                       only fills keys the file has never set.
+  #   - * enforced      : Nix structural keys always win, so config updates
+  #                       (plugins, hooks, permissions, statusline) propagate.
+  settingsActivation = ''
+    SETTINGS="${config.home.homeDirectory}/.claude/settings.json"
+    # Strip a stale Nix-store symlink left by previous home.file management so we
+    # can replace it with a writable file.
+    if [ -L "$SETTINGS" ]; then
+      case "$(${pkgs.coreutils}/bin/readlink "$SETTINGS")" in
+        /nix/store/*) run ${pkgs.coreutils}/bin/rm "$SETTINGS" ;;
+      esac
+    fi
+    SETTINGS_EXISTING="$(${pkgs.coreutils}/bin/mktemp -p "$(${pkgs.coreutils}/bin/dirname "$SETTINGS")")"
+    if [ -f "$SETTINGS" ]; then
+      ${pkgs.coreutils}/bin/cat "$SETTINGS" > "$SETTINGS_EXISTING"
+    else
+      ${pkgs.coreutils}/bin/printf '{}' > "$SETTINGS_EXISTING"
+    fi
+    SETTINGS_TMP="$(${pkgs.coreutils}/bin/mktemp -p "$(${pkgs.coreutils}/bin/dirname "$SETTINGS")")"
+    if ${pkgs.jq}/bin/jq -s '(.[0] * .[1]) * .[2]' \
+        ${seedSettingsFile} "$SETTINGS_EXISTING" ${enforcedSettingsFile} > "$SETTINGS_TMP"; then
+      run ${pkgs.coreutils}/bin/mv "$SETTINGS_TMP" "$SETTINGS"
+    else
+      ${pkgs.coreutils}/bin/rm -f "$SETTINGS_TMP"
+      ${pkgs.coreutils}/bin/rm -f "$SETTINGS_EXISTING"
+      echo "claude-code activation: jq merge into settings.json failed; left unchanged" >&2
+      exit 1
+    fi
+    ${pkgs.coreutils}/bin/rm -f "$SETTINGS_EXISTING"
+  '';
 in
 {
-  home.file.".claude/settings.json" = {
-    source = pkgs.writeText "claude-settings.json" (builtins.toJSON settings);
-    force = true;
-  };
+  # settings.json is NOT managed via home.file (that produces a read-only store
+  # symlink Claude Code cannot write to). It is built as a writable real file in
+  # settingsActivation below. See the comment on settingsActivation for the
+  # seed-vs-enforce merge rationale.
 
   # claude-hud reads this file at runtime to toggle optional HUD features.
   # The plugin's own state lives in sibling ~/.claude/plugins/claude-hud/config-cache/.
@@ -406,5 +458,6 @@ in
           run ${pkgs.coreutils}/bin/mv "$TMP_MD" "$FINAL_MD"
     ''
     + mcpActivation
+    + settingsActivation
   );
 }
