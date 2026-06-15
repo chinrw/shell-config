@@ -471,6 +471,23 @@
         "type": "github"
       }
     },
+    "khazix-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1781457126,
+        "narHash": "sha256-6uwZkpq3Ko5ev7ORJztRqPtl5s+u9oWCFgGZVbzzBN8=",
+        "owner": "KKKKhazix",
+        "repo": "khazix-skills",
+        "rev": "ff554365af3a57af5858749a57d7cc3230beec89",
+        "type": "github"
+      },
+      "original": {
+        "owner": "KKKKhazix",
+        "ref": "main",
+        "repo": "khazix-skills",
+        "type": "github"
+      }
+    },
     "linux-src": {
       "flake": false,
       "locked": {
@@ -1015,6 +1032,7 @@
         "hardware": "hardware",
         "hermes-agent": "hermes-agent",
         "home-manager": "home-manager_2",
+        "khazix-skills": "khazix-skills",
         "linux-src": "linux-src",
         "mtg-agent-skill": "mtg-agent-skill",
         "neovim-nightly-overlay": "neovim-nightly-overlay",

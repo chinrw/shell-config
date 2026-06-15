@@ -115,6 +115,11 @@
       flake = false;
     };
 
+    khazix-skills = {
+      url = "github:KKKKhazix/khazix-skills?ref=main";
+      flake = false;
+    };
+
     claude-code-nix = {
       url = "github:chinrw/claude-code-nix";
       inputs.nixpkgs.follows = "nixpkgs-unstable";

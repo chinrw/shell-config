@@ -341,6 +341,36 @@ in
     recursive = true;
   };
 
+  # khazix-skills repo hosts five sibling skills at its root. Each subfolder
+  # name already matches the `name:` field in its SKILL.md frontmatter, so map
+  # each into its own ~/.claude/skills/<name> location (same pattern as the mtg
+  # skills above). link_children only sweeps symlinks into $REPO (the ECC
+  # source), so these Nix-managed dirs coexist with the allowlisted ECC skills.
+  home.file.".claude/skills/aihot" = {
+    source = "${inputs.khazix-skills}/aihot";
+    recursive = true;
+  };
+
+  home.file.".claude/skills/hv-analysis" = {
+    source = "${inputs.khazix-skills}/hv-analysis";
+    recursive = true;
+  };
+
+  home.file.".claude/skills/khazix-writer" = {
+    source = "${inputs.khazix-skills}/khazix-writer";
+    recursive = true;
+  };
+
+  home.file.".claude/skills/neat-freak" = {
+    source = "${inputs.khazix-skills}/neat-freak";
+    recursive = true;
+  };
+
+  home.file.".claude/skills/storage-analyzer" = {
+    source = "${inputs.khazix-skills}/storage-analyzer";
+    recursive = true;
+  };
+
   home.activation.claudeCodeAssets = lib.hm.dag.entryAfter [ "linkGeneration" ] (
     ''
           REPO="${source}"
