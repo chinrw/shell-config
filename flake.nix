@@ -38,7 +38,10 @@
     hardware.url = "github:NixOS/nixos-hardware";
 
     # use hermes own flake
-    hermes-agent.url = "github:NousResearch/hermes-agent";
+    hermes-agent = {
+      url = "github:NousResearch/hermes-agent";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
 
     # Home manager
     home-manager = {
@@ -139,13 +142,12 @@
   };
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      home-manager,
-      flake-utils,
-      rust-overlay,
-      ...
+    { self
+    , nixpkgs
+    , home-manager
+    , flake-utils
+    , rust-overlay
+    , ...
     }@inputs:
     let
       inherit (self) outputs;
@@ -161,24 +163,25 @@
       helpers = import ./lib { inherit inputs outputs stateVersion; };
 
     in
-    flake-utils.lib.eachDefaultSystem (
-      system:
-      let
-        overlays = [ (import rust-overlay) ];
-        pkgs = import nixpkgs {
-          inherit system overlays;
-        };
-      in
-      {
-        devShells = {
-          rust = import ./shell/rust.nix { inherit pkgs inputs; };
-          hm = import ./shell/home-manager.nix { inherit pkgs inputs; };
-          kernel = import ./shell/kernel.nix { inherit pkgs inputs; };
-        };
-        # formatter used by `nix fmt`
-        formatter = pkgs.nixfmt-tree;
-      }
-    )
+    flake-utils.lib.eachDefaultSystem
+      (
+        system:
+        let
+          overlays = [ (import rust-overlay) ];
+          pkgs = import nixpkgs {
+            inherit system overlays;
+          };
+        in
+        {
+          devShells = {
+            rust = import ./shell/rust.nix { inherit pkgs inputs; };
+            hm = import ./shell/home-manager.nix { inherit pkgs inputs; };
+            kernel = import ./shell/kernel.nix { inherit pkgs inputs; };
+          };
+          # formatter used by `nix fmt`
+          formatter = pkgs.nixfmt-tree;
+        }
+      )
     // {
       # Your custom packages
       # Accessible through 'nix build', 'nix shell', etc
