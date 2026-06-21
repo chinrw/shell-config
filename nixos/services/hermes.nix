@@ -49,17 +49,32 @@ let
     timeout = 60;
   };
 
-  # Shared target for auxiliary roles pinned to DeepSeek flash —
-  # web_extract, triage_specifier, approval, curator, vision and
-  # compression. flash is the right tier for these per the upstream
-  # schema comments (large-context or capability-sensitive, but
-  # explicitly NOT main-model-grade). These match the primary tier now,
-  # but stay pinned explicitly so a future primary bump to Pro can't
-  # silently drag these chores onto the most expensive tier.
-  flashAuxTarget = {
-    provider = "deepseek";
-    model = deepseekFlash;
+  # ── opencode Zen "Go" plan gateway ──────────────────────────────
+  # OpenAI-compatible multi-model endpoint. Hermes' DeepSeek tiers now
+  # bill against this Go plan instead of api.deepseek.com. provider
+  # "custom" + explicit base_url/api_key is hermes' generic
+  # OpenAI-compatible shape (identical to the local fallback entry
+  # below), replacing the built-in "deepseek" named provider — which
+  # hardcoded api.deepseek.com + DEEPSEEK_API_KEY. The same key backs
+  # the switchable `opencode-go` custom_provider below, which exposes
+  # every Go-plan model (glm/qwen/kimi/minimax/…) to the /model picker.
+  opencodeGoEndpoint = "https://opencode.ai/zen/go/v1";
+
+  goBase = {
+    provider = "custom";
+    base_url = opencodeGoEndpoint;
+    api_key = "\${OPENCODE_API_KEY}";
   };
+
+  # A DeepSeek tier reached through the Go gateway.
+  goTarget = model: goBase // { inherit model; };
+
+  # Shared target for auxiliary roles on the flash tier — web_extract,
+  # triage_specifier, approval, curator, vision and compression. flash
+  # is the right tier per the upstream schema comments (large-context or
+  # capability-sensitive, but explicitly NOT main-model-grade). Pinned
+  # explicitly so a future primary bump can't drag these chores up a tier.
+  flashAuxTarget = goTarget deepseekFlash;
 in
 {
   imports = [ inputs.hermes-agent.nixosModules.default ];
@@ -118,14 +133,13 @@ in
       # NO_PROXY exempts:
       #   - 192.168.0.0/24 — local LAN (mirrors host config)
       #   - 127.0.0.1 / localhost — loopback
-      #   - api.deepseek.com — direct-reachable from CN; bypass proxy
       extraOptions = [
         "--env"
         "HTTP_PROXY=http://192.168.0.240:10809"
         "--env"
         "HTTPS_PROXY=http://192.168.0.240:10809"
         "--env"
-        "NO_PROXY=192.168.0.0/24,127.0.0.1,localhost,api.deepseek.com"
+        "NO_PROXY=192.168.0.0/24,127.0.0.1,localhost"
         "--env"
         "TELEGRAM_PROXY=http://192.168.0.240:10809"
       ];
@@ -136,32 +150,28 @@ in
     ];
 
     settings = {
-      # Primary chat model: DeepSeek deepseek-v4-flash — the mid tier,
-      # carrying main conversations and orchestration. `provider:
-      # "deepseek"` is a built-in named provider that already ships a
-      # hardcoded base_url and reads DEEPSEEK_API_KEY, so base_url/api_key
-      # would normally be redundant.
+      # Primary chat model: deepseek-v4-flash — the mid tier, carrying
+      # main conversations and orchestration. It now runs through the
+      # opencode Zen "Go" gateway (goBase: provider "custom" + base_url
+      # opencode.ai/zen/go/v1 + OPENCODE_API_KEY) instead of the built-in
+      # "deepseek" named provider that hit api.deepseek.com directly.
       #
-      # They are pinned explicitly ON PURPOSE. An earlier generation ran
-      # the PRIMARY on the local llama (base_url 127.0.0.1:8088 +
-      # OPENAI_API_KEY). Hermes reconciles these managed settings into the
-      # stateful ~/.hermes/config.yaml with an additive deep-merge
-      # (hermes_cli/config.py: _deep_merge / get_missing_config_fields):
-      # it OVERWRITES keys we set but NEVER prunes keys we drop. Simply
-      # omitting base_url/api_key here left those two behind as orphans,
-      # so the primary kept routing through the dead local shim (256K
-      # window + HTTP 500s). Setting them to the real DeepSeek endpoint
-      # gives the merge a value to overwrite the orphan with on rebuild.
+      # base_url/api_key are pinned explicitly ON PURPOSE. Hermes
+      # reconciles these managed settings into the stateful
+      # ~/.hermes/config.yaml with an additive deep-merge (hermes_cli/
+      # config.py: _deep_merge / get_missing_config_fields): it OVERWRITES
+      # keys we set but NEVER prunes keys we drop. Omitting base_url/api_key
+      # would leave the previous endpoint behind as an orphan, so the
+      # explicit Go-gateway values give the merge something to overwrite
+      # on rebuild.
       #
       # The orchestrator runs on this model and hands simpler sub-steps
       # down to local subagents via `delegation` below. When flash errors
       # out (5xx/timeout/rate-limit), fallback_providers escalates to
-      # DeepSeek Pro (the stronger tier), then degrades to the local llama.
-      model = {
+      # DeepSeek Pro (also via the Go gateway), then degrades to the local
+      # llama.
+      model = goBase // {
         default = deepseekFlash;
-        provider = "deepseek";
-        base_url = "https://api.deepseek.com/v1";
-        api_key = "\${DEEPSEEK_API_KEY}";
       };
 
       # Subagent delegation — delegate_task spawns child agents on the
@@ -240,10 +250,7 @@ in
       # The local alias stays absent: multi-model discovery (custom_providers
       # below) already exposes every local GGUF as `custom:local:<name>`.
       model_aliases = {
-        pro = {
-          model = deepseekPro;
-          provider = "deepseek";
-        };
+        pro = goTarget deepseekPro;
       };
 
       # Named custom providers — exposes the local llama.cpp endpoint to
@@ -263,6 +270,25 @@ in
           api_key = "no-key-required";
           discover_models = true;
         }
+        # opencode Zen "Go" plan — discover_models hits /v1/models on the
+        # gateway and enumerates every Go-plan model into the /model
+        # picker. Switch syntax: /model custom:opencode-go:<model-name>
+        # (e.g. glm-5.2, qwen3.7-max, kimi-k2.7-code, minimax-m3).
+        #
+        # key_env (NOT api_key) is mandatory here: the discovery path
+        # (model_switch.py: fetch_api_models) reads the entry's api_key
+        # verbatim and does NOT interpolate a "${VAR}" — a literal
+        # "${OPENCODE_API_KEY}" would be sent as the Bearer and 401, so the
+        # picker shows zero models. key_env defers to a live
+        # os.environ.get("OPENCODE_API_KEY") at /model time instead. (The
+        # main chat path — model/auxiliary/fallback above — does expand
+        # "${VAR}", which is why those keep the ${OPENCODE_API_KEY} form.)
+        {
+          name = "opencode-go";
+          base_url = opencodeGoEndpoint;
+          key_env = "OPENCODE_API_KEY";
+          discover_models = true;
+        }
       ];
 
       # Fallback chain — walked when the primary errors (5xx, timeout,
@@ -273,13 +299,13 @@ in
       # inherits the parent's _fallback_chain into spawned children
       # (see tools/delegate_tool.py:1078 / :1113), so a local-llama
       # subagent call that errors out walks this same list.
-      # Escalating degradation: flash primary → Pro (stronger tier,
-      # different rate-limit state) → local (offline-resilient last resort).
+      # Escalating degradation: flash primary → Pro (stronger tier, also
+      # via the Go gateway) → local (offline-resilient last resort). Note
+      # flash and Pro now share the one Go gateway, so a gateway-wide
+      # outage skips straight to the local llama — which is exactly why
+      # local stays pinned as the final entry.
       fallback_providers = [
-        {
-          provider = "deepseek";
-          model = deepseekPro;
-        }
+        (goTarget deepseekPro)
         (localTarget // { provider = "custom"; })
       ];
 
