@@ -9,52 +9,12 @@ let
   deepseekPro = "deepseek-v4-pro"; # strongest — fallback + manual /model pro escalation
   deepseekFlash = "deepseek-v4-flash"; # mid — primary chat model + auxiliary chores
 
-  # Local llama.cpp endpoint — points at the loader-shim
-  # (services/llama-loader-shim.nix) on this host, NOT directly at the
-  # llama-server on the Windows box. The shim transparently injects a
-  # POST /models/load before every chat/completion, working around
-  # llama-server's --no-models-autoload + --models-max 1. Bypassing
-  # the shim (going straight to 192.168.0.101:8087) means /model
-  # switches no longer "just work" — they 400 on every cold model.
-  #
-  # The primary chat model is DeepSeek (see settings.model below); the
-  # shim now serves only the delegation subagents and the local-pinned
-  # auxiliary roles. Loopback works because hermes-agent's upstream
-  # module pins the container to `--network=host` (see
-  # nix/nixosModules.nix:942), so 127.0.0.1 inside the container is this
-  # host's loopback. NO_PROXY already excludes 127.0.0.1 from the xray hop.
-  llamaEndpoint = "http://127.0.0.1:8088";
-
-  # The local GGUF every local consumer shares. Must match a section
-  # name (or alias) in the server-side models.ini — currently "default"
-  # is aliased there to the qwen3.6 27b GGUF.
-  preferredLocalModel = "default";
-
-  # Shared target for everything routed to the local llama.cpp: the
-  # delegation subagents and the local-pinned auxiliary roles. Pinning
-  # every local consumer to ONE GGUF (preferredLocalModel) means the
-  # shim's single model slot (--models-max 1) never thrashes between
-  # loads. api_key is a dummy — llama-server is keyless.
-  localTarget = {
-    base_url = "${llamaEndpoint}/v1";
-    api_key = "\${OPENAI_API_KEY}";
-    model = preferredLocalModel;
-  };
-
-  # Auxiliary variant: same local target plus a roomier timeout. The
-  # auxiliary default of 30s can fire mid-load when the shim cold-loads
-  # the GGUF (the upstream schema itself flags "increase for slow local
-  # models"). delegation has no `timeout` key, so it stays on localTarget.
-  localAuxTarget = localTarget // {
-    timeout = 60;
-  };
-
   # ── opencode Zen "Go" plan gateway ──────────────────────────────
   # OpenAI-compatible multi-model endpoint. Hermes' DeepSeek tiers now
   # bill against this Go plan instead of api.deepseek.com. provider
   # "custom" + explicit base_url/api_key is hermes' generic
-  # OpenAI-compatible shape (identical to the local fallback entry
-  # below), replacing the built-in "deepseek" named provider — which
+  # OpenAI-compatible shape — the form every target in this file now
+  # uses, replacing the built-in "deepseek" named provider, which
   # hardcoded api.deepseek.com + DEEPSEEK_API_KEY. The same key backs
   # the switchable `opencode-go` custom_provider below, which exposes
   # every Go-plan model (glm/qwen/kimi/minimax/…) to the /model picker.
@@ -69,11 +29,9 @@ let
   # A DeepSeek tier reached through the Go gateway.
   goTarget = model: goBase // { inherit model; };
 
-  # Shared target for auxiliary roles on the flash tier — web_extract,
-  # triage_specifier, approval, curator, vision and compression. flash
-  # is the right tier per the upstream schema comments (large-context or
-  # capability-sensitive, but explicitly NOT main-model-grade). Pinned
-  # explicitly so a future primary bump can't drag these chores up a tier.
+  # Shared target for the flash tier (deepseek-v4-flash via the Go
+  # gateway). Used by every auxiliary role and — since the local llama
+  # was retired — by delegation and the fallback's last entry too.
   flashAuxTarget = goTarget deepseekFlash;
 in
 {
@@ -166,64 +124,60 @@ in
       # on rebuild.
       #
       # The orchestrator runs on this model and hands simpler sub-steps
-      # down to local subagents via `delegation` below. When flash errors
-      # out (5xx/timeout/rate-limit), fallback_providers escalates to
-      # DeepSeek Pro (also via the Go gateway), then degrades to the local
-      # llama.
+      # down to subagents via `delegation` below. When flash errors out
+      # (5xx/timeout/rate-limit), fallback_providers escalates to DeepSeek
+      # Pro, then retries flash — all via the Go gateway (the local llama
+      # backstop was retired; see fallback_providers).
       model = goBase // {
         default = deepseekFlash;
       };
 
-      # Subagent delegation — delegate_task spawns child agents on the
-      # LOCAL llama.cpp (via the loader-shim), not on the primary. This
-      # is the cheap executor tier: the DeepSeek orchestrator does the
-      # hard reasoning and delegates simpler sub-tasks to local
-      # subagents. delegate_tool.py uses delegation.base_url verbatim
-      # when set; `model` must be explicit, or an empty value would
-      # inherit the parent's "deepseek-v4-flash" name and send it to the
-      # local server, which does not know that name.
+      # Subagent delegation — delegate_task spawns child agents on
+      # deepseek-v4-flash via the Go gateway (formerly the local llama.cpp
+      # via the loader-shim, retired when the Windows box went away).
+      # delegate_tool.py uses delegation.base_url verbatim when set;
+      # `model` must be explicit (goTarget supplies it), or an empty value
+      # would inherit the parent's name unresolved.
       #
-      # Tuning merged onto localTarget (schema defaults live in
+      # Tuning merged onto the Go flash target (schema defaults live in
       # hermes_cli/config.py:1388 "delegation"):
       #   max_concurrent_children 4 — parallel children per batch (def 3).
       #   max_spawn_depth 2 — let depth-1 children spawn their OWN workers
       #     for nested orchestration (def 1 = flat, leaf children only;
-      #     clamped to [1,3]). Kept at 2, not 3: every child shares the one
-      #     local llama-server (--models-max 1), so deeper trees just pile
-      #     more concurrent load onto a single slot.
+      #     clamped to [1,3]). Kept at 2, not 3 to cap how many concurrent
+      #     Go-plan calls a deep tree can fan out into.
       #   child_timeout_seconds 900 — roomier per-child wall-clock cap
-      #     (def 600) for the slow local model on large delegated tasks.
-      delegation = localTarget // {
+      #     (def 600) for large delegated tasks.
+      delegation = (goTarget deepseekFlash) // {
         max_concurrent_children = 4;
         max_spawn_depth = 2;
         child_timeout_seconds = 900;
       };
 
-      # Auxiliary side-task models. Every role is pinned explicitly — to
-      # local (tiny, private, high-frequency) or flash (large-context or
-      # capability-sensitive) — rather than left on `auto`. NO role uses
-      # Pro: the upstream schema comments uniformly recommend cheap/fast
-      # models for these, and the explicit flash pins keep chores off Pro
-      # even if the primary tier is later raised.
+      # Auxiliary side-task models. Every role runs on deepseek-v4-flash
+      # via the Go gateway (flashAuxTarget). title_generation,
+      # session_search, skills_hub and mcp were previously pinned to the
+      # local llama, but that timed out whenever the Windows llama-server
+      # (192.168.0.101:8087) was down ("Auxiliary title generation failed:
+      # Request timed out"); routing them through the Go plan removes that
+      # dependency. NO role uses Pro — the upstream schema comments
+      # uniformly recommend cheap/fast models here, and the explicit flash
+      # pins keep these chores off Pro even if the primary tier is raised.
       #
-      # Note: auxiliary clients (agent/auxiliary_client.py) do NOT walk
-      # the top-level fallback_providers chain — they have their own
-      # credential/payment fallback machinery. A local-pinned aux call
-      # therefore fails locally when the shim is down (title generation
-      # silently absent, session_search errors); these are deliberately
+      # Note: auxiliary clients (agent/auxiliary_client.py) do NOT walk the
+      # top-level fallback_providers chain — they have their own
+      # credential/payment fallback machinery — so an aux call still fails
+      # if the Go gateway itself is unreachable; these are deliberately
       # non-critical chores.
       auxiliary = {
-        # Local-pinned (qwen3.6 27b via the shim): zero-cost, private,
-        # small fixed context. Same GGUF as delegation so the shim's
-        # single slot never thrashes.
-        title_generation = localAuxTarget;
-        session_search = localAuxTarget;
-        skills_hub = localAuxTarget;
-        mcp = localAuxTarget;
+        # Formerly local-pinned, now on the Go flash tier.
+        title_generation = flashAuxTarget;
+        session_search = flashAuxTarget;
+        skills_hub = flashAuxTarget;
+        mcp = flashAuxTarget;
 
-        # Flash-pinned: web summarisation, spec expansion, danger
-        # classification, skill-curation review, image understanding —
-        # all sized for flash's 1M context and capability tier.
+        # Already flash: web summarisation, spec expansion, danger
+        # classification, skill-curation review, image understanding.
         approval = flashAuxTarget;
         web_extract = flashAuxTarget;
         triage_specifier = flashAuxTarget;
@@ -247,29 +201,14 @@ in
 
       # Quick-switch alias `/model pro` — manually escalate from the flash
       # primary up to the stronger DeepSeek Pro tier for a hard session.
-      # The local alias stays absent: multi-model discovery (custom_providers
-      # below) already exposes every local GGUF as `custom:local:<name>`.
       model_aliases = {
         pro = goTarget deepseekPro;
       };
 
-      # Named custom providers — exposes the local llama.cpp endpoint to
-      # the `/model` picker. With api_key set + discover_models = true,
-      # Hermes hits /v1/models on demand and enumerates every section in
-      # the server's models.ini (see hermes_cli/model_switch.py: the
-      # discovery branch is gated on `api_url && api_key && discover`).
-      # llama-server is keyless, but Hermes needs a non-empty Bearer to
-      # trigger the live fetch; the value itself is ignored upstream.
-      # The shim passes /v1/models through untouched, so discovery
-      # reflects the real server-side registry.
-      # Switch syntax: /model custom:local:<model-name>
+      # Named custom providers exposed to the `/model` picker. Only the Go
+      # gateway remains — the local llama provider was removed along with
+      # the rest of the local-llama wiring.
       custom_providers = [
-        {
-          name = "local";
-          base_url = "${llamaEndpoint}/v1";
-          api_key = "no-key-required";
-          discover_models = true;
-        }
         # opencode Zen "Go" plan — discover_models hits /v1/models on the
         # gateway and enumerates every Go-plan model into the /model
         # picker. Switch syntax: /model custom:opencode-go:<model-name>
@@ -297,16 +236,14 @@ in
       # References: hermes_cli/fallback_cmd.py, gateway/run.py:712.
       # This chain ALSO governs delegation subagents: delegate_tool.py
       # inherits the parent's _fallback_chain into spawned children
-      # (see tools/delegate_tool.py:1078 / :1113), so a local-llama
-      # subagent call that errors out walks this same list.
-      # Escalating degradation: flash primary → Pro (stronger tier, also
-      # via the Go gateway) → local (offline-resilient last resort). Note
-      # flash and Pro now share the one Go gateway, so a gateway-wide
-      # outage skips straight to the local llama — which is exactly why
-      # local stays pinned as the final entry.
+      # (see tools/delegate_tool.py:1078 / :1113).
+      # flash primary → Pro (stronger tier) → flash retry — all on the Go
+      # gateway. The local-llama offline backstop was retired, so a
+      # gateway-wide outage now fails the whole chain; that is the accepted
+      # trade-off for decoupling hermes from the Windows box.
       fallback_providers = [
         (goTarget deepseekPro)
-        (localTarget // { provider = "custom"; })
+        (goTarget deepseekFlash)
       ];
 
       terminal = {
@@ -373,14 +310,11 @@ in
     restartSec = 5;
   };
 
-  # Start hermes after the loader-shim. The shim serves the delegation
-  # subagents and the local-pinned auxiliary roles (not the primary chat
-  # model, which is DeepSeek). Loose ordering only — if the shim is down
-  # those local calls fail, but the primary DeepSeek path is unaffected.
-  systemd.services.hermes-agent = {
-    after = [ "llama-loader-shim.service" ];
-    wants = [ "llama-loader-shim.service" ];
-  };
+  # (hermes no longer depends on the llama-loader-shim: every model role
+  # now runs on the Go gateway, so the previous after/wants ordering on
+  # llama-loader-shim.service was dropped. The shim service itself still
+  # exists in services/llama-loader-shim.nix — disable it there if the
+  # local llama is gone for good.)
 
   systemd.services.hermes-perm-watch = {
     description = "Reset /var/lib/hermes/.hermes to 2770 on attrib change";
