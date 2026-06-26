@@ -280,7 +280,6 @@ in
         restic # Fast, secure, efficient backup program
         unar
         inputs.rustowl-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
-        unstable.gemini-cli
         inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
         unstable.codex
         rustscan # modern scanner
