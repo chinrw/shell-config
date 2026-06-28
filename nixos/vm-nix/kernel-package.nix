@@ -38,6 +38,8 @@ pkgs.linuxManualConfig {
 
   configfile = ./kernel.config;
 
+  features.efiBootStub = true;
+
   # Enable LLVM build
   stdenv = pkgs.clangStdenv;
   extraMakeFlags = [ "LLVM=1" ];
