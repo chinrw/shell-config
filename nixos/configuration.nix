@@ -170,7 +170,10 @@
     };
 
     zsh.enable = true;
-    fuse.userAllowOther = true;
+    fuse = {
+      enable = true;
+      userAllowOther = true;
+    };
   };
 
   # clean the /tmp entries older than 3 days
