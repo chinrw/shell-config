@@ -32,7 +32,6 @@
     "continuous-learning-v2"
     "council"
     "dashboard-builder"
-    "deep-research"
     "design-system"
     "django-patterns"
     "documentation-lookup"
