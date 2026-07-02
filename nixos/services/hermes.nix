@@ -9,6 +9,13 @@ let
   deepseekPro = "deepseek-v4-pro"; # strongest — fallback + manual /model pro escalation
   deepseekFlash = "deepseek-v4-flash"; # mid — primary chat model + auxiliary chores
 
+  # Vision-capable model for the auxiliary "vision" role. Both DeepSeek v4
+  # tiers are text-only (confirmed against models.dev: modalities.input =
+  # ["text"], no "attachment") — flash cannot see images. kimi-k2.6 (the
+  # non "-code" Kimi K2 slug, confirmed present on this account's opencode
+  # Zen "Go" plan) reports attachment:true with image+video input.
+  kimiVision = "kimi-k2.6";
+
   # ── opencode Zen "Go" plan gateway ──────────────────────────────
   # OpenAI-compatible multi-model endpoint. Hermes' DeepSeek tiers now
   # bill against this Go plan instead of api.deepseek.com. provider
@@ -26,13 +33,19 @@ let
     api_key = "\${OPENCODE_API_KEY}";
   };
 
-  # A DeepSeek tier reached through the Go gateway.
+  # A specific Go-plan model reached through the Go gateway.
   goTarget = model: goBase // { inherit model; };
 
   # Shared target for the flash tier (deepseek-v4-flash via the Go
-  # gateway). Used by every auxiliary role and — since the local llama
-  # was retired — by delegation and the fallback's last entry too.
+  # gateway). Used by every text-only auxiliary role and — since the
+  # local llama was retired — by delegation and the fallback's last
+  # entry too.
   flashAuxTarget = goTarget deepseekFlash;
+
+  # Vision-capable target for the auxiliary "vision" role only — flash
+  # can't see images, so this role needs its own target (see kimiVision
+  # above).
+  visionAuxTarget = goTarget kimiVision;
 in
 {
   imports = [ inputs.hermes-agent.nixosModules.default ];
@@ -154,15 +167,21 @@ in
         child_timeout_seconds = 900;
       };
 
-      # Auxiliary side-task models. Every role runs on deepseek-v4-flash
-      # via the Go gateway (flashAuxTarget). title_generation,
-      # session_search, skills_hub and mcp were previously pinned to the
-      # local llama, but that timed out whenever the Windows llama-server
-      # (192.168.0.101:8087) was down ("Auxiliary title generation failed:
-      # Request timed out"); routing them through the Go plan removes that
-      # dependency. NO role uses Pro — the upstream schema comments
-      # uniformly recommend cheap/fast models here, and the explicit flash
-      # pins keep these chores off Pro even if the primary tier is raised.
+      # Auxiliary side-task models. Every text-only role runs on
+      # deepseek-v4-flash via the Go gateway (flashAuxTarget).
+      # title_generation, session_search, skills_hub and mcp were
+      # previously pinned to the local llama, but that timed out whenever
+      # the Windows llama-server (192.168.0.101:8087) was down ("Auxiliary
+      # title generation failed: Request timed out"); routing them through
+      # the Go plan removes that dependency. NO role uses Pro — the
+      # upstream schema comments uniformly recommend cheap/fast models
+      # here, and the explicit flash pins keep these chores off Pro even
+      # if the primary tier is raised.
+      #
+      # vision is the one role that isn't text-only, so it can't share
+      # flashAuxTarget — deepseek-v4-flash is text-only (no "attachment"
+      # in its models.dev entry) and silently can't see images. It's
+      # pinned to visionAuxTarget (kimi-k2.6, image+video capable) instead.
       #
       # Note: auxiliary clients (agent/auxiliary_client.py) do NOT walk the
       # top-level fallback_providers chain — they have their own
@@ -177,12 +196,14 @@ in
         mcp = flashAuxTarget;
 
         # Already flash: web summarisation, spec expansion, danger
-        # classification, skill-curation review, image understanding.
+        # classification, skill-curation review.
         approval = flashAuxTarget;
         web_extract = flashAuxTarget;
         triage_specifier = flashAuxTarget;
         curator = flashAuxTarget;
-        vision = flashAuxTarget;
+
+        # Image understanding — needs a vision-capable model, not flash.
+        vision = visionAuxTarget;
 
         # Compression: same flash target plus the existing 30s timeout
         # override carried forward from the prior config (the per-role
