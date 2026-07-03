@@ -46,6 +46,33 @@ let
   # can't see images, so this role needs its own target (see kimiVision
   # above).
   visionAuxTarget = goTarget kimiVision;
+
+  # ── Native DeepSeek API (fallback only) ─────────────────────────
+  # The opencode Go plan that backs the primary/delegation/auxiliary
+  # roles above went down, and the fallback chain previously ran on that
+  # SAME gateway — so a Go-plan outage failed the whole chain with no
+  # backstop. Point the fallback at DeepSeek's native API instead: a
+  # different provider and a different credential (DEEPSEEK_API_KEY),
+  # independent of the Go plan, so a Go outage now falls back cleanly.
+  #
+  # provider = "deepseek" is hermes' built-in named provider
+  # (plugins/model-providers/deepseek): it activates DeepSeekProfile, which
+  # emits the extra_body.thinking / reasoning_effort wire shape the V4
+  # family requires to avoid the "reasoning_content must be passed back"
+  # HTTP 400 trap that a raw custom provider would hit.
+  #
+  # base_url is pinned explicitly (not left to the provider default) ON
+  # PURPOSE: hermes derives the credential from the base_url HOST
+  # (runtime_provider.py:_host_derived_api_key — api.deepseek.com →
+  # DEEPSEEK_API_KEY), so an empty base_url at resolution time would yield
+  # no key and a "Missing API key" 401. Pinning it guarantees the
+  # DEEPSEEK_API_KEY env var is picked up. api_key is deliberately left to
+  # that host-derivation rather than an explicit "${DEEPSEEK_API_KEY}".
+  deepseekApiTarget = model: {
+    provider = "deepseek";
+    base_url = "https://api.deepseek.com/v1";
+    inherit model;
+  };
 in
 {
   imports = [ inputs.hermes-agent.nixosModules.default ];
@@ -258,13 +285,19 @@ in
       # This chain ALSO governs delegation subagents: delegate_tool.py
       # inherits the parent's _fallback_chain into spawned children
       # (see tools/delegate_tool.py:1078 / :1113).
-      # flash primary → Pro (stronger tier) → flash retry — all on the Go
-      # gateway. The local-llama offline backstop was retired, so a
-      # gateway-wide outage now fails the whole chain; that is the accepted
-      # trade-off for decoupling hermes from the Windows box.
+      #
+      # The fallback now runs on the NATIVE DeepSeek API (deepseekApiTarget:
+      # provider "deepseek" → api.deepseek.com + DEEPSEEK_API_KEY), NOT the
+      # opencode Go gateway the primary uses. This is deliberate: the Go plan
+      # is the thing that fails (it went down), so a same-gateway fallback was
+      # useless. Routing the fallback through a separate provider + credential
+      # gives the primary a real backstop when the Go plan is unavailable.
+      # DeepSeek Pro (stronger tier) → flash retry, mirroring the previous
+      # chain's tiers on the native slugs. The primary, delegation, auxiliary
+      # and model_aliases stay on the Go gateway untouched.
       fallback_providers = [
-        (goTarget deepseekPro)
-        (goTarget deepseekFlash)
+        (deepseekApiTarget deepseekPro)
+        (deepseekApiTarget deepseekFlash)
       ];
 
       terminal = {
