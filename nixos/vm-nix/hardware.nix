@@ -26,9 +26,13 @@
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
+  # auto extend the root to use the full disk
+  boot.growPartition = true;
+
   fileSystems."/" = {
     device = "/dev/disk/by-uuid/7541133e-7d71-4483-89ef-1041daee6d60";
     fsType = "ext4";
+    autoResize = true; # auto resize2fs when boot
   };
 
   fileSystems."/boot" = {
