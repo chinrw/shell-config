@@ -38,6 +38,7 @@ in
         "/mnt/data/Video/jellyfin"
         "/mnt/data/harmony"
         "/mnt/data/Downloads/bt"
+        "/mnt/data/Downloads/incomplete"
       ]; # :contentReference[oaicite:1]{index=1}
     };
   };
