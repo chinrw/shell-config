@@ -155,7 +155,6 @@ in
       "ssh_pub_key" = { };
       "access-tokens" = { };
       "github-runners/Constantinople" = { };
-      "smb_creds" = { };
     };
   };
 
@@ -229,22 +228,25 @@ in
     nftables
   ];
 
+  # Host ZFS pool shared into this VM via virtiofs. This VM runs on the
+  # Proxmox host that owns the pool, so we use the shared-memory virtio
+  # transport instead of SMB-over-TCP to the host — no network stack, no
+  # credentials, no multichannel. The device string "data" is the virtiofs
+  # mount tag, which must match the Proxmox directory-mapping id (dirid=data)
+  # attached to this VM's hardware.
+  #
+  # Permissions: virtiofs passes host uid/gid through verbatim (no CIFS-style
+  # uid=/gid= remapping). The host dataset (elysion/data, acltype=posixacl)
+  # carries setgid dirs + POSIX default ACLs granting group 100 (${sharedGroup})
+  # rwx, and the device is attached with expose-acl=1 — so files created by
+  # chin39, aria2, or the factorio DynamicUser (all in `${sharedGroup}`) stay
+  # group-writable for the others regardless of the writer's umask. See
+  # nixos/services/factorio.nix for the group-permission note.
   fileSystems."/mnt/data" = {
-    device = "//192.168.0.254/data"; # UNC path
-    fsType = "cifs";
+    device = "data";
+    fsType = "virtiofs";
     options = [
-      "vers=3.11"
-      "credentials=${config.sops.secrets."smb_creds".path}"
-      "multichannel,max_channels=4"
-      "cache=strict,actimeo=1"
-      "rsize=130048,wsize=57344"
-      "uid=1000"
-      "gid=${sharedGroup}"
-      "iocharset=utf8"
-      "dir_mode=0775"
-      "file_mode=0775"
       "nofail"
-      "_netdev" # delays mount until network-online.target
       "x-systemd.automount" # lazy-mount on first access
     ];
     neededForBoot = false;

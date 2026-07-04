@@ -56,11 +56,11 @@
   # The original `umask=0002` in aria2's settings was not a valid
   # aria2 option (it logged "Unknown option: umask=0002"). We don't
   # replicate it at the systemd level either, because:
-  #   - Downloads go to /mnt/data/Downloads/aria2 which is a CIFS
-  #     mount with file_mode=0775/dir_mode=0775 baked into the
-  #     mount options. The server enforces those modes regardless
-  #     of the process umask, so UMask would have no effect on
-  #     downloaded files.
+  #   - Downloads go to /mnt/data/Downloads/aria2, a virtiofs share
+  #     whose host directories carry POSIX default ACLs granting
+  #     group `users` rwx (see vm-nix/default.nix). Inherited default
+  #     ACLs take the place of the process umask for group access,
+  #     so UMask would be redundant for downloaded files.
   #   - The only local file aria2 writes is /var/lib/aria2/aria2.session,
   #     which must NOT be group-writable — the nixpkgs aria2 module
   #     already sets UMask=0022 by default, which is correct for it.

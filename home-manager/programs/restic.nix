@@ -83,9 +83,10 @@ in
     # enough to confirm liveness without flooding the journal.
     progressFps = 0.2;
 
-    # Fail loudly if the CIFS mount is unreachable. `ls` on /mnt/data
-    # traverses the directory which triggers the systemd automount; on
-    # NAS failure the kernel returns I/O error and ls exits non-zero.
+    # Fail loudly if the virtiofs mount is unavailable. `ls` on /mnt/data
+    # traverses the directory which triggers the systemd automount; if
+    # the virtiofs device is absent or broken the mount fails and ls
+    # exits non-zero.
     backupPrepareCommand = "${pkgs.coreutils}/bin/ls /mnt/data >/dev/null";
 
     timerConfig = {

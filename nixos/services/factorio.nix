@@ -88,19 +88,21 @@
   # Inside the service mount namespace, both directories are bind-
   # mounted onto the factorio state dir, so factorio-headless reads
   # and writes them as if they were local. Autosaves and mod-list
-  # updates are persisted to the SMB share automatically.
+  # updates are persisted to the host ZFS pool automatically.
   #
   # Permissions:
-  #   The CIFS mount in vm-nix/default.nix uses uid=1000, gid=users,
-  #   file_mode=0775. The factorio service runs as a DynamicUser
-  #   (random UID each boot), so we can't match uid=1000. Instead
-  #   we add the dynamic user to the `users` group (gid 100) via
-  #   SupplementaryGroups, which gives it group rwx on the share.
+  #   /mnt/data is a virtiofs share (see vm-nix/default.nix) that passes
+  #   the host's uid/gid through verbatim. The host dataset carries
+  #   setgid dirs + POSIX default ACLs granting group 100 (`users`) rwx.
+  #   The factorio service runs as a DynamicUser (random UID each boot),
+  #   so we can't match a uid. Instead we add the dynamic user to the
+  #   `users` group (gid 100) via SupplementaryGroups; the inherited
+  #   ACLs keep every new file group-writable across boots.
   #
   # Ordering:
   #   RequiresMountsFor triggers the x-systemd.automount on /mnt/data
-  #   and blocks the service until the CIFS mount is actually up. If
-  #   the SMB server is unreachable at boot, factorio stays down
+  #   and blocks the service until the virtiofs mount is actually up. If
+  #   the virtiofs device is missing at boot, factorio stays down
   #   (acceptable — better than running on an empty saves/mods dir).
   # ---------------------------------------------------------------
   systemd.services.factorio = {
