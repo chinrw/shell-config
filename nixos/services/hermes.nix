@@ -16,6 +16,9 @@ let
   # Zen "Go" plan) reports attachment:true with image+video input.
   kimiVision = "kimi-k2.6";
 
+  # GLM 5.2 via the same Go plan — reserved for the auxiliary
+  glmCompression = "glm-5.2";
+
   # ── opencode Zen "Go" plan gateway ──────────────────────────────
   # OpenAI-compatible multi-model endpoint. Hermes' DeepSeek tiers now
   # bill against this Go plan instead of api.deepseek.com. provider
@@ -232,12 +235,8 @@ in
         # Image understanding — needs a vision-capable model, not flash.
         vision = visionAuxTarget;
 
-        # Compression: same flash target plus the existing 30s timeout
-        # override carried forward from the prior config (the per-role
-        # default is 120s; 30s keeps compression latency tight).
-        compression = flashAuxTarget // {
-          timeout = 30;
-        };
+        # Compression: GLM 5.2 (strongest summarizer on the Go plan)
+        compression = goTarget glmCompression;
       };
 
       compression = {
