@@ -96,6 +96,38 @@ hermes() {
 }
 
 "
+      + lib.optionalString pkgs.stdenv.isDarwin "
+# Fix Time Machine 'backup failed' on the NAS SMB destination. backupd
+# can only enable TM network volume options on an SMB mount it creates
+# itself; a lingering mount (eject blocked after a successful backup,
+# or the share mounted manually) makes every backup fail with fsctl
+# error 45 'does not support required network capabilities'. Clear the
+# stale sparsebundle + mountpoint, then start a fresh backup.
+tmfix() {
+  if tmutil status | grep -q 'Running = 1'; then
+    echo 'tmfix: a backup is running; not touching anything' >&2
+    return 1
+  fi
+  local dev mp found=0
+  dev=\$(hdiutil info | awk '/sparsebundle/{f=1;next} f && \$1 ~ \"^/dev/disk\" {print \$1; exit}')
+  if [[ -n \$dev ]]; then
+    found=1
+    echo \"tmfix: detaching sparsebundle \$dev\"
+    hdiutil detach \"\$dev\" || return 1
+  fi
+  for mp in /Volumes/.timemachine/*/*/timemachine(N) /Volumes/timemachine(N); do
+    found=1
+    echo \"tmfix: unmounting \$mp\"
+    diskutil unmount \"\$mp\" || return 1
+  done
+  if (( found )); then
+    tmutil startbackup
+  else
+    echo 'tmfix: no stale Time Machine mounts found'
+  fi
+}
+
+"
       + lib.optionalString isDesktop "
 alias_flatpak_exports() {
   zmodload zsh/parameter
