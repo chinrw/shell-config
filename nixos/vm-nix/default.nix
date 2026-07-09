@@ -207,11 +207,6 @@ in
     #   tokenKeyFile = "/etc/nixos/secrets/kavita_token.key";
     #   # make sure the service user can read the key
     # };
-    komga = {
-      enable = true;
-      openFirewall = true;
-      settings.server.port = 8081;
-    };
     # lanraragi = {
     #   enable = true;
     #   package = pkgs.lanraragi;
