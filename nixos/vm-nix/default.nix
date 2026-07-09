@@ -89,12 +89,9 @@ in
       5000 # local binary cache
       5001 # test webserver1
       5002 # test webserver2
-      3001 # lanraragi
       7892 # AutoBangumi
 
-      7861 # gcli2api
       8000
-      8484 # clewdr claude reverse
       8888 # kik
 
       8765 # local python testing web
@@ -103,7 +100,6 @@ in
 
       10808
       10809
-      22267 # alas
 
       8384 # syncthing web GUI
       22000 # syncthing sync protocol
