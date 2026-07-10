@@ -100,6 +100,14 @@
       # Opinionated: disable channels
       channel.enable = false;
 
+      # auto cleanup
+      gc = {
+        automatic = true;
+        dates = "03:15";
+        options = "--delete-older-than 21d";
+        randomizedDelaySec = "45min";
+      };
+
       # Opinionated: make flake registry and nix path match flake inputs.
       # `nixpkgs` is dropped from the map on purpose: nixpkgs' own
       # misc/nixpkgs-flake.nix pins the `nixpkgs` registry key to whichever
