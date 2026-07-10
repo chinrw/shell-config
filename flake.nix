@@ -128,6 +128,11 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    codex-cli-nix = {
+      url = "github:chinrw/codex-cli-nix";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     pwndbg = {
       url = "github:pwndbg/pwndbg";
       inputs.nixpkgs.follows = "nixpkgs-unstable";

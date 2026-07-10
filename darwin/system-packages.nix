@@ -32,8 +32,9 @@
     ))
 
     # Dev tools
+    # NOTE: `codex` is installed per-user from the codex-cli-nix flake in
+    # home-manager/home.nix, so it is deliberately absent here.
     cloc
-    codex
     cscope
     git
     rust-analyzer

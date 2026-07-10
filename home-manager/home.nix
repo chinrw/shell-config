@@ -281,7 +281,7 @@ in
         unar
         inputs.rustowl-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
         inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
-        unstable.codex
+        inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
         rustscan # modern scanner
         marksman
         pyrefly
