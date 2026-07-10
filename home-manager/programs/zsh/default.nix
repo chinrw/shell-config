@@ -158,10 +158,14 @@ fi
       if [ -e /home/chin39/.nix-profile/etc/profile.d/nix.sh ]; then
         . /home/chin39/.nix-profile/etc/profile.d/nix.sh
       fi
-      # Re-exec into Nix's zsh to avoid glibc mismatch with Nix-built modules
-      if [[ ! "$(readlink /proc/$$/exe 2>/dev/null)" == /nix/store/* ]]; then
+      # Re-exec into Nix's zsh to avoid glibc mismatch with Nix-built modules.
+      # The exported sentinel caps this at one exec per session lineage: the
+      # /proc-based check alone can stay true forever when /proc is absent
+      # (Darwin) or $$/exe resolves through a wrapper, which would exec-loop.
+      if [[ -z "$_NIX_ZSH_REEXECED" && ! "$(readlink /proc/$$/exe 2>/dev/null)" == /nix/store/* ]]; then
         _nix_zsh="$(command -v zsh 2>/dev/null)"
         if [[ "$_nix_zsh" == /nix/store/* ]]; then
+          export _NIX_ZSH_REEXECED=1
           exec "$_nix_zsh" -l
         fi
         unset _nix_zsh

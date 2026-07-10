@@ -339,11 +339,6 @@ in
 
   programs.bash = {
     enable = true;
-    bashrcExtra = "
-    if [[ -f /etc/bash/bashrc ]]; then
-      source /etc/bash/bashrc
-    fi
-    ";
     enableCompletion = true;
   };
 
