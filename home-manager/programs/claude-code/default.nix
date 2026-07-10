@@ -10,11 +10,14 @@
   extraInstructions ? "",
   # Skill allowlist: names linked into ~/.claude/skills/.
   # null = link every skill from the source flake (legacy behavior).
-  # Default set = used-in-past-sessions + ECC-tagged + user-curated workflows
-  # + their direct SKILL.md references (transitive closure not taken; the
-  # configure-ecc installer catalog is intentionally excluded to avoid
-  # re-linking every skill it advertises).
+  # Every entry here stays LINKED and therefore explicitly invocable. Whether
+  # its description also reaches the system prompt is decided separately by
+  # skillOverrides below -- a skill must be linked before an override can
+  # apply to it, so trimming this list and setting "name-only" are mutually
+  # exclusive, not complementary.
   # Plugin and built-in skills are unaffected; see commandDenylist below.
+  # Skills from other flake inputs (khazix-skills, mtg-agent-skill) are
+  # installed by a different mechanism and are NOT filtered by this list.
   skillAllowlist ? [
     "agent-sort"
     "agentic-engineering"
@@ -86,6 +89,11 @@
   # link every entry under $REPO/rules/.
   ruleDenylist ? [
     "zh"
+    # Install documentation for the rule bundle itself (directory tree,
+    # install.sh usage, "Adding a New Language"). No behavioural guidance, but
+    # it sits at rules/ root without `paths:` frontmatter, so it loaded as
+    # always-on memory in every project.
+    "README.md"
   ],
   ...
 }:
@@ -210,6 +218,10 @@ let
       };
     };
     skipAutoPermissionPrompt = true;
+    # Stop Claude Code appending a `Co-Authored-By: Claude` trailer to commits.
+    # CLAUDE.md already forbids it, but that relies on the model complying every
+    # time; this suppresses the trailer at the source.
+    includeCoAuthoredBy = false;
     # Deny access to secret-bearing paths natively. Read() rules cover the
     # Read/Grep/Glob tools and Claude-recognised Bash file commands (cat, head,
     # tail, sed); Edit() rules cover the built-in file editors. This replaces
@@ -218,6 +230,14 @@ let
     # and scripts that open files themselves (python/node) are NOT covered —
     # closing that needs the OS-level sandbox (sandbox.filesystem.denyRead).
     permissions = {
+      # Delegate routine per-action approvals to the safety classifier instead
+      # of prompting for each one. This MUST be asserted from a user-scope
+      # settings file (which ~/.claude/settings.json is): Claude Code ignores
+      # a defaultMode of "auto" coming from repo-controllable project settings.
+      # Not a lock-in -- if auto mode is unavailable at startup (unsupported
+      # model, org kill switch), the CLI falls back to default mode with a
+      # notice.
+      defaultMode = "auto";
       deny = [
         "Read(.env)"
         "Read(.env.*)"
@@ -233,21 +253,96 @@ let
         "Edit(~/.ssh/**)"
       ];
     };
-    # Drop descriptions for high-inbound hubs and isolated leaves to reclaim
-    # system-prompt tokens. Names stay listed so cross-skill references and
-    # slash-command invocations keep working.
+    # Per-skill listing overrides. From Claude Code's own settings schema:
+    #   absent                = listed with description; model may auto-invoke.
+    #   "name-only"           = listed without description; model may still
+    #                           auto-invoke it by name. Costs ~4-5 tokens.
+    #   "user-invocable-only" = hidden from the model entirely, `/name` still
+    #                           works. Costs nothing.
+    #   "off"                 = hidden from both; `/name` stops working.
+    #
+    # Audited over 311 recorded sessions: the only ECC skills ever invoked are
+    # codebase-onboarding (1) and hermes-imports (4). neat-freak (9) ships from
+    # a different flake input and is not affected by this list.
+    #
+    # Everything below is "user-invocable-only": reachable on demand via
+    # `/<name>`, invisible to the model, zero resident tokens. The tradeoff is
+    # that these skills can no longer delegate to each other via the Skill tool
+    # (72 such references exist among them). That is acceptable because none has
+    # ever been invoked -- but if you start using one, flip whichever skill it
+    # delegates to back to "name-only" so the model can reach it.
+    #
+    # hermes-imports is the exception: transcripts show it is model-invoked
+    # (4 sessions) rather than slash-invoked, so hiding it from the model would
+    # stop it firing. It stays "name-only".
+    # codebase-onboarding is also model-invoked, and keeps its description.
     skillOverrides = {
-      "verification-loop" = "name-only";
-      "tdd-workflow" = "name-only";
-      "knowledge-ops" = "name-only";
-      "configure-ecc" = "name-only";
-      "autonomous-agent-harness" = "name-only";
-      "context-budget" = "name-only";
-      "plan-orchestrate" = "name-only";
-      "design-system" = "name-only";
       "hermes-imports" = "name-only";
-      "plankton-code-quality" = "name-only";
-      "product-capability" = "name-only";
+
+      # khazix-skills. Installed via home.file (below), NOT via skillAllowlist,
+      # so these keys are deliberately absent from that list. Their descriptions
+      # are natural-language trigger text, so hiding them from the model also
+      # stops the Chinese-phrase auto-triggering they were written for --
+      # invoke them with `/<name>` instead. Note hv-analysis points at
+      # khazix-writer for style definitions; with both hidden from the model
+      # that pointer resolves by reading the file, not by Skill invocation.
+      #
+      # The sibling khazix/mtg skills fable-writing, mtg-card-evaluation and
+      # mtg-deck-analysis need no entry: they set `disable-model-invocation:
+      # true` in their own frontmatter, which Claude Code already resolves to
+      # user-invocable-only (source: "author").
+      "aihot" = "user-invocable-only";
+      "hv-analysis" = "user-invocable-only";
+      "khazix-writer" = "user-invocable-only";
+      "storage-analyzer" = "user-invocable-only";
+
+      "agent-sort" = "user-invocable-only";
+      "agentic-engineering" = "user-invocable-only";
+      "api-connector-builder" = "user-invocable-only";
+      "automation-audit-ops" = "user-invocable-only";
+      "autonomous-agent-harness" = "user-invocable-only";
+      "autonomous-loops" = "user-invocable-only";
+      "benchmark" = "user-invocable-only";
+      "code-tour" = "user-invocable-only";
+      "coding-standards" = "user-invocable-only";
+      "configure-ecc" = "user-invocable-only";
+      "context-budget" = "user-invocable-only";
+      "continuous-agent-loop" = "user-invocable-only";
+      "continuous-learning-v2" = "user-invocable-only";
+      "council" = "user-invocable-only";
+      "dashboard-builder" = "user-invocable-only";
+      "design-system" = "user-invocable-only";
+      "django-patterns" = "user-invocable-only";
+      "documentation-lookup" = "user-invocable-only";
+      "ecc-guide" = "user-invocable-only";
+      "ecc-tools-cost-audit" = "user-invocable-only";
+      "eval-harness" = "user-invocable-only";
+      "exa-search" = "user-invocable-only";
+      "frontend-patterns" = "user-invocable-only";
+      "git-workflow" = "user-invocable-only";
+      "github-ops" = "user-invocable-only";
+      "iterative-retrieval" = "user-invocable-only";
+      "knowledge-ops" = "user-invocable-only";
+      "nanoclaw-repl" = "user-invocable-only";
+      "plan-orchestrate" = "user-invocable-only";
+      "plankton-code-quality" = "user-invocable-only";
+      "product-capability" = "user-invocable-only";
+      "project-flow-ops" = "user-invocable-only";
+      "python-patterns" = "user-invocable-only";
+      "python-testing" = "user-invocable-only";
+      "ralphinho-rfc-pipeline" = "user-invocable-only";
+      "research-ops" = "user-invocable-only";
+      "rust-patterns" = "user-invocable-only";
+      "search-first" = "user-invocable-only";
+      "security-bounty-hunter" = "user-invocable-only";
+      "security-review" = "user-invocable-only";
+      "security-scan" = "user-invocable-only";
+      "skill-stocktake" = "user-invocable-only";
+      "strategic-compact" = "user-invocable-only";
+      "tdd-workflow" = "user-invocable-only";
+      "terminal-ops" = "user-invocable-only";
+      "verification-loop" = "user-invocable-only";
+      "workspace-surface-audit" = "user-invocable-only";
     };
   };
 
