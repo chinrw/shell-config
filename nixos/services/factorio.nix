@@ -106,11 +106,23 @@
   #   (acceptable — better than running on an empty saves/mods dir).
   # ---------------------------------------------------------------
   systemd.services.factorio = {
-    unitConfig.RequiresMountsFor = [
-      "/mnt/data/Documents/Factorio/saves"
-      "/mnt/data/Documents/Factorio/mods"
-    ];
+    unitConfig = {
+      RequiresMountsFor = [
+        "/mnt/data/Documents/Factorio/saves"
+        "/mnt/data/Documents/Factorio/mods"
+      ];
+      # Upstream sets Restart=always; with systemd's default 5-restarts-in-10s
+      # window and 100ms RestartSec, a crash cycle that takes ~10s (the map
+      # load alone is that long) never trips the limit — during the
+      # 2026-07-10 OOM storm the unit was killed and relaunched 66 times,
+      # each restart re-allocating ~2GB into an already-full machine. Widen
+      # the window so 5 failures inside 10 minutes park the unit as
+      # 'failed' instead; `systemctl restart factorio` brings it back.
+      StartLimitIntervalSec = 600;
+      StartLimitBurst = 5;
+    };
     serviceConfig = {
+      RestartSec = 10;
       SupplementaryGroups = [ "users" ];
       BindPaths = [
         "/mnt/data/Documents/Factorio/saves:/var/lib/factorio/saves"

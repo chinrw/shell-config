@@ -30,6 +30,7 @@ in
     ../services/nix-serve.nix
     ../services/factorio.nix
     ./kernel.nix
+    ./oom-guard.nix
     ../services/hermes.nix
     ../services/llama-loader-shim.nix
     ../services/flaresolverr.nix
