@@ -168,25 +168,28 @@
       helpers = import ./lib { inherit inputs outputs stateVersion; };
 
     in
-    flake-utils.lib.eachDefaultSystem
-      (
-        system:
-        let
-          overlays = [ (import rust-overlay) ];
-          pkgs = import nixpkgs {
-            inherit system overlays;
-          };
-        in
-        {
-          devShells = {
+    flake-utils.lib.eachSystem systems (
+      system:
+      let
+        overlays = [ (import rust-overlay) ];
+        pkgs = import nixpkgs {
+          inherit system overlays;
+        };
+      in
+      {
+        devShells =
+          {
             rust = import ./shell/rust.nix { inherit pkgs inputs; };
             hm = import ./shell/home-manager.nix { inherit pkgs inputs; };
+          }
+          // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
             kernel = import ./shell/kernel.nix { inherit pkgs inputs; };
           };
-          # formatter used by `nix fmt`
-          formatter = pkgs.nixfmt-tree;
-        }
-      )
+
+        # formatter used by `nix fmt`
+        formatter = pkgs.nixfmt-tree;
+      }
+    )
     // {
       # Your custom packages
       # Accessible through 'nix build', 'nix shell', etc

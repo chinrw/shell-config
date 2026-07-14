@@ -12,6 +12,5 @@ in
     mkDarwin
     mkHome
     mkNixos
-    forAllSystems
     ;
 }
