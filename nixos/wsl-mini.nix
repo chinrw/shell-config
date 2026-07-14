@@ -24,7 +24,6 @@
       address = "10.0.0.1";
       interface = "eth0";
     };
-    nameservers = [ "10.0.0.1" ];
   };
 
   programs.proxychains = {
