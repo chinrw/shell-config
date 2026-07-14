@@ -267,7 +267,7 @@
         "chin39@arch-lxc" = helpers.mkHome {
           hostname = "arch-lxc";
           isServer = true;
-
+          localCaches = [ "home" ];
         };
         "chin39@proxmox" = helpers.mkHome {
           hostname = "proxmox";
