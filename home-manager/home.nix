@@ -294,7 +294,6 @@ in
         mpv
       ]
       ++ lib.optionals isDesktop [
-        inputs.nixgl.packages.${pkgs.stdenv.hostPlatform.system}.nixGLDefault
         jellyfin-media-player
       ]
       ++ lib.optionals (!isDesktop) [

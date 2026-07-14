@@ -1,9 +1,10 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 pkgs.mkShell {
-  buildInputs = with pkgs; [
-    home-manager
-    git
+  packages = [
+    inputs.home-manager.packages.${pkgs.stdenv.hostPlatform.system}.default
+    pkgs.git
   ];
+
   NIX_CONFIG = "experimental-features = nix-command flakes";
 }
