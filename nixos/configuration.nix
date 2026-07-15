@@ -38,7 +38,6 @@
   ]
   ++ lib.optionals (hostname == "wsl-mini") [
     ./wsl-mini.nix
-    ./services/github-runners.nix
   ]
   ++ lib.optionals (hostname == "vm-nix") [
     ./vm-nix

@@ -1,53 +1,73 @@
 {
   config,
   lib,
-  pkgs,
   hostname,
   ...
 }:
 let
   runnersByHost = {
-    "wsl-mini" = {
-      name = "midashood";
-      tokenSecret = config.sops.secrets."github-runners/midashood".path;
-      proxy = "http://10.0.0.242:10809";
-    };
+    # "wsl-mini" = {
+    #   proxy = "http://10.0.0.242:10809";
+    #   name = "midashood";
+    #   tokenSecret = config.sops.secrets."github-runners/midashood".path;
+    # };
     "vm-nix" = {
-      name = "Constantinople";
-      tokenSecret = config.sops.secrets."github-runners/Constantinople".path;
       proxy = "http://192.168.0.240:10809";
+      runners = {
+        # Keep runner1 stable so the existing rex runner retains its state directory.
+        runner1 = {
+          name = "Constantinople";
+          url = "https://github.com/rex-rs/rex";
+        };
+        stocks-1 = {
+          name = "stocks-1";
+          tokenSecret = "stocks";
+          url = "https://github.com/chinrw/stocks";
+          workDir = null;
+        };
+        stocks-2 = {
+          name = "stocks-2";
+          tokenSecret = "stocks";
+          url = "https://github.com/chinrw/stocks";
+          workDir = null;
+        };
+        stocks-3 = {
+          name = "stocks-3";
+          tokenSecret = "stocks";
+          url = "https://github.com/chinrw/stocks";
+          workDir = null;
+        };
+      };
     };
   };
 
   thisHostCfg = runnersByHost.${hostname} or null;
+  thisHostRunners = if thisHostCfg == null then { } else thisHostCfg.runners;
+  hostProxy = if thisHostCfg == null then null else thisHostCfg.proxy or null;
 
-in
-{
-  assertions = [
+  mkRunner =
+    runnerCfg:
+    let
+      tokenSecret = runnerCfg.tokenSecret or runnerCfg.name;
+    in
     {
-      assertion = thisHostCfg ? name;
-      message = "✗ No GitHub-runner token configured for host “${hostname}”.";
-    }
-  ];
-
-  services.github-runners = {
-    runner1 = {
       enable = true;
       nodeRuntimes = [ "node24" ];
-      name = thisHostCfg.name;
-      tokenFile = config.sops.secrets."github-runners/${thisHostCfg.name}".path;
-      url = "https://github.com/rex-rs/rex";
+      name = runnerCfg.name;
+      tokenFile = config.sops.secrets."github-runners/${tokenSecret}".path;
+      url = runnerCfg.url;
       extraLabels = [ "nix" ];
       user = "midashood";
       replace = true;
-      workDir = "/var/lib/github-runner/${thisHostCfg.name}";
-      extraEnvironment = lib.mkIf (thisHostCfg ? proxy) {
-        all_proxy = thisHostCfg.proxy;
-        https_proxy = thisHostCfg.proxy;
-        http_proxy = thisHostCfg.proxy;
+      workDir = runnerCfg.workDir or "/var/lib/github-runner/${runnerCfg.name}";
+      extraEnvironment = lib.optionalAttrs (hostProxy != null) {
+        all_proxy = hostProxy;
+        https_proxy = hostProxy;
+        http_proxy = hostProxy;
       };
       # Allow the service to create user namespaces
       serviceOverrides = {
+        Slice = "github-runners.slice";
         PrivateUsers = lib.mkForce false;
         # Allow namespaces needed for buildFHSEnv + QEMU networking
         RestrictNamespaces = lib.mkForce "user mnt pid ipc net";
@@ -71,6 +91,29 @@ in
           "pivot_root"
         ];
       };
+    };
+
+in
+{
+  assertions = [
+    {
+      assertion = thisHostCfg != null;
+      message = "✗ No GitHub runners configured for host “${hostname}”.";
+    }
+  ];
+
+  services.github-runners = lib.mapAttrs (_: mkRunner) thisHostRunners;
+
+  systemd.slices.github-runners = {
+    description = "GitHub Actions runners resource pool";
+    sliceConfig = {
+      CPUAccounting = true;
+      CPUQuota = "2200%";
+      MemoryAccounting = true;
+      MemoryHigh = "48G";
+      MemoryMax = "56G";
+      TasksAccounting = true;
+      TasksMax = 16384;
     };
   };
 

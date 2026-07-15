@@ -38,7 +38,6 @@
       "wg/pubkey" = { };
       "ssh_pub_key" = { };
       "access-tokens" = { };
-      "github-runners/midashood" = { };
     };
   };
 

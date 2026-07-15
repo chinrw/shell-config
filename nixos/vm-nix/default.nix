@@ -153,6 +153,13 @@ in
       "ssh_pub_key" = { };
       "access-tokens" = { };
       "github-runners/Constantinople" = { };
+      "github-runners/stocks" = {
+        restartUnits = [
+          "github-runner-stocks-1.service"
+          "github-runner-stocks-2.service"
+          "github-runner-stocks-3.service"
+        ];
+      };
     };
   };
 
