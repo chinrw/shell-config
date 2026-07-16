@@ -244,5 +244,3 @@ return {
 	-- swap_backspace_and_delete = false,
 	-- freetype_load_target = "Light",
 }
-
-

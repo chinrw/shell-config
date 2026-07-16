@@ -18,27 +18,31 @@
       TREE_IGNORE = [ "cache|log|logs|node_modules|vendor" ];
     };
 
-    initContent =
-      "
+    initContent = lib.mkMerge [
+      (lib.mkBefore "
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r \"\${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-\${(%):-%n}.zsh\" ]]; then
   source \"\${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-\${(%):-%n}.zsh\"
 fi
-
+")
+      (lib.mkOrder 850 "
+# Load fzf after Oh My Zsh (order 800), but before fzf-tab (order 900),
+# so fzf-tab remains the owner of Tab completion.
+if [[ $options[zle] = on ]]; then
+  source <(${lib.getExe pkgs.fzf} --zsh)
+fi
+")
+      (
+        lib.optionalString (proxyUrl != "")
+          "
+_proxy_url=$(<\"${proxyUrl}\")
+export http_proxy=\"$_proxy_url\"
+export https_proxy=\"$_proxy_url\"
+unset _proxy_url
 "
-      + lib.optionalString (
-        proxyUrl != ""
-      ) "
-export http_proxy=$(cat ${proxyUrl})
-export https_proxy=$(cat ${proxyUrl})
-"
-      + "
-# Uncomment the following line to use hyphen-insensitive completion.
-# Case-sensitive completion must be off. _ and - will be interchangeable.
-HYPHEN_INSENSITIVE=\"true\"
-bindkey '\CI' expand-or-complete-prefix
+        + "
 
 # User configuration
 zstyle ':fzf-tab:complete:eza:*' fzf-preview 'eza -G -a --color auto --sort=accessed --git --icons -s type $realpath'
@@ -96,7 +100,7 @@ hermes() {
 }
 
 "
-      + lib.optionalString pkgs.stdenv.isDarwin "
+        + lib.optionalString pkgs.stdenv.isDarwin "
 # Fix Time Machine 'backup failed' on the NAS SMB destination. backupd
 # can only enable TM network volume options on an SMB mount it creates
 # itself; a lingering mount (eject blocked after a successful backup,
@@ -128,7 +132,7 @@ tmfix() {
 }
 
 "
-      + lib.optionalString isDesktop "
+        + lib.optionalString isDesktop "
 alias_flatpak_exports() {
   zmodload zsh/parameter
 	local item
@@ -151,7 +155,9 @@ if [ \"$(command -v flatpak)\" ] ; then
     PATH=\"$HOME/.local/share/flatpak/exports/bin:$PATH\"
     alias_flatpak_exports
 fi
-";
+"
+      )
+    ];
 
     profileExtra = ''
       # Source Nix profile for single user mode
@@ -237,10 +243,8 @@ fi
       enable = true;
       plugins = [
         "1password"
-        "fzf"
         "git"
         "jj"
-        "rust"
         "python"
         "pip"
         "systemd"
@@ -249,8 +253,10 @@ fi
         "docker-compose"
         "history-substring-search"
       ];
-      # extraConfig = "
-      #   ";
+      extraConfig = ''
+        # Must be set before Oh My Zsh initializes completion.
+        HYPHEN_INSENSITIVE="true"
+      '';
     };
 
   };
