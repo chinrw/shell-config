@@ -256,6 +256,9 @@ fi
       extraConfig = ''
         # Must be set before Oh My Zsh initializes completion.
         HYPHEN_INSENSITIVE="true"
+        # Avoid triggering Powerlevel10k's instant-prompt warning when the
+        # plugin starts a new agent during shell initialization.
+        zstyle :omz:plugins:ssh-agent quiet yes
       '';
     };
 
