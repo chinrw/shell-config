@@ -24,6 +24,13 @@ let
   inherit (pkgs.stdenv) isDarwin isLinux;
   isDesktop = hostname == "desktop";
 
+  codexPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  codexZshCompletion = pkgs.runCommand "codex-zsh-completion" { } ''
+    export HOME="$TMPDIR"
+    mkdir -p "$HOME/.local/bin" "$out/share/zsh/site-functions"
+    ${codexPackage}/bin/codex completion zsh > "$out/share/zsh/site-functions/_codex"
+  '';
+
   proxyUrl =
     if (hostname == "wsl" || isDesktop) then
       config.sops.secrets."proxy/clash".path
@@ -41,7 +48,6 @@ in
   imports = [
     # If you want to use home-manager modules from other flakes (such as nix-colors):
     # inputs.nix-colors.homeManagerModule
-    ./programs/nushell
     (import ./programs/zsh {
       inherit
         lib
@@ -281,7 +287,8 @@ in
         unar
         inputs.rustowl-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
         inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
-        inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
+        codexPackage
+        codexZshCompletion
         rustscan # modern scanner
         marksman
         pyrefly
@@ -351,14 +358,12 @@ in
       enableFishIntegration = true;
       enableZshIntegration = true;
       enableBashIntegration = true;
-      enableNushellIntegration = true;
     };
 
     atuin = {
       enable = true;
       enableFishIntegration = true;
       enableZshIntegration = true;
-      enableNushellIntegration = true;
       enableBashIntegration = false;
 
       flags = [
@@ -407,7 +412,6 @@ in
       enable = true;
       enableZshIntegration = true;
       enableBashIntegration = true;
-      enableNushellIntegration = true;
       nix-direnv = {
         enable = true;
       };
