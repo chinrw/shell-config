@@ -37,6 +37,24 @@ let
           url = "https://github.com/chinrw/stocks";
           workDir = null;
         };
+        stocks-4 = {
+          name = "stocks-4";
+          tokenSecret = "stocks";
+          url = "https://github.com/chinrw/stocks";
+          workDir = null;
+        };
+        stocks-5 = {
+          name = "stocks-5";
+          tokenSecret = "stocks";
+          url = "https://github.com/chinrw/stocks";
+          workDir = null;
+        };
+        stocks-6 = {
+          name = "stocks-6";
+          tokenSecret = "stocks";
+          url = "https://github.com/chinrw/stocks";
+          workDir = null;
+        };
       };
     };
   };
