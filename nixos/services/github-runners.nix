@@ -33,6 +33,11 @@ let
     CARGO_HOME = "${stocksCacheRoot}/cargo";
     UV_CACHE_DIR = "${stocksCacheRoot}/uv";
     XDG_CACHE_HOME = "${stocksCacheRoot}/xdg";
+    # The cache and the checkout .venv sit on the same disk but in different
+    # bind mounts of the sandbox (ReadWritePaths vs BindPaths), and link(2)
+    # across vfsmounts is EXDEV — uv would warn and fall back to copying on
+    # every sync. Declare copy mode explicitly to silence the warning.
+    UV_LINK_MODE = "copy";
   };
 
   # Persistent on-disk work dirs keep six concurrent checkouts + .venv out of
