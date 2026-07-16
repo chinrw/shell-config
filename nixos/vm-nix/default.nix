@@ -158,6 +158,9 @@ in
           "github-runner-stocks-1.service"
           "github-runner-stocks-2.service"
           "github-runner-stocks-3.service"
+          "github-runner-stocks-4.service"
+          "github-runner-stocks-5.service"
+          "github-runner-stocks-6.service"
         ];
       };
     };
