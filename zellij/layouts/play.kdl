@@ -4,9 +4,9 @@ layout {
         children
         pane size=1 borderless=true {
             plugin location="file:~/.config/zellij-plugins/zjstatus.wasm" {
-                format_left   "{mode} #[fg=#89B4FA,bold]{session}{notifications}#[fg=#6C7086,bold]{command_net_speed}"
+                format_left   "{mode} #[fg=#89B4FA,bold]{session}{notifications}#[fg=#6C7086,bold]{pipe_netspeed}"
                 format_center "{tabs}"
-                format_right  "#[fg=#6C7086,bold]{command_uptime}{datetime}"
+                format_right  "#[fg=#6C7086,bold]{pipe_uptime}{datetime}"
                 format_space  ""
 
                 // hide_frame_for_single_pane "true"
@@ -37,15 +37,11 @@ layout {
                 command_git_branch_interval    "10"
                 command_git_branch_command     "git rev-parse --abbrev-ref HEAD"
 
-                command_uptime_command     "bash -c \"uptime | awk '{print $(NF-2),$(NF-1)}'| tr ', ' ' '\""
-                command_uptime_format      "#[fg=blue] {stdout} "
-                command_uptime_interval    "2"
-                command_uptime_rendermode  "dynamic"
+                pipe_uptime_format      "#[fg=blue] {output} "
+                pipe_uptime_rendermode  "static"
 
-                command_net_speed_command     "bash -c \"${HOME}/.config/zellij/net_speed.sh eth0\""
-                command_net_speed_format      "#[fg=blue] {stdout} "
-                command_net_speed_interval    "1"
-                command_net_speed_rendermode  "dynamic"
+                pipe_netspeed_format      "#[fg=blue] {output} "
+                pipe_netspeed_rendermode  "static"
 
                 datetime        "#[fg=#6C7086,bold] {format} "
                 datetime_format "%b %d %H:%M"

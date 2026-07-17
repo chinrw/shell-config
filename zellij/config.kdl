@@ -259,6 +259,28 @@ plugins {
 	compact-bar { path "compact-bar"; }
 }
 
+// Background sysinfo producer for the zjstatus pipe widgets.
+// One instance per session replaces the per-tab command_* bash polling
+// that caused the 2026-07-10 OOM fork storm.
+//
+// Permission note: as a background (paneless) plugin it cannot show the
+// interactive FullHdAccess/MessageAndLaunchOtherPlugins prompt, so the
+// grant lives in ~/.cache/zellij/permissions.kdl, keyed by the stable
+// ~/.config/zellij-plugins/zj-sysinfo.wasm symlink path. It is seeded
+// idempotently by home-manager activation on every `home-manager switch`
+// (home-manager/programs/zellij/default.nix, activation script
+// "zjSysinfoPermissions") -- that script only appends the entry when it's
+// missing, so it never clobbers the file zellij itself owns and rewrites.
+// If the widgets are ever blank on a new or reset machine, run
+// `home-manager switch`, or add the entry by hand:
+//   "/home/<you>/.config/zellij-plugins/zj-sysinfo.wasm" {
+//       FullHdAccess
+//       MessageAndLaunchOtherPlugins
+//   }
+load_plugins {
+	"file:~/.config/zellij-plugins/zj-sysinfo.wasm"
+}
+
 // load_plugins {
 //     "file:~/.config/zellij-plugins/zjframes.wasm" {
 // 		hide_frame_for_single_pane       "true"

@@ -171,6 +171,7 @@ in
 
       (final: prev: {
         zjstatus = inputs.zjstatus.packages.${prev.stdenv.hostPlatform.system}.default;
+        zj-sysinfo = inputs.zj-sysinfo.packages.${prev.stdenv.hostPlatform.system}.default;
       })
 
       outputs.overlays.additions

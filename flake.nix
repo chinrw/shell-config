@@ -105,6 +105,10 @@
     zjstatus.inputs.nixpkgs.follows = "nixpkgs-unstable";
     zjstatus.inputs.rust-overlay.follows = "rust-overlay";
 
+    zj-sysinfo.url = "github:chinrw/zj-sysinfo";
+    zj-sysinfo.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    zj-sysinfo.inputs.rust-overlay.follows = "rust-overlay";
+
     everything-claude-code = {
       url = "github:affaan-m/everything-claude-code?ref=main";
       flake = false;

@@ -974,6 +974,7 @@
         "rustowl-overlay": "rustowl-overlay",
         "sops-nix": "sops-nix",
         "yazi": "yazi",
+        "zj-sysinfo": "zj-sysinfo",
         "zjstatus": "zjstatus"
       }
     },
@@ -1277,6 +1278,29 @@
       "original": {
         "owner": "sxyazi",
         "repo": "yazi",
+        "type": "github"
+      }
+    },
+    "zj-sysinfo": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ],
+        "rust-overlay": [
+          "rust-overlay"
+        ]
+      },
+      "locked": {
+        "lastModified": 1784261669,
+        "narHash": "sha256-v+z9hwTtEXcUZZtM94rBAY13gMoRptkqafTL2mdQQZo=",
+        "owner": "chinrw",
+        "repo": "zj-sysinfo",
+        "rev": "8dd36991606e63f5b3c8027c941be5979fdb2110",
+        "type": "github"
+      },
+      "original": {
+        "owner": "chinrw",
+        "repo": "zj-sysinfo",
         "type": "github"
       }
     },
