@@ -199,8 +199,10 @@ let
       "pyright-lsp@claude-plugins-official" = true;
       "clangd-lsp@claude-plugins-official" = true;
       "andrej-karpathy-skills@karpathy-skills" = true;
-      "superpowers@claude-plugins-official" = true;
+      "mattpocock-skills@mattpocock" = true;
+      "superpowers@claude-plugins-official" = false;
       "github@claude-plugins-official" = true;
+      "codex@openai-codex" = true;
       "claude-hud@claude-hud" = true;
     };
     extraKnownMarketplaces = {
@@ -210,10 +212,22 @@ let
           repo = "forrestchang/andrej-karpathy-skills";
         };
       };
+      mattpocock = {
+        source = {
+          source = "github";
+          repo = "mattpocock/skills";
+        };
+      };
       claude-hud = {
         source = {
           source = "github";
           repo = "jarrodwatts/claude-hud";
+        };
+      };
+      openai-codex = {
+        source = {
+          source = "github";
+          repo = "openai/codex-plugin-cc";
         };
       };
     };
