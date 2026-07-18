@@ -114,6 +114,11 @@
       flake = false;
     };
 
+    oh-my-opencode-slim = {
+      url = "github:alvinunreal/oh-my-opencode-slim?ref=master";
+      flake = false;
+    };
+
     mtg-agent-skill = {
       url = "github:chinrw/mtg-agent-skill?ref=main";
       flake = false;

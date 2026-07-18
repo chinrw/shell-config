@@ -97,6 +97,7 @@ in
     (import ./programs/yazi.nix { inherit config; })
   ]
   ++ lib.optionals (!smallNode) [
+    ./programs/opencode.nix
     (import ./programs/claude-code {
       inherit
         lib
@@ -254,7 +255,6 @@ in
         man-pages
         pyright
         basedpyright
-        opencode
         tailspin # 🌀 A log file highlighter
         rename
 
