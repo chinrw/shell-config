@@ -5,29 +5,36 @@
   ...
 }:
 let
-  # DeepSeek tiers used in this config.
-  deepseekPro = "deepseek-v4-pro"; # strongest — fallback + manual /model pro escalation
-  deepseekFlash = "deepseek-v4-flash"; # mid — primary chat model + auxiliary chores
+  # DeepSeek tiers — fallback chain + manual /model deepseek[-flash] only.
+  deepseekPro = "deepseek-v4-pro";
+  deepseekFlash = "deepseek-v4-flash";
 
-  # Vision-capable model for the auxiliary "vision" role. Both DeepSeek v4
-  # tiers are text-only (confirmed against models.dev: modalities.input =
-  # ["text"], no "attachment") — flash cannot see images. kimi-k2.6 (the
-  # non "-code" Kimi K2 slug, confirmed present on this account's opencode
-  # Zen "Go" plan) reports attachment:true with image+video input.
+  # Video-capable model for the auxiliary "vision" role (Go plan). The aux
+  # path sends whole videos as video_url blocks, which the Codex route does
+  # not accept (input_image only) — so this one role stays off Codex.
   kimiVision = "kimi-k2.6";
 
-  # GLM 5.2 via the same Go plan — reserved for the auxiliary
-  glmCompression = "glm-5.2";
+  # GPT-5.6 models reached through Codex CLI's ChatGPT subscription login.
+  # Luna is the high-volume default; Terra and Sol remain explicit /model
+  # escalations for tasks that need progressively more capability.
+  codexLuna = "gpt-5.6-luna";
+  codexTerra = "gpt-5.6-terra";
+  codexSol = "gpt-5.6-sol";
+
+  # Empty base_url/api_key overwrite the stale Go-gateway keys the additive
+  # config merge would otherwise leave behind when a role moves onto Codex.
+  codexTarget = model: {
+    provider = "openai-codex";
+    inherit model;
+    base_url = "";
+    api_key = "";
+  };
 
   # ── opencode Zen "Go" plan gateway ──────────────────────────────
-  # OpenAI-compatible multi-model endpoint. Hermes' DeepSeek tiers now
-  # bill against this Go plan instead of api.deepseek.com. provider
-  # "custom" + explicit base_url/api_key is hermes' generic
-  # OpenAI-compatible shape — the form every target in this file now
-  # uses, replacing the built-in "deepseek" named provider, which
-  # hardcoded api.deepseek.com + DEEPSEEK_API_KEY. The same key backs
-  # the switchable `opencode-go` custom_provider below, which exposes
-  # every Go-plan model (glm/qwen/kimi/minimax/…) to the /model picker.
+  # OpenAI-compatible multi-model endpoint, now only behind the legacy
+  # `/model pro` shortcut and the switchable `opencode-go` custom provider.
+  # provider "custom" + explicit base_url/api_key is Hermes' generic
+  # OpenAI-compatible shape.
   opencodeGoEndpoint = "https://opencode.ai/zen/go/v1";
 
   goBase = {
@@ -39,24 +46,10 @@ let
   # A specific Go-plan model reached through the Go gateway.
   goTarget = model: goBase // { inherit model; };
 
-  # Shared target for the flash tier (deepseek-v4-flash via the Go
-  # gateway). Used by every text-only auxiliary role and — since the
-  # local llama was retired — by delegation and the fallback's last
-  # entry too.
-  flashAuxTarget = goTarget deepseekFlash;
-
-  # Vision-capable target for the auxiliary "vision" role only — flash
-  # can't see images, so this role needs its own target (see kimiVision
-  # above).
-  visionAuxTarget = goTarget kimiVision;
-
-  # ── Native DeepSeek API (fallback only) ─────────────────────────
-  # The opencode Go plan that backs the primary/delegation/auxiliary
-  # roles above went down, and the fallback chain previously ran on that
-  # SAME gateway — so a Go-plan outage failed the whole chain with no
-  # backstop. Point the fallback at DeepSeek's native API instead: a
-  # different provider and a different credential (DEEPSEEK_API_KEY),
-  # independent of the Go plan, so a Go outage now falls back cleanly.
+  # ── Native DeepSeek API (fallback + manual aliases) ──────────────
+  # Keep a route independent of the OpenCode Go plan and its credential.
+  # This backs the fallback chain on Hermes' default runtime plus the manual
+  # `/model deepseek` and `/model deepseek-flash` switches.
   #
   # provider = "deepseek" is hermes' built-in named provider
   # (plugins/model-providers/deepseek): it activates DeepSeekProfile, which
@@ -76,6 +69,39 @@ let
     base_url = "https://api.deepseek.com/v1";
     inherit model;
   };
+
+  # Codex aux target with the DeepSeek backstop: when the explicit Codex
+  # provider fails or can't build a client, hermes walks the per-task
+  # auxiliary.<task>.fallback_chain (auxiliary_client.py:3950).
+  codexAuxTarget =
+    model:
+    (codexTarget model)
+    // {
+      fallback_chain = [
+        (deepseekApiTarget deepseekPro)
+        (deepseekApiTarget deepseekFlash)
+      ];
+    };
+
+  # Compatibility bridge for the pinned Hermes revision: its app-server
+  # adapter selects the Codex runtime but does not forward a live /model
+  # switch or reasoning effort into turn/start. Codex 0.144.5 supports both
+  # fields, so this sitecustomize hook injects them per turn. It also remaps
+  # the picker's openai-api row to openai-codex (subscription billing).
+  # Remove it once upstream covers these.
+  codexAppServerBridge = pkgs.writeTextDir "${pkgs.python312.sitePackages}/sitecustomize.py" (
+    builtins.readFile ./hermes-codex-app-server-sitecustomize.py
+  );
+
+  # Same codex/claude builds home-manager installs — nix-provided so they
+  # survive container recreation (replacing the npm-global copies).
+  codexPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  claudePackage = inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
+  # ── Dashboard ───────────────────────────────────────────────────
+  dashboardPort = 9119;
+  dashboardWaitSeconds = 30;
+  dashboardCmd = "${pkgs.docker}/bin/docker exec --user hermes hermes-agent /data/current-package/bin/hermes dashboard";
 in
 {
   imports = [ inputs.hermes-agent.nixosModules.default ];
@@ -102,6 +128,32 @@ in
     format = "dotenv";
     owner = "hermes";
     mode = "0400";
+  };
+
+  # Dashboard credentials are kept separately from hermes-env. Hermes hashes
+  # the plaintext login password in memory when loading the basic-auth plugin;
+  # the independent session-signing key keeps sessions valid across restarts.
+  sops.secrets."hermes-dashboard-password" = {
+    sopsFile = ../../secrets/hermes-dashboard.yaml;
+    key = "dashboard/password";
+    owner = "hermes";
+    mode = "0400";
+  };
+  sops.secrets."hermes-dashboard-session-secret" = {
+    sopsFile = ../../secrets/hermes-dashboard.yaml;
+    key = "dashboard/session_secret";
+    owner = "hermes";
+    mode = "0400";
+  };
+
+  sops.templates."hermes-dashboard.env" = {
+    owner = "hermes";
+    mode = "0400";
+    content = ''
+      HERMES_DASHBOARD_BASIC_AUTH_USERNAME=chin39
+      HERMES_DASHBOARD_BASIC_AUTH_PASSWORD=${config.sops.placeholder."hermes-dashboard-password"}
+      HERMES_DASHBOARD_BASIC_AUTH_SECRET=${config.sops.placeholder."hermes-dashboard-session-secret"}
+    '';
   };
 
   # ── Service ─────────────────────────────────────────────────────
@@ -143,100 +195,91 @@ in
         "NO_PROXY=192.168.0.0/24,127.0.0.1,localhost"
         "--env"
         "TELEGRAM_PROXY=http://192.168.0.240:10809"
+
+        # Load the app-server model bridge in Hermes' sealed Python, and put
+        # the host-provided bubblewrap on the container PATH so Codex can use
+        # its normal Linux sandbox without the bundled-fallback warning.
+        "--env"
+        "PYTHONPATH=${codexAppServerBridge}/${pkgs.python312.sitePackages}"
+        "--env"
+        "PATH=${pkgs.bubblewrap}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${codexPackage}/bin:${claudePackage}/bin"
       ];
     };
 
     environmentFiles = [
       config.sops.secrets."hermes-env".path
+      config.sops.templates."hermes-dashboard.env".path
     ];
 
     settings = {
-      # Primary chat model: deepseek-v4-flash — the mid tier, carrying
-      # main conversations and orchestration. It now runs through the
-      # opencode Zen "Go" gateway (goBase: provider "custom" + base_url
-      # opencode.ai/zen/go/v1 + OPENCODE_API_KEY) instead of the built-in
-      # "deepseek" named provider that hit api.deepseek.com directly.
+      # Primary chat model: Luna via Codex app-server and the Codex CLI's
+      # ChatGPT subscription login. xhigh is configured under agent below.
       #
-      # base_url/api_key are pinned explicitly ON PURPOSE. Hermes
-      # reconciles these managed settings into the stateful
-      # ~/.hermes/config.yaml with an additive deep-merge (hermes_cli/
-      # config.py: _deep_merge / get_missing_config_fields): it OVERWRITES
-      # keys we set but NEVER prunes keys we drop. Omitting base_url/api_key
-      # would leave the previous endpoint behind as an orphan, so the
-      # explicit Go-gateway values give the merge something to overwrite
-      # on rebuild.
-      #
-      # The orchestrator runs on this model and hands simpler sub-steps
-      # down to subagents via `delegation` below. When flash errors out
-      # (5xx/timeout/rate-limit), fallback_providers escalates to DeepSeek
-      # Pro, then retries flash — all via the Go gateway (the local llama
-      # backstop was retired; see fallback_providers).
-      model = goBase // {
-        default = deepseekFlash;
+      # Empty base_url/api_key values are deliberate. Hermes reconciles these
+      # managed settings into its stateful config.yaml with an additive merge:
+      # it overwrites keys we set but does not prune dropped keys. Explicitly
+      # clearing both removes the previous OpenCode Go endpoint and credential
+      # reference so openai-codex can resolve the Codex CLI OAuth session.
+      model = {
+        default = codexLuna;
+        provider = "openai-codex";
+        openai_runtime = "codex_app_server";
+        base_url = "";
+        api_key = "";
       };
 
-      # Subagent delegation — delegate_task spawns child agents on
-      # deepseek-v4-flash via the Go gateway (formerly the local llama.cpp
-      # via the loader-shim, retired when the Windows box went away).
-      # delegate_tool.py uses delegation.base_url verbatim when set;
-      # `model` must be explicit (goTarget supplies it), or an empty value
-      # would inherit the parent's name unresolved.
+      # Default Codex reasoning level, forwarded per turn by the bridge.
+      # Adjust live per session with `/reasoning <level>`.
+      agent.reasoning_effort = "xhigh";
+
+      # Subagent delegation — children run on Luna via the Codex OAuth
+      # responses route (delegate_tool.py detects provider openai-codex; no
+      # app-server binary involved). They inherit fallback_providers, so a
+      # subscription outage drops them to the native DeepSeek chain.
       #
-      # Tuning merged onto the Go flash target (schema defaults live in
-      # hermes_cli/config.py:1388 "delegation"):
+      # Tuning (schema defaults live in hermes_cli/config.py:1388):
       #   max_concurrent_children 4 — parallel children per batch (def 3).
-      #   max_spawn_depth 2 — let depth-1 children spawn their OWN workers
-      #     for nested orchestration (def 1 = flat, leaf children only;
-      #     clamped to [1,3]). Kept at 2, not 3 to cap how many concurrent
-      #     Go-plan calls a deep tree can fan out into.
-      #   child_timeout_seconds 900 — roomier per-child wall-clock cap
-      #     (def 600) for large delegated tasks.
-      delegation = (goTarget deepseekFlash) // {
+      #   max_spawn_depth 2 — depth-1 children may spawn their own workers
+      #     (def 1 = flat; clamped to [1,3]).
+      #   child_timeout_seconds 900 — roomier per-child cap (def 600).
+      delegation = (codexTarget codexLuna) // {
         max_concurrent_children = 4;
         max_spawn_depth = 2;
         child_timeout_seconds = 900;
       };
 
-      # Auxiliary side-task models. Every text-only role runs on
-      # deepseek-v4-flash via the Go gateway (flashAuxTarget).
-      # title_generation, session_search, skills_hub and mcp were
-      # previously pinned to the local llama, but that timed out whenever
-      # the Windows llama-server (192.168.0.101:8087) was down ("Auxiliary
-      # title generation failed: Request timed out"); routing them through
-      # the Go plan removes that dependency. NO role uses Pro — the
-      # upstream schema comments uniformly recommend cheap/fast models
-      # here, and the explicit flash pins keep these chores off Pro even
-      # if the primary tier is raised.
+      # Auxiliary side-task models — subscription-first: text chores on Luna,
+      # compression on Terra, each carrying a native-DeepSeek fallback_chain
+      # so a Codex outage degrades to DeepSeek instead of failing.
       #
-      # vision is the one role that isn't text-only, so it can't share
-      # flashAuxTarget — deepseek-v4-flash is text-only (no "attachment"
-      # in its models.dev entry) and silently can't see images. It's
-      # pinned to visionAuxTarget (kimi-k2.6, image+video capable) instead.
-      #
-      # Note: auxiliary clients (agent/auxiliary_client.py) do NOT walk the
-      # top-level fallback_providers chain — they have their own
-      # credential/payment fallback machinery — so an aux call still fails
-      # if the Go gateway itself is unreachable; these are deliberately
-      # non-critical chores.
+      # Chain trigger coverage (auxiliary_client.py:6925 should_fallback /
+      # is_capacity_error): payment 402s, rate-limit 429s, connection and
+      # timeout errors, allow-list 400s ("model incompatible with route"),
+      # invalid responses — plus OAuth credentials that can't build a client
+      # at all (_try_configured_fallback_for_unavailable_client). The one
+      # exemption upstream enforces for explicit providers is an in-flight
+      # 401: after any credential refresh fails the call aborts WITHOUT
+      # walking the chain, and keeps aborting while the cached token still
+      # builds a client. Recovery from a revoked login is manual: codex login.
       auxiliary = {
-        # Formerly local-pinned, now on the Go flash tier.
-        title_generation = flashAuxTarget;
-        session_search = flashAuxTarget;
-        skills_hub = flashAuxTarget;
-        mcp = flashAuxTarget;
+        title_generation = codexAuxTarget codexLuna;
+        session_search = codexAuxTarget codexLuna;
+        skills_hub = codexAuxTarget codexLuna;
+        mcp = codexAuxTarget codexLuna;
+        approval = codexAuxTarget codexLuna;
+        web_extract = codexAuxTarget codexLuna;
+        triage_specifier = codexAuxTarget codexLuna;
+        curator = codexAuxTarget codexLuna;
 
-        # Already flash: web summarisation, spec expansion, danger
-        # classification, skill-curation review.
-        approval = flashAuxTarget;
-        web_extract = flashAuxTarget;
-        triage_specifier = flashAuxTarget;
-        curator = flashAuxTarget;
+        # Video understanding. Images rarely reach this role: with Luna as
+        # main model, the native fast path (vision_tools.py:749) feeds them
+        # straight into the Codex turn as input_image — subscription-billed.
+        # Video has no Codex route, so it stays on the Go plan's kimi.
+        vision = goTarget kimiVision;
 
-        # Image understanding — needs a vision-capable model, not flash.
-        vision = visionAuxTarget;
-
-        # Compression: GLM 5.2 (strongest summarizer on the Go plan)
-        compression = goTarget glmCompression;
+        # Compression — upstream has dedicated Codex handling (272K cap,
+        # codex_gpt55_autoraise); DeepSeek chain backstops it like the rest.
+        compression = codexAuxTarget codexTerra;
       };
 
       compression = {
@@ -246,9 +289,20 @@ in
         protect_last_n = 20;
       };
 
-      # Quick-switch alias `/model pro` — manually escalate from the flash
-      # primary up to the stronger DeepSeek Pro tier for a hard session.
+      # Quick model switches. Luna/Terra/Sol use ChatGPT subscription auth;
+      # DeepSeek aliases use its native API, while `pro` retains the previous
+      # OpenCode Go-plan shortcut.
       model_aliases = {
+        luna = codexTarget codexLuna;
+        terra = codexTarget codexTerra;
+        sol = codexTarget codexSol;
+
+        # Native DeepSeek routes remain available even while the main model
+        # uses the ChatGPT subscription-backed Codex runtime.
+        deepseek = deepseekApiTarget deepseekPro;
+        deepseek-flash = deepseekApiTarget deepseekFlash;
+
+        # Existing Go-plan shortcut retained for compatibility.
         pro = goTarget deepseekPro;
       };
 
@@ -277,23 +331,19 @@ in
         }
       ];
 
-      # Fallback chain — walked when the primary errors (5xx, timeout,
-      # rate-limit, auth, connection refused). Hermes' app-level retry
-      # loop tries each entry in order before surfacing failure.
+      # Fallback chain for Hermes' own agent loop — walked on 5xx, timeout,
+      # rate-limit, auth, or connection errors. Codex app-server owns its own
+      # execution loop and does not consume this chain; switch manually to
+      # `/model deepseek` if the ChatGPT-backed Codex route is unavailable.
       # References: hermes_cli/fallback_cmd.py, gateway/run.py:712.
       # This chain ALSO governs delegation subagents: delegate_tool.py
       # inherits the parent's _fallback_chain into spawned children
       # (see tools/delegate_tool.py:1078 / :1113).
       #
-      # The fallback now runs on the NATIVE DeepSeek API (deepseekApiTarget:
-      # provider "deepseek" → api.deepseek.com + DEEPSEEK_API_KEY), NOT the
-      # opencode Go gateway the primary uses. This is deliberate: the Go plan
-      # is the thing that fails (it went down), so a same-gateway fallback was
-      # useless. Routing the fallback through a separate provider + credential
-      # gives the primary a real backstop when the Go plan is unavailable.
-      # DeepSeek Pro (stronger tier) → flash retry, mirroring the previous
-      # chain's tiers on the native slugs. The primary, delegation, auxiliary
-      # and model_aliases stay on the Go gateway untouched.
+      # It uses the NATIVE DeepSeek API (deepseekApiTarget: provider
+      # "deepseek" → api.deepseek.com + DEEPSEEK_API_KEY), not the Go gateway,
+      # so DeepSeek Pro → flash remains an independent backstop for default-
+      # runtime sessions and delegated work.
       fallback_providers = [
         (deepseekApiTarget deepseekPro)
         (deepseekApiTarget deepseekFlash)
@@ -363,11 +413,9 @@ in
     restartSec = 5;
   };
 
-  # (hermes no longer depends on the llama-loader-shim: every model role
-  # now runs on the Go gateway, so the previous after/wants ordering on
-  # llama-loader-shim.service was dropped. The shim service itself still
-  # exists in services/llama-loader-shim.nix — disable it there if the
-  # local llama is gone for good.)
+  # Hermes no longer depends on llama-loader-shim: active roles now use Codex,
+  # the Go gateway, or native DeepSeek. The shim service itself still exists
+  # in services/llama-loader-shim.nix and can be disabled separately.
 
   systemd.services.hermes-perm-watch = {
     description = "Reset /var/lib/hermes/.hermes to 2770 on attrib change";
@@ -397,4 +445,48 @@ in
       '';
     };
   };
+
+  # The upstream OCI image's HERMES_DASHBOARD=1 switch relies on s6, while
+  # this module intentionally runs a plain Ubuntu container. Start the web UI
+  # as a separate host service attached to the already-running container.
+  systemd.services.hermes-dashboard = {
+    description = "Hermes Agent Dashboard";
+    wantedBy = [ "multi-user.target" ];
+    after = [
+      "docker.service"
+      "hermes-agent.service"
+    ];
+    requires = [
+      "docker.service"
+      "hermes-agent.service"
+    ];
+    partOf = [ "hermes-agent.service" ];
+
+    serviceConfig = {
+      Type = "simple";
+      Restart = "always";
+      RestartSec = 5;
+
+      ExecStartPre = [
+        # Succeeds only once the container runs and the entrypoint has
+        # created the hermes user — no first-boot race with useradd.
+        (pkgs.writeShellScript "wait-for-hermes-container" ''
+          for _ in $(${pkgs.coreutils}/bin/seq 1 ${toString dashboardWaitSeconds}); do
+            if ${pkgs.docker}/bin/docker exec --user hermes hermes-agent true 2>/dev/null; then
+              exit 0
+            fi
+            ${pkgs.coreutils}/bin/sleep 1
+          done
+          echo "hermes-dashboard: container did not become ready" >&2
+          exit 1
+        '')
+        "-${dashboardCmd} --stop"
+      ];
+      ExecStart = "${dashboardCmd} --host 192.168.0.240 --port ${toString dashboardPort} --no-open --skip-build";
+      ExecStop = "-${dashboardCmd} --stop";
+    };
+  };
+
+  # LAN access to the dashboard.
+  networking.firewall.allowedTCPPorts = [ dashboardPort ];
 }
