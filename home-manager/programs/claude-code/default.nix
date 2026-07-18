@@ -98,6 +98,9 @@
   ...
 }:
 let
+  claudeCodePackage =
+    inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
   skillAllowlistShell =
     if skillAllowlist == null then "" else lib.concatStringsSep " " skillAllowlist;
 
@@ -180,6 +183,61 @@ let
     };
   };
 
+  # Plugin enablement declared by Nix. Rendered into settings.json as
+  # enabledPlugins (enforcedSettings below) AND consumed by
+  # pluginBootstrapActivation, because the settings key alone installs
+  # nothing: user-scope enabledPlugins only toggles plugins already present in
+  # Claude Code's mutable plugin registry (managed settings are the only scope
+  # with documented auto-install), so a fresh host needs the explicit
+  # bootstrap. false = keep installed but disabled; false entries are not
+  # bootstrapped.
+  declaredPlugins = {
+    "rust-analyzer-lsp@claude-plugins-official" = true;
+    "context7@claude-plugins-official" = true;
+    "commit-commands@claude-plugins-official" = true;
+    "security-guidance@claude-plugins-official" = true;
+    "frontend-design@claude-plugins-official" = true;
+    "pyright-lsp@claude-plugins-official" = true;
+    "clangd-lsp@claude-plugins-official" = true;
+    "andrej-karpathy-skills@karpathy-skills" = true;
+    "mattpocock-skills@mattpocock" = true;
+    "superpowers@claude-plugins-official" = false;
+    "github@claude-plugins-official" = true;
+    "codex@openai-codex" = true;
+    "claude-hud@claude-hud" = true;
+  };
+
+  # Third-party marketplaces backing the plugins above. Rendered into
+  # settings.json as extraKnownMarketplaces AND used by
+  # pluginBootstrapActivation — the settings key only declares a trusted name
+  # for the CLI, it never clones the marketplace repo.
+  declaredMarketplaces = {
+    karpathy-skills = {
+      source = {
+        source = "github";
+        repo = "forrestchang/andrej-karpathy-skills";
+      };
+    };
+    mattpocock = {
+      source = {
+        source = "github";
+        repo = "mattpocock/skills";
+      };
+    };
+    claude-hud = {
+      source = {
+        source = "github";
+        repo = "jarrodwatts/claude-hud";
+      };
+    };
+    openai-codex = {
+      source = {
+        source = "github";
+        repo = "openai/codex-plugin-cc";
+      };
+    };
+  };
+
   # Structural settings Nix always owns. These are re-asserted on every switch
   # (enforced wins the merge in settingsActivation below). Runtime-mutable keys
   # like effortLevel / model / editorMode are intentionally NOT here — they live
@@ -190,47 +248,8 @@ let
       type = "command";
       command = "${claudeHudStatusline}";
     };
-    enabledPlugins = {
-      "rust-analyzer-lsp@claude-plugins-official" = true;
-      "context7@claude-plugins-official" = true;
-      "commit-commands@claude-plugins-official" = true;
-      "security-guidance@claude-plugins-official" = true;
-      "frontend-design@claude-plugins-official" = true;
-      "pyright-lsp@claude-plugins-official" = true;
-      "clangd-lsp@claude-plugins-official" = true;
-      "andrej-karpathy-skills@karpathy-skills" = true;
-      "mattpocock-skills@mattpocock" = true;
-      "superpowers@claude-plugins-official" = false;
-      "github@claude-plugins-official" = true;
-      "codex@openai-codex" = true;
-      "claude-hud@claude-hud" = true;
-    };
-    extraKnownMarketplaces = {
-      karpathy-skills = {
-        source = {
-          source = "github";
-          repo = "forrestchang/andrej-karpathy-skills";
-        };
-      };
-      mattpocock = {
-        source = {
-          source = "github";
-          repo = "mattpocock/skills";
-        };
-      };
-      claude-hud = {
-        source = {
-          source = "github";
-          repo = "jarrodwatts/claude-hud";
-        };
-      };
-      openai-codex = {
-        source = {
-          source = "github";
-          repo = "openai/codex-plugin-cc";
-        };
-      };
-    };
+    enabledPlugins = declaredPlugins;
+    extraKnownMarketplaces = declaredMarketplaces;
     skipAutoPermissionPrompt = true;
     # Stop Claude Code appending a `Co-Authored-By: Claude` trailer to commits.
     # CLAUDE.md already forbids it, but that relies on the model complying every
@@ -409,6 +428,90 @@ let
     fi
     ${pkgs.coreutils}/bin/rm -f "$SETTINGS_EXISTING"
   '';
+
+  # Marketplaces the plugin bootstrap must ensure exist before installing.
+  # Includes the official marketplace: Claude Code special-cases cloning it on
+  # first interactive startup, but activation on a fresh host runs earlier
+  # than that and the @claude-plugins-official installs below need it present.
+  bootstrapMarketplaces = {
+    claude-plugins-official = "anthropics/claude-plugins-official";
+  }
+  // lib.mapAttrs (_name: mp: mp.source.repo) declaredMarketplaces;
+
+  bootstrapPlugins = lib.attrNames (lib.filterAttrs (_name: enabled: enabled) declaredPlugins);
+
+  # Converge Claude Code's mutable plugin state with the declarations above.
+  # Guards check the registry entry AND the defining content it points at,
+  # not just that a directory exists: registry files and bare directories
+  # survive cache wipes, interrupted clones, and partial restores, so neither
+  # proves the marketplace/plugin is actually usable. A marketplace is healthy
+  # only with its .claude-plugin/marketplace.json manifest; a plugin cache
+  # only when it is a DIRECTORY with content — the -d test matters because
+  # `ls -A` on a regular file prints the filename, which would pass the
+  # non-empty check (no stronger universal marker exists — the LSP plugins
+  # ship without a plugin.json). The repair command differs by state (each
+  # verified against the CLI): `marketplace add` trusts the registry and
+  # reports "already on disk" WITHOUT recloning a deleted or gutted
+  # directory, so those states need `marketplace update`; `plugin install`
+  # does re-fetch a deleted or emptied cache directory (it prints "already
+  # installed" for the emptied case but still repopulates the files).
+  # Every declared marketplace and enabled plugin additionally gets an
+  # UNCONDITIONAL refresh/update pass on each switch — switch-time update,
+  # same mental model as `nix flake update`. This deliberately includes the
+  # official marketplace and its plugins: Claude Code's session-start update
+  # sweep would normally cover those, but the claude-code-nix wrapper exports
+  # DISABLE_AUTOUPDATER=1 (self-update cannot work from the read-only store)
+  # and the docs say that disables the plugin sweep with it — so on these
+  # hosts the switch is the only update path guaranteed by the documented
+  # contract, for ALL plugins. Third-party marketplaces never auto-update
+  # regardless (their autoUpdate flag is managed-settings-only). Explicit HTTPS clone URLs are deliberate —
+  # the CLI's owner/repo shorthand clones over SSH, which fails on hosts
+  # without GitHub keys. Every step warns instead of aborting so an offline
+  # switch still succeeds and the next switch retries. The subshell keeps the
+  # git PATH prefix (needed by the CLI's marketplace clone) out of later
+  # activation steps.
+  pluginBootstrapActivation =
+    ''
+      (
+      export PATH="${pkgs.git}/bin:$PATH"
+      CLAUDE_PLUGINS="${config.home.homeDirectory}/.claude/plugins"
+    ''
+    + lib.concatStrings (
+      lib.mapAttrsToList (name: repo: ''
+        mp_loc="$(${pkgs.jq}/bin/jq -r '."${name}".installLocation // ""' \
+          "$CLAUDE_PLUGINS/known_marketplaces.json" 2>/dev/null || true)"
+        if [ -z "$mp_loc" ]; then
+          run ${claudeCodePackage}/bin/claude plugin marketplace add "https://github.com/${repo}" \
+            || echo "claude-code activation: marketplace add ${name} failed; will retry next switch" >&2
+        elif [ ! -f "$mp_loc/.claude-plugin/marketplace.json" ]; then
+          run ${claudeCodePackage}/bin/claude plugin marketplace update "${name}" \
+            || echo "claude-code activation: marketplace update ${name} failed; will retry next switch" >&2
+        fi
+      '') bootstrapMarketplaces
+    )
+    + lib.concatStrings (
+      lib.mapAttrsToList (name: _repo: ''
+        run ${claudeCodePackage}/bin/claude plugin marketplace update "${name}" \
+          || echo "claude-code activation: marketplace refresh ${name} failed; will retry next switch" >&2
+      '') bootstrapMarketplaces
+    )
+    + lib.concatMapStrings (key: ''
+      plugin_loc="$(${pkgs.jq}/bin/jq -r \
+        '.plugins["${key}"] // [] | map(select(.scope == "user")) | .[0].installPath // ""' \
+        "$CLAUDE_PLUGINS/installed_plugins.json" 2>/dev/null || true)"
+      if [ -z "$plugin_loc" ] || [ ! -d "$plugin_loc" ] \
+        || [ -z "$(${pkgs.coreutils}/bin/ls -A "$plugin_loc" 2>/dev/null || true)" ]; then
+        run ${claudeCodePackage}/bin/claude plugin install "${key}" --scope user \
+          || echo "claude-code activation: plugin install ${key} failed; will retry next switch" >&2
+      fi
+    '') bootstrapPlugins
+    + lib.concatMapStrings (key: ''
+      run ${claudeCodePackage}/bin/claude plugin update "${key}" --scope user \
+        || echo "claude-code activation: plugin update ${key} failed; will retry next switch" >&2
+    '') bootstrapPlugins
+    + ''
+      )
+    '';
 in
 {
   # settings.json is NOT managed via home.file (that produces a read-only store
@@ -597,5 +700,6 @@ in
     ''
     + mcpActivation
     + settingsActivation
+    + pluginBootstrapActivation
   );
 }
