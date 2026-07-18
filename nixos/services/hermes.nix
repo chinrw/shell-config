@@ -186,13 +186,17 @@ in
       # NO_PROXY exempts:
       #   - 192.168.0.0/24 — local LAN (mirrors host config)
       #   - 127.0.0.1 / localhost — loopback
+      #   - slack.com — directly reachable; routing it through the proxy
+      #     caused duplicate posts (proxy drops the response after Slack
+      #     accepts chat.postMessage → slack_sdk's default connection-error
+      #     retry re-sends the same message)
       extraOptions = [
         "--env"
         "HTTP_PROXY=http://192.168.0.240:10809"
         "--env"
         "HTTPS_PROXY=http://192.168.0.240:10809"
         "--env"
-        "NO_PROXY=192.168.0.0/24,127.0.0.1,localhost"
+        "NO_PROXY=192.168.0.0/24,127.0.0.1,localhost,slack.com,.slack.com"
         "--env"
         "TELEGRAM_PROXY=http://192.168.0.240:10809"
 
