@@ -31,6 +31,7 @@ in
     ../services/factorio.nix
     ./kernel.nix
     ./oom-guard.nix
+    ./zram.nix
     ../services/hermes.nix
     ../services/llama-loader-shim.nix
     ../services/flaresolverr.nix
