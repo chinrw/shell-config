@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   username,
   sharedGroup,
@@ -53,24 +54,31 @@
   };
   users.users.aria2.extraGroups = [ sharedGroup ];
 
-  # The original `umask=0002` in aria2's settings was not a valid
-  # aria2 option (it logged "Unknown option: umask=0002"). We don't
-  # replicate it at the systemd level either, because:
+  # The original `umask=0002` in aria2's settings was not a valid aria2
+  # option (it logged "Unknown option: umask=0002"). We leave the nixpkgs
+  # module's UMask=0022 unchanged because:
   #   - Downloads go to /mnt/data/Downloads/aria2, a virtiofs share
-  #     whose host directories carry POSIX default ACLs granting
-  #     group `users` rwx (see vm-nix/default.nix). Inherited default
-  #     ACLs take the place of the process umask for group access,
-  #     so UMask would be redundant for downloaded files.
-  #   - The only local file aria2 writes is /var/lib/aria2/aria2.session,
-  #     which must NOT be group-writable — the nixpkgs aria2 module
-  #     already sets UMask=0022 by default, which is correct for it.
-  # Net result: leave the module default alone.
+  #     whose host directories carry POSIX default ACLs granting group
+  #     `users` rwx (see vm-nix/default.nix); inherited default ACLs govern
+  #     group access there instead of the process umask.
+  #   - The local /var/lib/aria2/aria2.session file must not be group-writable.
+  #
+  # The nixpkgs aria2 module also emits a tmpfiles rule that would chown the
+  # download directory to aria2:aria2 and chmod it 0770 on every boot/switch.
+  # UID/GID pass through virtiofs, so that destroys the host-side owner and
+  # setgid/group-sharing state managed outside this config. systemd-tmpfiles
+  # uses the first rule for a path; mkBefore puts this rule ahead of the
+  # module's hardcoded one (the module's later duplicate line is ignored with
+  # a harmless "Duplicate line for path" journal warning). The ":" prefixes
+  # mean mode/owner apply only if the directory has to be created — an
+  # existing directory is never chmodded or chowned, so tmpfiles leaves the
+  # share entirely alone.
 
-  # Ensure /var/lib/aria2/aria2.session exists before aria2 starts.
-  # Without this, the very first startup (or any startup after the
-  # file is manually deleted) prints a noisy "Failed to open input
-  # file" warning because input-file points at a non-existent path.
-  systemd.tmpfiles.rules = [
+  systemd.tmpfiles.rules = lib.mkBefore [
+    "d '${config.services.aria2.settings.dir}' :2775 :${username} :${sharedGroup} - -"
+
+    # Ensure the session file exists before aria2 starts, avoiding a noisy
+    # "Failed to open input file" warning on the first startup.
     "f /var/lib/aria2/aria2.session 0640 aria2 aria2 -"
   ];
 }

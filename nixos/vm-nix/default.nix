@@ -1,6 +1,7 @@
 {
   inputs,
   config,
+  lib,
   pkgs,
   hostname,
   username,
@@ -20,6 +21,7 @@ in
     (import ../services/aria2.nix {
       inherit
         config
+        lib
         pkgs
         username
         sharedGroup
