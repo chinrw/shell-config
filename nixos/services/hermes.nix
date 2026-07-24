@@ -83,12 +83,11 @@ let
       ];
     };
 
-  # Compatibility bridge for the pinned Hermes revision: its app-server
-  # adapter selects the Codex runtime but does not forward a live /model
-  # switch or reasoning effort into turn/start. Codex 0.144.5 supports both
-  # fields, so this sitecustomize hook injects them per turn. It also remaps
-  # the picker's openai-api row to openai-codex (subscription billing).
-  # Remove it once upstream covers these.
+  # Compatibility bridge for the pinned Hermes revision. Its picker remap is
+  # still needed to route OpenAI models through openai-codex (subscription
+  # billing). The app-server turn hook is dormant while openai_runtime is
+  # "auto", but remains available for an explicit temporary switch.
+  # Remove it once upstream covers both behaviors.
   codexAppServerBridge = pkgs.writeTextDir "${pkgs.python312.sitePackages}/sitecustomize.py" (
     builtins.readFile ./hermes-codex-app-server-sitecustomize.py
   );
@@ -200,9 +199,9 @@ in
         "--env"
         "TELEGRAM_PROXY=http://192.168.0.240:10809"
 
-        # Load the app-server model bridge in Hermes' sealed Python, and put
-        # the host-provided bubblewrap on the container PATH so Codex can use
-        # its normal Linux sandbox without the bundled-fallback warning.
+        # Load the Codex provider/picker bridge in Hermes' sealed Python. Its
+        # app-server hook is dormant on the default "auto" runtime. Keep the
+        # host-provided bubblewrap on PATH for an explicit app-server switch.
         "--env"
         "PYTHONPATH=${codexAppServerBridge}/${pkgs.python312.sitePackages}"
         "--env"
@@ -216,8 +215,9 @@ in
     ];
 
     settings = {
-      # Primary chat model: Luna via Codex app-server and the Codex CLI's
-      # ChatGPT subscription login. xhigh is configured under agent below.
+      # Primary chat model: Luna via Hermes' native agent loop and the Codex
+      # Responses OAuth route backed by the Codex CLI's ChatGPT login. xhigh
+      # is configured under agent below.
       #
       # Empty base_url/api_key values are deliberate. Hermes reconciles these
       # managed settings into its stateful config.yaml with an additive merge:
@@ -227,12 +227,12 @@ in
       model = {
         default = codexLuna;
         provider = "openai-codex";
-        openai_runtime = "codex_app_server";
+        openai_runtime = "auto";
         base_url = "";
         api_key = "";
       };
 
-      # Default Codex reasoning level, forwarded per turn by the bridge.
+      # Default reasoning level for the Hermes-managed Codex Responses client.
       # Adjust live per session with `/reasoning <level>`.
       agent.reasoning_effort = "xhigh";
 
@@ -335,10 +335,9 @@ in
         }
       ];
 
-      # Fallback chain for Hermes' own agent loop — walked on 5xx, timeout,
-      # rate-limit, auth, or connection errors. Codex app-server owns its own
-      # execution loop and does not consume this chain; switch manually to
-      # `/model deepseek` if the ChatGPT-backed Codex route is unavailable.
+      # Fallback chain for Hermes' agent loop — now active for the primary
+      # Codex Responses route and walked on 5xx, timeout, rate-limit, auth, or
+      # connection errors.
       # References: hermes_cli/fallback_cmd.py, gateway/run.py:712.
       # This chain ALSO governs delegation subagents: delegate_tool.py
       # inherits the parent's _fallback_chain into spawned children
