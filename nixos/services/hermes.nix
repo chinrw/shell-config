@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   inputs,
   ...
@@ -15,8 +16,8 @@ let
   kimiVision = "kimi-k2.6";
 
   # GPT-5.6 models reached through Codex CLI's ChatGPT subscription login.
-  # Luna is the high-volume default; Terra and Sol remain explicit /model
-  # escalations for tasks that need progressively more capability.
+  # Keep the model IDs bare: openai-codex resolves them through its Codex
+  # catalog and does not use the OpenCode `openai/` naming convention.
   codexLuna = "gpt-5.6-luna";
   codexTerra = "gpt-5.6-terra";
   codexSol = "gpt-5.6-sol";
@@ -96,6 +97,60 @@ let
   # survive container recreation (replacing the npm-global copies).
   codexPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
   claudePackage = inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
+  # The upstream NixOS module currently renders settings only to the default
+  # profile's config.yaml. Named Hermes profiles each have an independent
+  # config.yaml under profiles/<name>/, so merge the Nix-owned leaves into
+  # those existing files with the same helper upstream uses for the default
+  # profile. User-added settings remain intact.
+  #
+  # Only leaves that actually differ from the upstream default are set here:
+  # `agent.tool_use_enforcement` is already "auto" upstream
+  # (hermes_cli/config.py), so pinning it would add nine copies of a no-op.
+  profileConfig = model: reasoningEffort: toolsets: {
+    model = (codexTarget model) // {
+      openai_runtime = "auto";
+    };
+    agent.reasoning_effort = reasoningEffort;
+
+    # `platform_toolsets.cli` is what direct CLI sessions and Kanban workers
+    # resolve. Every entry is a real 0.19.0 toolset; `gateway` is a process-
+    # level dispatcher, not an agent toolset in this Hermes release.
+    platform_toolsets.cli = toolsets;
+  };
+
+  # Profile-specific model/effort/toolsets, descriptions, and SOULs live in
+  # a separate declarative file. Generic Hermes/Kanban/runtime settings remain
+  # in this service module.
+  specialistProfileData = import ./hermes-profile-definitions.nix {
+    inherit
+      profileConfig
+      codexLuna
+      codexTerra
+      codexSol
+      ;
+  };
+  specialistProfiles = specialistProfileData.specialistProfiles;
+  specialistProfileDescriptions = specialistProfileData.specialistProfileDescriptions;
+  specialistSouls = specialistProfileData.specialistSouls;
+
+  # Both asset files are JSON on purpose: configMergeScript reads its first
+  # argument with json.load and only its *target* is YAML. Writing the
+  # description side as .json keeps that contract visible -- an earlier
+  # revision used lib.generators.toYAML, which happens to emit JSON today and
+  # would have broken silently against a real YAML emitter.
+  specialistProfileAssets = lib.mapAttrs (name: settings: {
+    settingsFile = pkgs.writeText "hermes-profile-${name}.json" (builtins.toJSON settings);
+    descriptionFile = pkgs.writeText "hermes-profile-description-${name}.json" (
+      builtins.toJSON {
+        description = specialistProfileDescriptions.${name};
+        description_auto = false;
+      }
+    );
+    soulFile = pkgs.writeText "hermes-soul-${name}.md" specialistSouls.${name};
+  }) specialistProfiles;
+
+  hermesConfigMerge = pkgs.callPackage (inputs.hermes-agent + "/nix/configMergeScript.nix") { };
 
   # ── Dashboard ───────────────────────────────────────────────────
   dashboardPort = 9119;
@@ -215,9 +270,8 @@ in
     ];
 
     settings = {
-      # Primary chat model: Luna via Hermes' native agent loop and the Codex
-      # Responses OAuth route backed by the Codex CLI's ChatGPT login. xhigh
-      # is configured under agent below.
+      # Primary chat model: Terra via Hermes' native agent loop and the Codex
+      # Responses OAuth route backed by the Codex CLI's ChatGPT login.
       #
       # Empty base_url/api_key values are deliberate. Hermes reconciles these
       # managed settings into its stateful config.yaml with an additive merge:
@@ -225,7 +279,7 @@ in
       # clearing both removes the previous OpenCode Go endpoint and credential
       # reference so openai-codex can resolve the Codex CLI OAuth session.
       model = {
-        default = codexLuna;
+        default = codexTerra;
         provider = "openai-codex";
         openai_runtime = "auto";
         base_url = "";
@@ -234,7 +288,11 @@ in
 
       # Default reasoning level for the Hermes-managed Codex Responses client.
       # Adjust live per session with `/reasoning <level>`.
-      agent.reasoning_effort = "xhigh";
+      #
+      # tool_use_enforcement is deliberately not pinned: "auto" is already the
+      # upstream default and it has never been set in the stateful config, so
+      # declaring it would only add a leaf that always matches the default.
+      agent.reasoning_effort = "medium";
 
       # Subagent delegation — children run on Luna via the Codex OAuth
       # responses route (delegate_tool.py detects provider openai-codex; no
@@ -272,7 +330,21 @@ in
         mcp = codexAuxTarget codexLuna;
         approval = codexAuxTarget codexLuna;
         web_extract = codexAuxTarget codexLuna;
-        triage_specifier = codexAuxTarget codexLuna;
+        triage_specifier = (codexAuxTarget codexTerra) // {
+          reasoning_effort = "high";
+          timeout = 180;
+        };
+        kanban_decomposer = (codexAuxTarget codexTerra) // {
+          reasoning_effort = "xhigh";
+          timeout = 300;
+        };
+        profile_describer = (codexAuxTarget codexLuna) // {
+          reasoning_effort = "high";
+          timeout = 180;
+        };
+        goal_judge = (codexAuxTarget codexTerra) // {
+          reasoning_effort = "high";
+        };
         curator = codexAuxTarget codexLuna;
 
         # Video understanding. Images rarely reach this role: with Luna as
@@ -362,6 +434,26 @@ in
         tirith_enabled = true;
         tirith_fail_open = false;
       };
+
+      kanban = {
+        dispatch_in_gateway = true;
+        dispatch_interval_seconds = 15;
+        failure_limit = 2;
+        auto_decompose = true;
+        auto_decompose_per_tick = 3;
+        orchestrator_profile = "orchestrator";
+        default_assignee = "orchestrator";
+        auto_subscribe_on_create = true;
+        auto_promote_children = true;
+        max_in_progress = 4;
+        max_in_progress_per_profile = 2;
+      };
+
+      dashboard.kanban = {
+        lane_by_profile = true;
+        include_archived_by_default = false;
+        render_markdown = true;
+      };
     };
 
     extraPackages = with pkgs; [
@@ -414,6 +506,75 @@ in
 
     restart = "always";
     restartSec = 5;
+  };
+
+  # Upstream has no services.hermes-agent.profiles option yet. Keep Profile
+  # model/effort/toolsets, descriptions, and SOULs declarative without
+  # replacing the rest of each Profile's stateful config. Profiles are created
+  # with the official `hermes profile create --clone` path first; a missing one
+  # fails loudly instead of silently yielding a partial identity.
+  #
+  # This is a unit rather than a system.activationScripts entry on purpose.
+  # `exit 1` inside an activation snippet aborts the *whole* activation, and
+  # the snippets that carry no declared dependency (modprobe, stdio, udevd,
+  # usrbinenv, var) are ordered after this one -- so one missing Hermes
+  # directory would silently skip unrelated system setup and fail the switch.
+  # As a unit the blast radius is Hermes: hermes-agent.service requires this
+  # one, so Hermes refuses to start while the rest of the system activates
+  # normally. `hermes profile create` writes under stateDir, so ordering after
+  # the upstream setup unit is enough -- no activation-time hook needed.
+  #
+  # Note SOUL.md is Nix-owned from here on: edits made through the Hermes CLI
+  # or TUI are overwritten on the next start of this unit.
+  systemd.services.hermes-agent-profile-settings = {
+    description = "Nix-managed Hermes Profile settings, descriptions, and SOULs";
+    wantedBy = [ "multi-user.target" ];
+    before = [ "hermes-agent.service" ];
+    requiredBy = [ "hermes-agent.service" ];
+    path = [ pkgs.coreutils ];
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+
+    script = ''
+      profiles_root=${config.services.hermes-agent.stateDir}/.hermes/profiles
+
+      ${lib.concatStringsSep "\n" (
+        lib.mapAttrsToList (name: assets: ''
+          profile_dir="$profiles_root/${name}"
+          if [ ! -d "$profile_dir" ]; then
+            echo "hermes-agent: required Profile '${name}' is missing at $profile_dir" >&2
+            echo "hermes-agent: create it with 'hermes profile create ${name} --clone --no-alias' first" >&2
+            exit 1
+          fi
+
+          # Require the cloned config.yaml too. Merging into a missing file
+          # would produce one holding *only* the Nix-owned leaves, which reads
+          # like a working Profile while having lost every other setting.
+          if [ ! -f "$profile_dir/config.yaml" ]; then
+            echo "hermes-agent: Profile '${name}' has no config.yaml at $profile_dir" >&2
+            echo "hermes-agent: recreate it with 'hermes profile create ${name} --clone --no-alias'" >&2
+            exit 1
+          fi
+
+          ${hermesConfigMerge} ${assets.settingsFile} "$profile_dir/config.yaml"
+          install -m 0660 ${assets.soulFile} "$profile_dir/SOUL.md"
+          ${hermesConfigMerge} ${assets.descriptionFile} "$profile_dir/profile.yaml"
+          chown ${config.services.hermes-agent.user}:${config.services.hermes-agent.group} "$profile_dir/config.yaml" "$profile_dir/SOUL.md" "$profile_dir/profile.yaml"
+          chmod 0660 "$profile_dir/config.yaml"
+          chmod 0660 "$profile_dir/SOUL.md"
+          chmod 0644 "$profile_dir/profile.yaml"
+
+          # Profile directories have drifted: some are 0755, some 0777. Pin
+          # them to the setgid group-owned mode upstream uses for its own
+          # stateDir subdirectories.
+          chown ${config.services.hermes-agent.user}:${config.services.hermes-agent.group} "$profile_dir"
+          chmod 2770 "$profile_dir"
+        '') specialistProfileAssets
+      )}
+    '';
   };
 
   # Hermes no longer depends on llama-loader-shim: active roles now use Codex,
