@@ -40,7 +40,7 @@ in
       "/home/chin39/Documents/container/jellyfin/config-jellyfin:/config:rw"
       "${jellyfinCjkFonts}/share/fonts/opentype/noto-cjk:/config/fonts:ro"
       "/home/chin39/mounts:/mounts:rw"
-      "/mnt/data/video/jellyfin:/jellyfin-media:rw"
+      "/mnt/data/Video/jellyfin:/jellyfin-media:rw"
     ];
     ports = [
       "8096:8096/tcp"
