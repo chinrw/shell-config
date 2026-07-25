@@ -1,0 +1,34 @@
+From 9d9eaf399fbcba14e883c34a53dffcdfe5143669 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E9=A3=8E=E6=89=87=E6=BB=91=E7=BF=94=E7=BF=BC?=
+ <Fangliding.fshxy@outlook.com>
+Date: Sun, 10 May 2026 00:54:57 +0800
+Subject: [PATCH] XHTTP client: Fix potential memory leak in stream-up/one
+ (#6095)
+
+Fixes https://github.com/XTLS/Xray-core/pull/6087#issuecomment-4402474552
+---
+ transport/internet/splithttp/client.go | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/transport/internet/splithttp/client.go b/transport/internet/splithttp/client.go
+index c156509a0c46..47f6560a92b5 100644
+--- a/transport/internet/splithttp/client.go
++++ b/transport/internet/splithttp/client.go
+@@ -71,6 +71,7 @@ func (c *DefaultDialerClient) OpenStream(ctx context.Context, url string, sessio
+ 				errors.LogInfoInner(ctx, err, "failed to "+method+" "+url)
+ 			}
+ 			gotConn.Close()
++			common.Close(body)
+ 			wrc.Close()
+ 			return
+ 		}
+@@ -80,6 +81,7 @@ func (c *DefaultDialerClient) OpenStream(ctx context.Context, url string, sessio
+ 		if resp.StatusCode != 200 || uploadOnly { // stream-up
+ 			io.Copy(io.Discard, resp.Body)
+ 			resp.Body.Close() // if it is called immediately, the upload will be interrupted also
++			common.Close(body)
+ 			wrc.Close()
+ 			return
+ 		}
+-- 
+2.43.0

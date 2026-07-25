@@ -60,7 +60,7 @@
     # oomd.conf, spelled out (upstream defaults).
     settings.OOM = {
       SwapUsedLimit = "90%";
-      DefaultMemoryPressureLimit = "80%";
+      DefaultMemoryPressureLimit = "90%";
       DefaultMemoryPressureDurationSec = "30s";
     };
   };
