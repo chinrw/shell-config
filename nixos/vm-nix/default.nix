@@ -9,6 +9,12 @@
 }:
 let
   sharedGroup = "users";
+  # Backport Xray #6095; drop when stable Nixpkgs includes it.
+  xrayPatched = pkgs.xray.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [
+      ../../patches/xray/9d9eaf3-close-xhttp-body.patch
+    ];
+  });
 in
 {
   imports = [
@@ -191,6 +197,7 @@ in
 
   services.xray = {
     enable = true;
+    package = xrayPatched;
     settingsFile = "/etc/xray/xray_client.conf";
   };
 
