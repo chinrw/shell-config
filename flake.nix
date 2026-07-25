@@ -119,6 +119,16 @@
       flake = false;
     };
 
+    opencode-goal-plugin = {
+      url = "github:prevalentWare/opencode-goal-plugin?ref=main";
+      flake = false;
+    };
+
+    bun2nix = {
+      url = "github:nix-community/bun2nix";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     mtg-agent-skill = {
       url = "github:chinrw/mtg-agent-skill?ref=main";
       flake = false;
@@ -126,6 +136,11 @@
 
     khazix-skills = {
       url = "github:KKKKhazix/khazix-skills?ref=main";
+      flake = false;
+    };
+
+    mattpocock-skills = {
+      url = "github:mattpocock/skills?ref=main";
       flake = false;
     };
 
