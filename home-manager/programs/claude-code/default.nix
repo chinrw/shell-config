@@ -98,8 +98,7 @@
   ...
 }:
 let
-  claudeCodePackage =
-    inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  claudeCodePackage = inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   skillAllowlistShell =
     if skillAllowlist == null then "" else lib.concatStringsSep " " skillAllowlist;
@@ -107,6 +106,65 @@ let
   commandDenylistShell = lib.concatStringsSep " " commandDenylist;
 
   ruleDenylistShell = lib.concatStringsSep " " ruleDenylist;
+
+  mattSkillSources =
+    let
+      skillsIn =
+        category:
+        let
+          root = "${inputs.mattpocock-skills}/skills/${category}";
+          entries = builtins.readDir root;
+        in
+        map
+          (name: {
+            inherit name;
+            source = "${root}/${name}";
+          })
+          (
+            lib.filter (
+              name: builtins.getAttr name entries == "directory" && builtins.pathExists "${root}/${name}/SKILL.md"
+            ) (builtins.attrNames entries)
+          );
+    in
+    skillsIn "engineering" ++ skillsIn "productivity";
+
+  # ~/.agents/skills is the Agent-Skills convention shared by Codex and other
+  # harnesses (upstream's own scripts/link-skills.sh links the same two promoted
+  # buckets there). Unlike ~/.claude/skills it has no allowlist, so this is the
+  # one place to drop a skill that should not be resident in every harness.
+  # Whether a skill is model- or user-invocable is settled by its own
+  # frontmatter (`disable-model-invocation`) plus agents/openai.yaml, so this
+  # list is only for skills that do not belong here at all.
+  #
+  # setup-matt-pocock-skills scaffolds per-repo configuration for the other
+  # engineering skills. It is run once per repository, so a permanent global
+  # link is noise.
+  #
+  # Not excluded, but worth knowing about: grill-me and grill-with-docs are
+  # narrower siblings of grilling, and aihot is also linked into
+  # ~/.claude/skills below.
+  agentSkillDenylist = [
+    "setup-matt-pocock-skills"
+  ];
+
+  agentSkillSources =
+    let
+      sources = lib.filter (skill: !(lib.elem skill.name agentSkillDenylist)) (
+        [
+          {
+            name = "aihot";
+            source = "${inputs.khazix-skills}/aihot";
+          }
+        ]
+        ++ mattSkillSources
+      );
+    in
+    assert lib.length sources == lib.length (lib.unique (map (skill: skill.name) sources));
+    sources;
+
+  agentSkillLinkCommands = lib.concatMapStrings (skill: ''
+    register_agent_skill ${lib.escapeShellArg skill.name} ${lib.escapeShellArg skill.source}
+  '') agentSkillSources;
 
   baseClaudeMd = builtins.readFile ./CLAUDE.md;
   withHostExtra =
@@ -470,48 +528,149 @@ let
   # switch still succeeds and the next switch retries. The subshell keeps the
   # git PATH prefix (needed by the CLI's marketplace clone) out of later
   # activation steps.
-  pluginBootstrapActivation =
-    ''
-      (
-      export PATH="${pkgs.git}/bin:$PATH"
-      CLAUDE_PLUGINS="${config.home.homeDirectory}/.claude/plugins"
-    ''
-    + lib.concatStrings (
-      lib.mapAttrsToList (name: repo: ''
-        mp_loc="$(${pkgs.jq}/bin/jq -r '."${name}".installLocation // ""' \
-          "$CLAUDE_PLUGINS/known_marketplaces.json" 2>/dev/null || true)"
-        if [ -z "$mp_loc" ]; then
-          run ${claudeCodePackage}/bin/claude plugin marketplace add "https://github.com/${repo}" \
-            || echo "claude-code activation: marketplace add ${name} failed; will retry next switch" >&2
-        elif [ ! -f "$mp_loc/.claude-plugin/marketplace.json" ]; then
-          run ${claudeCodePackage}/bin/claude plugin marketplace update "${name}" \
-            || echo "claude-code activation: marketplace update ${name} failed; will retry next switch" >&2
-        fi
-      '') bootstrapMarketplaces
-    )
-    + lib.concatStrings (
-      lib.mapAttrsToList (name: _repo: ''
+  pluginBootstrapActivation = ''
+    (
+    export PATH="${pkgs.git}/bin:$PATH"
+    CLAUDE_PLUGINS="${config.home.homeDirectory}/.claude/plugins"
+  ''
+  + lib.concatStrings (
+    lib.mapAttrsToList (name: repo: ''
+      mp_loc="$(${pkgs.jq}/bin/jq -r '."${name}".installLocation // ""' \
+        "$CLAUDE_PLUGINS/known_marketplaces.json" 2>/dev/null || true)"
+      if [ -z "$mp_loc" ]; then
+        run ${claudeCodePackage}/bin/claude plugin marketplace add "https://github.com/${repo}" \
+          || echo "claude-code activation: marketplace add ${name} failed; will retry next switch" >&2
+      elif [ ! -f "$mp_loc/.claude-plugin/marketplace.json" ]; then
         run ${claudeCodePackage}/bin/claude plugin marketplace update "${name}" \
-          || echo "claude-code activation: marketplace refresh ${name} failed; will retry next switch" >&2
-      '') bootstrapMarketplaces
-    )
-    + lib.concatMapStrings (key: ''
-      plugin_loc="$(${pkgs.jq}/bin/jq -r \
-        '.plugins["${key}"] // [] | map(select(.scope == "user")) | .[0].installPath // ""' \
-        "$CLAUDE_PLUGINS/installed_plugins.json" 2>/dev/null || true)"
-      if [ -z "$plugin_loc" ] || [ ! -d "$plugin_loc" ] \
-        || [ -z "$(${pkgs.coreutils}/bin/ls -A "$plugin_loc" 2>/dev/null || true)" ]; then
-        run ${claudeCodePackage}/bin/claude plugin install "${key}" --scope user \
-          || echo "claude-code activation: plugin install ${key} failed; will retry next switch" >&2
+          || echo "claude-code activation: marketplace update ${name} failed; will retry next switch" >&2
       fi
-    '') bootstrapPlugins
-    + lib.concatMapStrings (key: ''
-      run ${claudeCodePackage}/bin/claude plugin update "${key}" --scope user \
-        || echo "claude-code activation: plugin update ${key} failed; will retry next switch" >&2
-    '') bootstrapPlugins
-    + ''
-      )
-    '';
+    '') bootstrapMarketplaces
+  )
+  + lib.concatStrings (
+    lib.mapAttrsToList (name: _repo: ''
+      run ${claudeCodePackage}/bin/claude plugin marketplace update "${name}" \
+        || echo "claude-code activation: marketplace refresh ${name} failed; will retry next switch" >&2
+    '') bootstrapMarketplaces
+  )
+  + lib.concatMapStrings (key: ''
+    plugin_loc="$(${pkgs.jq}/bin/jq -r \
+      '.plugins["${key}"] // [] | map(select(.scope == "user")) | .[0].installPath // ""' \
+      "$CLAUDE_PLUGINS/installed_plugins.json" 2>/dev/null || true)"
+    if [ -z "$plugin_loc" ] || [ ! -d "$plugin_loc" ] \
+      || [ -z "$(${pkgs.coreutils}/bin/ls -A "$plugin_loc" 2>/dev/null || true)" ]; then
+      run ${claudeCodePackage}/bin/claude plugin install "${key}" --scope user \
+        || echo "claude-code activation: plugin install ${key} failed; will retry next switch" >&2
+    fi
+  '') bootstrapPlugins
+  + lib.concatMapStrings (key: ''
+    run ${claudeCodePackage}/bin/claude plugin update "${key}" --scope user \
+      || echo "claude-code activation: plugin update ${key} failed; will retry next switch" >&2
+  '') bootstrapPlugins
+  + ''
+    )
+  '';
+
+  agentSkillsActivation = ''
+    AGENTS="${config.home.homeDirectory}/.agents"
+    AGENTS_SKILLS="$AGENTS/skills"
+    AGENTS_MANIFEST="$AGENTS/.shell-config-managed-skills"
+
+    run ${pkgs.coreutils}/bin/mkdir -p "$AGENTS_SKILLS"
+
+    declare -A agent_skill_sources=()
+    declare -A managed_agent_skills=()
+    register_agent_skill() {
+      local name="$1"
+      local src="$2"
+      if [ -n "''${agent_skill_sources[$name]+set}" ]; then
+        echo "claude-code activation: duplicate agent skill basename: $name" >&2
+        exit 1
+      fi
+      agent_skill_sources["$name"]="$src"
+    }
+
+    ${agentSkillLinkCommands}
+
+    # The manifest identifies links made by this activation. It lets us prune
+    # stale links after a source revision changes without touching unrelated
+    # symlinks or manually managed non-symlink paths.
+    if [ -f "$AGENTS_MANIFEST" ]; then
+      while IFS="$(printf '\t')" read -r old_name old_src; do
+        [ -n "$old_name" ] || continue
+        if [ -z "$old_src" ]; then
+          echo "claude-code activation: malformed agent skill manifest entry: $old_name" >&2
+          exit 1
+        fi
+        old_target="$AGENTS_SKILLS/$old_name"
+        if [ -L "$old_target" ]; then
+          current_src="$(${pkgs.coreutils}/bin/readlink "$old_target")"
+          if [ -n "''${agent_skill_sources[$old_name]+set}" ]; then
+            expected_src="''${agent_skill_sources[$old_name]}"
+            if [ "$current_src" != "$old_src" ] && [ "$current_src" != "$expected_src" ]; then
+              echo "claude-code activation: managed agent skill target $old_target points elsewhere" >&2
+              exit 1
+            fi
+            if [ "$current_src" = "$old_src" ] && [ "$current_src" != "$expected_src" ]; then
+              run ${pkgs.coreutils}/bin/rm "$old_target"
+            fi
+          elif [ "$current_src" != "$old_src" ]; then
+            echo "claude-code activation: managed agent skill target $old_target points elsewhere" >&2
+            exit 1
+          else
+            run ${pkgs.coreutils}/bin/rm "$old_target"
+          fi
+        fi
+      done < "$AGENTS_MANIFEST"
+    fi
+
+    link_agent_skill() {
+      local name="$1"
+      local src="$2"
+      local target="$AGENTS_SKILLS/$name"
+      [ -d "$src" ] || {
+        echo "claude-code activation: agent skill source is not a directory: $src" >&2
+        exit 1
+      }
+      [ -f "$src/SKILL.md" ] || {
+        echo "claude-code activation: agent skill source has no SKILL.md: $src" >&2
+        exit 1
+      }
+      if [ -L "$target" ]; then
+        current_src="$(${pkgs.coreutils}/bin/readlink "$target")"
+        if [ "$current_src" != "$src" ]; then
+          echo "claude-code activation: agent skill target $target points elsewhere" >&2
+          exit 1
+        fi
+      elif [ -e "$target" ]; then
+        # Preserve manually managed files and directories.
+        return 0
+      else
+        run ${pkgs.coreutils}/bin/ln -s "$src" "$target"
+      fi
+      managed_agent_skills["$name"]="$src"
+    }
+
+    for name in "''${!agent_skill_sources[@]}"; do
+      link_agent_skill "$name" "''${agent_skill_sources[$name]}"
+    done
+
+    # Guard the whole rewrite on a live run rather than wrapping each step in
+    # `run`: mktemp and the redirect below touch the filesystem directly, so
+    # under --dry-run they would leave a stray temp file that the no-op `mv`
+    # never collects -- and would fail outright on a host where ~/.agents does
+    # not exist yet, because the mkdir above is itself a `run`.
+    if [[ -v DRY_RUN ]]; then
+      echo "would write $AGENTS_MANIFEST (''${#managed_agent_skills[@]} entries)"
+    else
+      AGENTS_MANIFEST_TMP="$(${pkgs.coreutils}/bin/mktemp "$AGENTS/.shell-config-managed-skills.XXXXXX")"
+      {
+        for name in "''${!managed_agent_skills[@]}"; do
+          printf '%s\t%s\n' "$name" "''${managed_agent_skills[$name]}"
+        done
+      } | ${pkgs.coreutils}/bin/sort > "$AGENTS_MANIFEST_TMP"
+      ${pkgs.coreutils}/bin/mv "$AGENTS_MANIFEST_TMP" "$AGENTS_MANIFEST"
+    fi
+  '';
 in
 {
   # settings.json is NOT managed via home.file (that produces a read-only store
@@ -701,5 +860,6 @@ in
     + mcpActivation
     + settingsActivation
     + pluginBootstrapActivation
+    + agentSkillsActivation
   );
 }
