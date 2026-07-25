@@ -254,6 +254,21 @@ in
         "--env"
         "TELEGRAM_PROXY=http://192.168.0.240:10809"
 
+        # Keep these lowercase copies. apt honours only the lowercase spelling
+        # (verified: an unreachable http_proxy fails apt, an unreachable
+        # HTTP_PROXY does not), while curl accepts either. With the uppercase
+        # names alone, the container's first-boot provisioning split across two
+        # routes -- curl fetched the NodeSource key through the proxy while apt
+        # installed nodejs over a direct connection, which is unreliable from
+        # here. That half-finished provisioning is what left the service in a
+        # restart loop on 2026-07-25.
+        "--env"
+        "http_proxy=http://192.168.0.240:10809"
+        "--env"
+        "https_proxy=http://192.168.0.240:10809"
+        "--env"
+        "no_proxy=192.168.0.0/24,127.0.0.1,localhost,slack.com,.slack.com"
+
         # Load the Codex provider/picker bridge in Hermes' sealed Python. Its
         # app-server hook is dormant on the default "auto" runtime. Keep the
         # host-provided bubblewrap on PATH for an explicit app-server switch.
