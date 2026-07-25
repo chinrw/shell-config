@@ -8,9 +8,8 @@ let
   # Triggered by systemd's OnFailure when a restic unit fails.
   # Argument $1 = name of the failed unit (passed via %i).
   failureScript = pkgs.writeShellScript "restic-failure-log" ''
-    { echo "restic unit $1 failed"
-      ${pkgs.systemd}/bin/journalctl --user -u "$1" -n 50 --no-pager
-    } | ${pkgs.systemd}/bin/systemd-cat -p emerg -t restic-backup
+    echo "restic unit $1 failed; inspect with: journalctl --user -u $1 -n 50 --no-pager" \
+      | ${pkgs.systemd}/bin/systemd-cat -p err -t restic-backup
   '';
 in
 {
@@ -83,11 +82,13 @@ in
     # enough to confirm liveness without flooding the journal.
     progressFps = 0.2;
 
-    # Fail loudly if the virtiofs mount is unavailable. `ls` on /mnt/data
-    # traverses the directory which triggers the systemd automount; if
-    # the virtiofs device is absent or broken the mount fails and ls
-    # exits non-zero.
-    backupPrepareCommand = "${pkgs.coreutils}/bin/ls /mnt/data >/dev/null";
+    backupPrepareCommand = ''
+      # Clear stale locks left by interrupted backups.
+      ${lib.getExe config.services.restic.backups.vm-nix.package} unlock
+
+      # Trigger the automount and fail if virtiofs is unavailable.
+      ${pkgs.coreutils}/bin/ls /mnt/data >/dev/null
+    '';
 
     timerConfig = {
       OnCalendar = "*-*-* 03:00:00";
@@ -137,8 +138,7 @@ in
   # versions check both).
   systemd.user.services.restic-backups-vm-nix.Service."X-RestartIfChanged" = lib.mkForce false;
 
-  # Failure alert: emit emerg-priority journal entry so any future log
-  # shipper / alert listener picks it up by priority.
+  # Log one error summary without broadcasting it to every console.
   systemd.user.services.restic-backups-vm-nix.Unit.OnFailure = [ "restic-backup-failed@%p.service" ];
 
   systemd.user.services."restic-backup-failed@" = {
