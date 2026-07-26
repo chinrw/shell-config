@@ -217,6 +217,27 @@ in
 
   services = {
     qemuGuest.enable = true;
+
+    # Encrypted upstream for AdGuard. AdGuard cannot do this itself: dnsproxy
+    # dials upstream_dns with no proxy support, and every encrypted transport
+    # is blocked on the direct path, so DoH has to terminate in a forwarder
+    # that can use xray. Over the SOCKS inbound it reaches Cloudflare and
+    # returns correct answers for the hijacked Slack names.
+    #
+    # The stamp is the official cloudflare entry from public-resolvers.md,
+    # inlined with sources cleared so startup does not depend on fetching the
+    # resolver list through the tunnel.
+    dnscrypt-proxy2 = {
+      enable = true;
+      settings = {
+        listen_addresses = [ "127.0.0.1:5353" ];
+        server_names = [ "cloudflare" ];
+        proxy = "socks5://127.0.0.1:10808";
+        sources = { };
+        static.cloudflare.stamp =
+          "sdns://AgcAAAAAAAAABzEuMC4wLjEAEmRucy5jbG91ZGZsYXJlLmNvbQovZG5zLXF1ZXJ5";
+      };
+    };
     adguardhome = {
       enable = true;
       openFirewall = true;
@@ -227,15 +248,18 @@ in
         http_proxy = "http://127.0.0.1:10809";
 
         dns = {
-          # Plaintext, because no encrypted transport leaves this network: DoH
-          # on :443 times out to 1.1.1.1, dns.google, dns.quad9.net and
-          # 94.140.14.14, and 1.1.1.1:853 resets the TLS handshake after the
-          # TCP connect. Both of these resolve the hijacked Slack names
-          # correctly. fallback_dns is set so a leftover entry in AdGuard's
-          # mutable config cannot send failures back to the router.
+          # dnscrypt-proxy2, so queries leave this host encrypted and are
+          # resolved at the tunnel exit rather than by the hijacking chain.
+          #
+          # fallback_dns is plaintext on purpose: it keeps DNS answering if
+          # dnscrypt-proxy stops or its upstream breaks, at the cost of being
+          # silent when it takes over. AdGuard's query log records the
+          # answering upstream per query, so `127.0.0.1:5353` there means the
+          # encrypted path is live and `1.1.1.1:53` means it is not.
+          # `systemctl is-active dnscrypt-proxy2` catches the crashed case but
+          # not a running forwarder whose own upstream is failing.
           upstream_dns = [
-            "1.1.1.1"
-            "8.8.8.8"
+            "127.0.0.1:5353"
           ];
           bootstrap_dns = [
             "1.1.1.1"
