@@ -84,7 +84,21 @@ in
     networkmanager.enable = true;
     proxy.default = "http://192.168.0.240:10809";
     proxy.noProxy = "10.0.0.0/24,192.168.0.0/24,127.0.0.1,localhost,.localdomain";
-    nameservers = [ "192.168.0.1" ];
+    # Resolve through the local AdGuard instead of the router. 192.168.0.1,
+    # AliDNS and AdGuard's previous upstreams all answer
+    # wss-primary.slack.com and edgeapi.slack.com with 112.121.185.234, a
+    # sinkhole that 302s to baidu.com under a certificate whose only SAN is
+    # that IP, so Slack Socket Mode fails TLS hostname verification and hermes
+    # receives no Slack events. slack.com, api.slack.com, files.slack.com and
+    # wss-backup.slack.com still resolve correctly, which is why the REST API
+    # kept working and only the websocket broke. Direct connections to Slack's
+    # real addresses verify fine, so only resolution is affected.
+    #
+    # 1.1.1.1 is second so a stopped AdGuard cannot take DNS down with it.
+    nameservers = [
+      "127.0.0.1"
+      "1.1.1.1"
+    ];
   };
 
   networking.firewall = {
@@ -207,7 +221,31 @@ in
       enable = true;
       openFirewall = true;
       settings = {
+        # Covers AdGuard's own HTTP client (filter and version fetches) only.
+        # dnsproxy dials upstream_dns without it, so an https:// upstream would
+        # be attempted directly and time out.
         http_proxy = "http://127.0.0.1:10809";
+
+        dns = {
+          # Plaintext, because no encrypted transport leaves this network: DoH
+          # on :443 times out to 1.1.1.1, dns.google, dns.quad9.net and
+          # 94.140.14.14, and 1.1.1.1:853 resets the TLS handshake after the
+          # TCP connect. Both of these resolve the hijacked Slack names
+          # correctly. fallback_dns is set so a leftover entry in AdGuard's
+          # mutable config cannot send failures back to the router.
+          upstream_dns = [
+            "1.1.1.1"
+            "8.8.8.8"
+          ];
+          bootstrap_dns = [
+            "1.1.1.1"
+            "8.8.8.8"
+          ];
+          fallback_dns = [
+            "1.1.1.1"
+            "8.8.8.8"
+          ];
+        };
       };
     };
     # open-webui = {
