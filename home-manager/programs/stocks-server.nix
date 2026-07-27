@@ -34,12 +34,13 @@ let
         echo "checkout is on '$branch' but the deployment branch is main - refusing" >&2
         exit 1
       fi
-      # git status --porcelain (not diff-index) so untracked files also count
-      # as dirty: an untracked file at a path upstream adds would abort the
-      # ff-merge midway, and even a non-conflicting one means deploying from
-      # a checkout that isn't pristine.
-      if [ -n "$(git status --porcelain)" ]; then
-        echo "checkout not clean (tracked changes or untracked files) - updates blocked" >&2
+      # --untracked-files=no: this checkout permanently carries untracked agent
+      # worktrees (.codex-*wt*/) and scratch docs, and counting those as dirty
+      # blocked deployment indefinitely. Modified tracked files still block. An
+      # untracked file sitting where upstream adds one aborts the ff-merge
+      # below, which errexit turns into a failed unit.
+      if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+        echo "checkout has modified tracked files - updates blocked" >&2
         exit 1
       fi
 
