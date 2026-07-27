@@ -227,12 +227,16 @@ in
     # The stamp is the official cloudflare entry from public-resolvers.md,
     # inlined with sources cleared so startup does not depend on fetching the
     # resolver list through the tunnel.
-    dnscrypt-proxy2 = {
+    dnscrypt-proxy = {
       enable = true;
       settings = {
         listen_addresses = [ "127.0.0.1:5353" ];
         server_names = [ "cloudflare" ];
         proxy = "socks5://127.0.0.1:10808";
+
+        cache = true;
+        cache_size = 4096;
+
         sources = { };
         static.cloudflare.stamp =
           "sdns://AgcAAAAAAAAABzEuMC4wLjEAEmRucy5jbG91ZGZsYXJlLmNvbQovZG5zLXF1ZXJ5";
