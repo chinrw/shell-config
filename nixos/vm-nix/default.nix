@@ -209,6 +209,17 @@ in
     format = "binary";
   };
 
+  # The settings themselves live in the sops secret above. Worth knowing without
+  # decrypting it: proxied traffic is routed to the `proxy-balancer` balancer
+  # rather than straight to the `proxy` outbound. The balancer selects only
+  # `proxy` and carries `fallbackTag = "fallback-socks"`, a SOCKS5 outbound
+  # pointing at the Windows box (192.168.0.101:7891, the same mixed-port proxy
+  # wsl.nix uses). `observatory` probes `proxy` every 30s against
+  # https://www.google.com/generate_204; when that probe fails the balancer has
+  # no live candidate and every proxied rule — including AdGuard's DNS path
+  # through dnscrypt-proxy — falls through to the LAN proxy until it recovers.
+  # Strict priority, not load balancing: an outbound the observatory has no
+  # verdict on yet counts as alive, so a fresh start still uses `proxy`.
   services.xray = {
     enable = true;
     package = xrayPatched;
