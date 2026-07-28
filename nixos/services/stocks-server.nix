@@ -40,18 +40,20 @@ let
         git -C ${userDir} worktree add --detach ${srvDir} origin/${branch}
       fi
 
-      # data/ and .env are the shared halves: the same database file, and one
-      # place for credentials and ports. Both are gitignored, so the links never
-      # make the deployment worktree look dirty.
-      link() {
-        if [ -e "$2" ] && [ ! -L "$2" ]; then
-          echo "$2 exists and is not a symlink - refusing to replace it" >&2
-          exit 1
-        fi
-        ln -sfn "$1" "$2"
-      }
-      link ${userDir}/.env ${srvDir}/.env
-      link ${userDir}/data ${srvDir}/data
+      # .env is shared so credentials and ports live in one place. It is
+      # gitignored, so the link never makes the deployment worktree look dirty.
+      # The database is shared through STOCKS_DB_PATH instead: the backend opens
+      # its data directory with O_NOFOLLOW and rejects a symlinked one.
+      if [ -e ${srvDir}/.env ] && [ ! -L ${srvDir}/.env ]; then
+        echo "${srvDir}/.env exists and is not a symlink - refusing to replace it" >&2
+        exit 1
+      fi
+      ln -sfn ${userDir}/.env ${srvDir}/.env
+
+      # Left over from when data/ was linked; the backend now never looks here.
+      if [ -L ${srvDir}/data ]; then
+        rm -f ${srvDir}/data
+      fi
     '';
   };
 
@@ -155,11 +157,17 @@ in
       enableDefaultPath = inheritUserPath;
       serviceConfig = {
         WorkingDirectory = srvDir;
-        # Hosts the front accepts besides loopback, i.e. what caddy is bound to
-        # in stocks-proxy.nix. Without it every proxied request is a 403. Set
-        # here rather than in .env, which is shared with the checkout you work
-        # in.
-        Environment = "STOCKS_ALLOWED_ORIGINS=${endpoints.allowedOriginsFor endpoints.ports.stocks}";
+        Environment = [
+          # Hosts the front accepts besides loopback, i.e. what caddy is bound
+          # to in stocks-proxy.nix. Without it every proxied request is a 403.
+          # Set here rather than in .env, which is shared with the checkout you
+          # work in.
+          "STOCKS_ALLOWED_ORIGINS=${endpoints.allowedOriginsFor endpoints.ports.stocks}"
+          # Share the database with that checkout. This is the app's own
+          # operator knob; it leaves the directory's mode alone and only
+          # requires that the current user owns it.
+          "STOCKS_DB_PATH=${userDir}/data/stocks.db"
+        ];
         ExecStartPre = lib.getExe bootstrapScript;
         ExecStart = "${lib.getExe pkgs.nix} run ${srvDir}#server";
         # on-failure with 30s spacing retries indefinitely (never trips the

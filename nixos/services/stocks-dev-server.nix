@@ -128,15 +128,15 @@ let
         git -C ${devDir} worktree add --detach ${devSrvDir} origin/${devBranch}
       fi
 
-      link() {
-        if [ -e "$2" ] && [ ! -L "$2" ]; then
-          echo "$2 exists and is not a symlink - refusing to replace it" >&2
-          exit 1
-        fi
-        ln -sfn "$1" "$2"
-      }
-      link ${devDir}/.env ${devSrvDir}/.env
-      link ${devDir}/data ${devSrvDir}/data
+      if [ -e ${devSrvDir}/.env ] && [ ! -L ${devSrvDir}/.env ]; then
+        echo "${devSrvDir}/.env exists and is not a symlink - refusing to replace it" >&2
+        exit 1
+      fi
+      ln -sfn ${devDir}/.env ${devSrvDir}/.env
+
+      if [ -L ${devSrvDir}/data ]; then
+        rm -f ${devSrvDir}/data
+      fi
     '';
   };
 
@@ -240,9 +240,12 @@ in
       enableDefaultPath = inheritUserPath;
       serviceConfig = {
         WorkingDirectory = devSrvDir;
-        # Same allowlist as the main server, on this stack's port — see the note
-        # in stocks-server.nix.
-        Environment = "STOCKS_ALLOWED_ORIGINS=${endpoints.allowedOriginsFor endpoints.ports.stocks-dev}";
+        # Same two variables as the main server, against the dev pair — see the
+        # notes in stocks-server.nix.
+        Environment = [
+          "STOCKS_ALLOWED_ORIGINS=${endpoints.allowedOriginsFor endpoints.ports.stocks-dev}"
+          "STOCKS_DB_PATH=${devDb}"
+        ];
         # Bootstrap first: the sync writes into the linked data/, and the
         # launcher needs the worktree to exist. Then re-align the database with
         # main before every boot, so `systemctl --user restart
