@@ -7,22 +7,29 @@
 }:
 
 let
-  # The stocks-dev worktree — a git worktree of the stocks checkout, pinned to
-  # the `stocks-dev` branch. A separate unit rather than a parameterisation of
-  # stocks-server.nix: main is a deployment that must not drift, this is a dev
-  # checkout that is allowed to be dirty, and the DB sync only exists here.
+  home = config.users.users.${username}.home;
+
+  # The dev checkout you work in. Its data/ and .env are what the deployment
+  # worktree below links to.
+  devDir = "${home}/Documents/play/stocks-dev";
+
+  # Machine-owned deployment worktree, detached at origin/stocks-dev. A separate
+  # unit rather than a parameterisation of stocks-server.nix: the branches
+  # differ and the DB sync only exists here.
   #
-  # The port is not set here. The launcher resolves it from this worktree's own
-  # .env (PORT=5002, also in the repo's PORT_MAP) and defaults GATHER_PORT to
-  # 5106, so main (:5001/:5101) and dev (:5002/:5106) do not collide.
-  devDir = "${config.users.users.${username}.home}/Documents/play/stocks-dev";
+  # The port is not set here. The launcher resolves it from the linked .env
+  # (PORT=5002) and defaults GATHER_PORT to 5106, so main (:5001/:5101) and dev
+  # (:5002/:5106) do not collide.
+  devSrvDir = "${home}/Documents/play/stocks-dev-srv";
   devBranch = "stocks-dev";
 
   endpoints = import ../../lib/stocks-endpoints.nix;
 
-  # The deployment checkout's database — the sync source, only ever read here.
-  mainDb = "${config.users.users.${username}.home}/Documents/play/stocks/data/stocks.db";
+  # The main stack's database — the sync source, only ever read here.
+  mainDb = "${home}/Documents/play/stocks/data/stocks.db";
 
+  # The dev database lives in the checkout you work in; the deployment worktree
+  # links to that same directory, so both stacks see one file.
   devDb = "${devDir}/data/stocks.db";
   # data/ is gitignored, so this bookkeeping never shows up in `git status`.
   syncStamp = "${devDir}/data/.main-sync-stamp";
@@ -105,10 +112,37 @@ let
     '';
   };
 
-  # Follow origin/stocks-dev and bounce the dev server when it moves. Unlike
-  # stocks-server-update, every blocked state is a logged skip that leaves the
-  # unit successful — this worktree is where development happens, so "cannot
-  # update right now" is the normal case, not a fault.
+  # Create the deployment worktree on first use and keep the shared state
+  # linked. Same shape as the one in stocks-server.nix, against the dev pair.
+  bootstrapScript = pkgs.writeShellApplication {
+    name = "stocks-dev-bootstrap";
+    runtimeInputs = [
+      pkgs.git
+      pkgs.coreutils
+      pkgs.openssh
+    ];
+    text = ''
+      if [ ! -e ${devSrvDir}/.git ]; then
+        echo "creating the deployment worktree at ${devSrvDir}"
+        git -C ${devDir} fetch --quiet origin
+        git -C ${devDir} worktree add --detach ${devSrvDir} origin/${devBranch}
+      fi
+
+      link() {
+        if [ -e "$2" ] && [ ! -L "$2" ]; then
+          echo "$2 exists and is not a symlink - refusing to replace it" >&2
+          exit 1
+        fi
+        ln -sfn "$1" "$2"
+      }
+      link ${devDir}/.env ${devSrvDir}/.env
+      link ${devDir}/data ${devSrvDir}/data
+    '';
+  };
+
+  # Follow origin/stocks-dev and bounce the dev server when it moves. Nobody
+  # works in the deployment worktree, so blocked states fail the unit rather
+  # than skipping quietly; only network errors are soft.
   updateScript = pkgs.writeShellApplication {
     name = "stocks-dev-update";
     runtimeInputs = [
@@ -117,19 +151,15 @@ let
       pkgs.coreutils
     ];
     text = ''
-      cd ${devDir}
+      cd ${devSrvDir}
 
-      branch=$(git rev-parse --abbrev-ref HEAD)
-      if [ "$branch" != "${devBranch}" ]; then
-        echo "checkout is on '$branch', not ${devBranch} - skipping"
-        exit 0
+      if git symbolic-ref -q HEAD >/dev/null; then
+        echo "deployment worktree has a branch checked out, expected detached - refusing" >&2
+        exit 1
       fi
-
-      # --untracked-files=no: agent worktrees, scratch docs and build leftovers
-      # live untracked here permanently; only edits to tracked files block.
       if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
-        echo "tracked files are modified - skipping"
-        exit 0
+        echo "deployment worktree has modified tracked files - updates blocked" >&2
+        exit 1
       fi
 
       if ! git fetch --quiet origin; then
@@ -144,18 +174,15 @@ let
       ahead=$(git rev-list --count origin/${devBranch}..HEAD)
       behind=$(git rev-list --count HEAD..origin/${devBranch})
       if [ "$ahead" -gt 0 ]; then
-        echo "local ${devBranch} is $ahead commit(s) ahead (behind $behind) - skipping"
-        exit 0
+        echo "deployment worktree has $ahead commit(s) origin/${devBranch} lacks - refusing" >&2
+        exit 1
       fi
       if [ "$behind" -eq 0 ]; then
         echo "up to date with origin/${devBranch}"
         exit 0
       fi
 
-      if ! git merge --ff-only --quiet origin/${devBranch}; then
-        echo "ff-merge failed (untracked file in the way?) - skipping" >&2
-        exit 0
-      fi
+      git merge --ff-only --quiet origin/${devBranch}
       echo "fast-forwarded $behind commit(s) -> $(git rev-parse --short HEAD), restarting stocks-dev-server"
 
       # Bypass the sync throttle for this restart: upstream moving is when the
@@ -183,15 +210,20 @@ in
       unitConfig = onlyForUser;
       enableDefaultPath = inheritUserPath;
       serviceConfig = {
-        WorkingDirectory = devDir;
-        # Same allowlist as the main server, on this worktree's port — see the
-        # note in stocks-server.nix.
+        WorkingDirectory = devSrvDir;
+        # Same allowlist as the main server, on this stack's port — see the note
+        # in stocks-server.nix.
         Environment = "STOCKS_ALLOWED_ORIGINS=${endpoints.allowedOriginsFor endpoints.ports.stocks-dev}";
-        # Re-align the database with main before every boot, so `systemctl
-        # --user restart stocks-dev-server` is also how you refresh the dev
-        # data. Soft-fails into "keep the current database".
-        ExecStartPre = lib.getExe syncScript;
-        ExecStart = "${lib.getExe pkgs.nix} run ${devDir}#server";
+        # Bootstrap first: the sync writes into the linked data/, and the
+        # launcher needs the worktree to exist. Then re-align the database with
+        # main before every boot, so `systemctl --user restart
+        # stocks-dev-server` is also how you refresh the dev data. The sync
+        # soft-fails into "keep the current database".
+        ExecStartPre = [
+          (lib.getExe bootstrapScript)
+          (lib.getExe syncScript)
+        ];
+        ExecStart = "${lib.getExe pkgs.nix} run ${devSrvDir}#server";
         # Same policy as the main server: retry transient build/boot failures at
         # 30s spacing. The noisy case is the launcher's port/lock pre-check
         # refusing to boot next to a hand-started dev stack on :5002 — stop that
@@ -202,11 +234,12 @@ in
     };
 
     stocks-dev-update = {
-      description = "Fast-forward the stocks-dev worktree and restart the dev server on updates";
+      description = "Fast-forward the stocks-dev deployment worktree and restart the dev server on updates";
       unitConfig = onlyForUser;
       enableDefaultPath = inheritUserPath;
       serviceConfig = {
         Type = "oneshot";
+        ExecStartPre = lib.getExe bootstrapScript;
         ExecStart = lib.getExe updateScript;
       };
     };

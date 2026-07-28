@@ -7,22 +7,58 @@
 }:
 
 let
-  # The stocks checkout this service boots. `nix run <dir>#server` resolves the
-  # launcher from this worktree, and the launcher itself rebuilds the frontend
-  # bundle + release backend when sources changed — so "pull then restart the
-  # unit" IS the rebuild; nothing else needs to compile here.
-  stocksDir = "${config.users.users.${username}.home}/Documents/play/stocks";
+  home = config.users.users.${username}.home;
+
+  # The checkout you work in. The service never runs from it, but it owns the
+  # .git the deployment worktree hangs off, and its data/ + .env are the runtime
+  # state both share.
+  userDir = "${home}/Documents/play/stocks";
+
+  # Machine-owned deployment worktree, detached at origin/main. Nothing edits it
+  # by hand, which is what lets the guards below stay strict: before this
+  # existed, the service served whatever branch the checkout happened to be on.
+  srvDir = "${home}/Documents/play/stocks-srv";
+  branch = "main";
 
   endpoints = import ../../lib/stocks-endpoints.nix;
 
-  # Fast-forward the checkout from origin/main and bounce the server only when
-  # HEAD actually moved. Looks similar to the stocks repo's scripts/git-poll.sh
-  # but encodes the opposite policy on purpose — don't merge them: git-poll is
-  # a dev-loop that follows any branch and swallows every error; this is
-  # deployment policy — pinned to main, and every state that blocks updates
-  # indefinitely (wrong branch, dirty tree, diverged history) fails the unit
-  # so it shows up in `systemctl --user --failed`. Only transient network
-  # errors are soft skips.
+  # Create the worktree on first use and keep the shared state linked. Runs
+  # before both the server and the updater, so either one provisions it.
+  bootstrapScript = pkgs.writeShellApplication {
+    name = "stocks-server-bootstrap";
+    runtimeInputs = [
+      pkgs.git
+      pkgs.coreutils
+      pkgs.openssh
+    ];
+    text = ''
+      if [ ! -e ${srvDir}/.git ]; then
+        echo "creating the deployment worktree at ${srvDir}"
+        git -C ${userDir} fetch --quiet origin
+        # Detached: `${branch}` is checked out in ${userDir}, and git allows a
+        # branch in one worktree only.
+        git -C ${userDir} worktree add --detach ${srvDir} origin/${branch}
+      fi
+
+      # data/ and .env are the shared halves: the same database file, and one
+      # place for credentials and ports. Both are gitignored, so the links never
+      # make the deployment worktree look dirty.
+      link() {
+        if [ -e "$2" ] && [ ! -L "$2" ]; then
+          echo "$2 exists and is not a symlink - refusing to replace it" >&2
+          exit 1
+        fi
+        ln -sfn "$1" "$2"
+      }
+      link ${userDir}/.env ${srvDir}/.env
+      link ${userDir}/data ${srvDir}/data
+    '';
+  };
+
+  # Fast-forward the deployment worktree and bounce the server only when HEAD
+  # moved. Every blocked state fails the unit so it shows up in
+  # `systemctl --user --failed`; only transient network errors are soft skips.
+  # Nobody works in this tree, so anything unexpected here is worth a red unit.
   updateScript = pkgs.writeShellApplication {
     name = "stocks-server-update";
     runtimeInputs = [
@@ -30,20 +66,14 @@ let
       pkgs.openssh # github remote is ssh; key auth works agent-less
     ];
     text = ''
-      cd ${stocksDir}
+      cd ${srvDir}
 
-      branch=$(git rev-parse --abbrev-ref HEAD)
-      if [ "$branch" != "main" ]; then
-        echo "checkout is on '$branch' but the deployment branch is main - refusing" >&2
+      if git symbolic-ref -q HEAD >/dev/null; then
+        echo "deployment worktree has a branch checked out, expected detached - refusing" >&2
         exit 1
       fi
-      # --untracked-files=no: this checkout permanently carries untracked agent
-      # worktrees (.codex-*wt*/) and scratch docs, and counting those as dirty
-      # blocked deployment indefinitely. Modified tracked files still block. An
-      # untracked file sitting where upstream adds one aborts the ff-merge
-      # below, which errexit turns into a failed unit.
       if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
-        echo "checkout has modified tracked files - updates blocked" >&2
+        echo "deployment worktree has modified tracked files - updates blocked" >&2
         exit 1
       fi
 
@@ -52,18 +82,18 @@ let
         exit 0
       fi
 
-      ahead=$(git rev-list --count origin/main..HEAD)
-      behind=$(git rev-list --count HEAD..origin/main)
+      ahead=$(git rev-list --count origin/${branch}..HEAD)
+      behind=$(git rev-list --count HEAD..origin/${branch})
       if [ "$ahead" -gt 0 ]; then
-        echo "local main has $ahead commit(s) origin/main lacks (behind $behind) - refusing to deploy" >&2
+        echo "deployment worktree has $ahead commit(s) origin/${branch} lacks - refusing" >&2
         exit 1
       fi
       if [ "$behind" -eq 0 ]; then
-        echo "up to date with origin/main"
+        echo "up to date with origin/${branch}"
         exit 0
       fi
 
-      git merge --ff-only --quiet origin/main
+      git merge --ff-only --quiet origin/${branch}
       echo "fast-forwarded $behind commit(s) -> $(git rev-parse --short HEAD), restarting stocks-server"
       # try-restart: only bounce the server if it is running; a unit the user
       # stopped stays down instead of being resurrected.
@@ -92,13 +122,14 @@ in
       unitConfig = onlyForUser;
       enableDefaultPath = inheritUserPath;
       serviceConfig = {
-        WorkingDirectory = stocksDir;
+        WorkingDirectory = srvDir;
         # Hosts the front accepts besides loopback, i.e. what caddy is bound to
         # in stocks-proxy.nix. Without it every proxied request is a 403. Set
-        # here rather than in the checkout's .env, which would dirty the tree
-        # the updater above needs clean.
+        # here rather than in .env, which is shared with the checkout you work
+        # in.
         Environment = "STOCKS_ALLOWED_ORIGINS=${endpoints.allowedOriginsFor endpoints.ports.stocks}";
-        ExecStart = "${lib.getExe pkgs.nix} run ${stocksDir}#server";
+        ExecStartPre = lib.getExe bootstrapScript;
+        ExecStart = "${lib.getExe pkgs.nix} run ${srvDir}#server";
         # on-failure with 30s spacing retries indefinitely (never trips the
         # default start-rate limit). Deliberate: transient build/boot failures
         # self-heal. The one noisy case is the launcher's own lock/port
@@ -110,11 +141,12 @@ in
     };
 
     stocks-server-update = {
-      description = "Fast-forward the stocks checkout and restart the server on upstream updates";
+      description = "Fast-forward the stocks deployment worktree and restart the server on updates";
       unitConfig = onlyForUser;
       enableDefaultPath = inheritUserPath;
       serviceConfig = {
         Type = "oneshot";
+        ExecStartPre = lib.getExe bootstrapScript;
         ExecStart = lib.getExe updateScript;
       };
     };
