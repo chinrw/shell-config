@@ -52,6 +52,9 @@ in
     };
     Service = {
       ExecStart = "${lib.getExe pkgs.caddy} run --adapter caddyfile --config ${caddyfile}";
+      # Matches what the NixOS module sets; caddy never needs to gain
+      # privileges here, both ports are above 1024.
+      NoNewPrivileges = true;
       # tailscaled assigns the tailnet addresses some time after boot, and a
       # bind that arrives first exits 1. Retrying is the recovery path.
       Restart = "on-failure";
