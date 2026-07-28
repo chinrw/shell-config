@@ -7,9 +7,9 @@
 # answers 403 without saying which part was wrong.
 #
 # Consumers:
-#   - home-manager/programs/stocks-proxy.nix       (caddy bind + site addresses)
-#   - home-manager/programs/stocks-server.nix      (STOCKS_ALLOWED_ORIGINS)
-#   - home-manager/programs/stocks-dev-server.nix  (STOCKS_ALLOWED_ORIGINS)
+#   - nixos/services/stocks-proxy.nix       (caddy bind + site addresses)
+#   - nixos/services/stocks-server.nix      (STOCKS_ALLOWED_ORIGINS)
+#   - nixos/services/stocks-dev-server.nix  (STOCKS_ALLOWED_ORIGINS)
 #
 # Every address here is static: 192.168.0.240 is this VM's LAN address, and the
 # 100.x/fd7a: pair plus the MagicDNS name are its tailnet identity, which

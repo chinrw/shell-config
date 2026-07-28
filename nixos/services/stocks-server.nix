@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  username,
   ...
 }:
 
@@ -10,7 +11,7 @@ let
   # launcher from this worktree, and the launcher itself rebuilds the frontend
   # bundle + release backend when sources changed — so "pull then restart the
   # unit" IS the rebuild; nothing else needs to compile here.
-  stocksDir = "${config.home.homeDirectory}/Documents/play/stocks";
+  stocksDir = "${config.users.users.${username}.home}/Documents/play/stocks";
 
   endpoints = import ../../lib/stocks-endpoints.nix;
 
@@ -69,18 +70,28 @@ let
       ${pkgs.systemd}/bin/systemctl --user try-restart stocks-server.service
     '';
   };
+
+  # These live in /etc/systemd/user, which every user manager on the box reads.
+  # Only ${username} has the checkout, and without this guard a root login would
+  # run the launcher as root against that user's worktree.
+  onlyForUser = {
+    ConditionUser = username;
+  };
+
+  # NixOS otherwise pins a minimal PATH on every unit, which would replace the
+  # one the user manager exports. These ran as home-manager units inheriting
+  # that manager PATH, and the launcher is built against it.
+  inheritUserPath = false;
 in
 {
   systemd.user.services = {
     stocks-server = {
-      Unit = {
-        Description = "Stock Analyzer server (nix run .#server)";
-        After = "network-online.target";
-      };
-      Install = {
-        WantedBy = [ "default.target" ];
-      };
-      Service = {
+      description = "Stock Analyzer server (nix run .#server)";
+      after = [ "network-online.target" ];
+      wantedBy = [ "default.target" ];
+      unitConfig = onlyForUser;
+      enableDefaultPath = inheritUserPath;
+      serviceConfig = {
         WorkingDirectory = stocksDir;
         # Hosts the front accepts besides loopback, i.e. what caddy is bound to
         # in stocks-proxy.nix. Without it every proxied request is a 403. Set
@@ -99,29 +110,24 @@ in
     };
 
     stocks-server-update = {
-      Unit = {
-        Description = "Fast-forward the stocks checkout and restart the server on upstream updates";
-      };
-      Service = {
+      description = "Fast-forward the stocks checkout and restart the server on upstream updates";
+      unitConfig = onlyForUser;
+      enableDefaultPath = inheritUserPath;
+      serviceConfig = {
         Type = "oneshot";
         ExecStart = lib.getExe updateScript;
       };
     };
   };
 
-  systemd.user.timers = {
-    stocks-server-update = {
-      Unit = {
-        Description = "Poll the stocks upstream for updates";
-      };
-      Timer = {
-        OnStartupSec = "2min";
-        OnUnitActiveSec = "5min";
-        AccuracySec = "1min";
-      };
-      Install = {
-        WantedBy = [ "timers.target" ];
-      };
+  systemd.user.timers.stocks-server-update = {
+    description = "Poll the stocks upstream for updates";
+    wantedBy = [ "timers.target" ];
+    unitConfig = onlyForUser;
+    timerConfig = {
+      OnStartupSec = "2min";
+      OnUnitActiveSec = "5min";
+      AccuracySec = "1min";
     };
   };
 }

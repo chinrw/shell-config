@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  username,
   ...
 }:
 
@@ -14,13 +15,13 @@ let
   # The port is not set here. The launcher resolves it from this worktree's own
   # .env (PORT=5002, also in the repo's PORT_MAP) and defaults GATHER_PORT to
   # 5106, so main (:5001/:5101) and dev (:5002/:5106) do not collide.
-  devDir = "${config.home.homeDirectory}/Documents/play/stocks-dev";
+  devDir = "${config.users.users.${username}.home}/Documents/play/stocks-dev";
   devBranch = "stocks-dev";
 
   endpoints = import ../../lib/stocks-endpoints.nix;
 
   # The deployment checkout's database — the sync source, only ever read here.
-  mainDb = "${config.home.homeDirectory}/Documents/play/stocks/data/stocks.db";
+  mainDb = "${config.users.users.${username}.home}/Documents/play/stocks/data/stocks.db";
 
   devDb = "${devDir}/data/stocks.db";
   # data/ is gitignored, so this bookkeeping never shows up in `git status`.
@@ -165,18 +166,23 @@ let
       ${pkgs.systemd}/bin/systemctl --user try-restart stocks-dev-server.service
     '';
   };
+  # See the notes in stocks-server.nix: /etc/systemd/user is read by every user
+  # manager and only ${username} has these worktrees, and the units keep the
+  # manager's PATH instead of the minimal one NixOS pins by default.
+  onlyForUser = {
+    ConditionUser = username;
+  };
+  inheritUserPath = false;
 in
 {
   systemd.user.services = {
     stocks-dev-server = {
-      Unit = {
-        Description = "Stock Analyzer dev server (stocks-dev worktree, nix run .#server)";
-        After = "network-online.target";
-      };
-      Install = {
-        WantedBy = [ "default.target" ];
-      };
-      Service = {
+      description = "Stock Analyzer dev server (stocks-dev worktree, nix run .#server)";
+      after = [ "network-online.target" ];
+      wantedBy = [ "default.target" ];
+      unitConfig = onlyForUser;
+      enableDefaultPath = inheritUserPath;
+      serviceConfig = {
         WorkingDirectory = devDir;
         # Same allowlist as the main server, on this worktree's port — see the
         # note in stocks-server.nix.
@@ -196,31 +202,26 @@ in
     };
 
     stocks-dev-update = {
-      Unit = {
-        Description = "Fast-forward the stocks-dev worktree and restart the dev server on updates";
-      };
-      Service = {
+      description = "Fast-forward the stocks-dev worktree and restart the dev server on updates";
+      unitConfig = onlyForUser;
+      enableDefaultPath = inheritUserPath;
+      serviceConfig = {
         Type = "oneshot";
         ExecStart = lib.getExe updateScript;
       };
     };
   };
 
-  systemd.user.timers = {
-    stocks-dev-update = {
-      Unit = {
-        Description = "Poll the stocks-dev upstream for updates";
-      };
-      Timer = {
-        # 3min at startup (main polls at 2min) so the two checkouts do not fetch
-        # in the same second on every boot.
-        OnStartupSec = "3min";
-        OnUnitActiveSec = "5min";
-        AccuracySec = "1min";
-      };
-      Install = {
-        WantedBy = [ "timers.target" ];
-      };
+  systemd.user.timers.stocks-dev-update = {
+    description = "Poll the stocks-dev upstream for updates";
+    wantedBy = [ "timers.target" ];
+    unitConfig = onlyForUser;
+    timerConfig = {
+      # 3min at startup (main polls at 2min) so the two checkouts do not fetch
+      # in the same second on every boot.
+      OnStartupSec = "3min";
+      OnUnitActiveSec = "5min";
+      AccuracySec = "1min";
     };
   };
 }

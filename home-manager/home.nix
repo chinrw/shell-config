@@ -92,9 +92,6 @@ in
   ]
   ++ lib.optionals (hostname == "vm-nix") [
     (import ./programs/restic.nix { inherit config lib pkgs; })
-    (import ./programs/stocks-server.nix { inherit config lib pkgs; })
-    (import ./programs/stocks-dev-server.nix { inherit config lib pkgs; })
-    (import ./programs/stocks-proxy.nix { inherit config lib pkgs; })
   ]
   ++ lib.optionals (hostname != "vm-nix") [
     (import ./programs/yazi.nix { inherit config; })
