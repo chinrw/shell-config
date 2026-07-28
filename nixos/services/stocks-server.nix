@@ -63,6 +63,7 @@ let
     name = "stocks-server-update";
     runtimeInputs = [
       pkgs.git
+      pkgs.nix
       pkgs.openssh # github remote is ssh; key auth works agent-less
     ];
     text = ''
@@ -93,8 +94,39 @@ let
         exit 0
       fi
 
+      old=$(git rev-parse HEAD)
       git merge --ff-only --quiet origin/${branch}
-      echo "fast-forwarded $behind commit(s) -> $(git rev-parse --short HEAD), restarting stocks-server"
+      new=$(git rev-parse HEAD)
+      echo "fast-forwarded $behind commit(s) -> $(git rev-parse --short HEAD), building"
+
+      # Build before the restart, not after: the old server keeps serving while
+      # this runs, and a revision that does not compile never takes it down.
+      # The toolchain comes from the app's own devShell.
+      changed_paths=$(git diff --name-only "$old" "$new")
+
+      # The wasm bundle embeds these three crates, so nothing else can stale it.
+      frontend_changed=false
+      while IFS= read -r path; do
+        case "$path" in
+          crates/frontend/*|crates/shared-types/*|crates/core/*)
+            frontend_changed=true
+            break
+            ;;
+        esac
+      done <<< "$changed_paths"
+
+      if [ "$frontend_changed" = true ]; then
+        if ! nix develop ${srvDir} --command bash -c 'cd crates/frontend && trunk build --release'; then
+          echo "frontend build failed - stocks-server will not be restarted" >&2
+          exit 1
+        fi
+      fi
+      if ! nix develop ${srvDir} --command bash -c 'cd crates && cargo build --release --manifest-path backend/Cargo.toml'; then
+        echo "backend build failed - stocks-server will not be restarted" >&2
+        exit 1
+      fi
+
+      echo "build ok, restarting stocks-server"
       # try-restart: only bounce the server if it is running; a unit the user
       # stopped stays down instead of being resurrected.
       ${pkgs.systemd}/bin/systemctl --user try-restart stocks-server.service

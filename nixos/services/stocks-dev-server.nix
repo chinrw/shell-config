@@ -147,6 +147,7 @@ let
     name = "stocks-dev-update";
     runtimeInputs = [
       pkgs.git
+      pkgs.nix
       pkgs.openssh # github remote is ssh; key auth works agent-less
       pkgs.coreutils
     ];
@@ -182,8 +183,36 @@ let
         exit 0
       fi
 
+      old=$(git rev-parse HEAD)
       git merge --ff-only --quiet origin/${devBranch}
-      echo "fast-forwarded $behind commit(s) -> $(git rev-parse --short HEAD), restarting stocks-dev-server"
+      new=$(git rev-parse HEAD)
+      echo "fast-forwarded $behind commit(s) -> $(git rev-parse --short HEAD), building"
+
+      # Build before the restart; see the note in stocks-server.nix.
+      changed_paths=$(git diff --name-only "$old" "$new")
+
+      frontend_changed=false
+      while IFS= read -r path; do
+        case "$path" in
+          crates/frontend/*|crates/shared-types/*|crates/core/*)
+            frontend_changed=true
+            break
+            ;;
+        esac
+      done <<< "$changed_paths"
+
+      if [ "$frontend_changed" = true ]; then
+        if ! nix develop ${devSrvDir} --command bash -c 'cd crates/frontend && trunk build --release'; then
+          echo "frontend build failed - stocks-dev-server will not be restarted" >&2
+          exit 1
+        fi
+      fi
+      if ! nix develop ${devSrvDir} --command bash -c 'cd crates && cargo build --release --manifest-path backend/Cargo.toml'; then
+        echo "backend build failed - stocks-dev-server will not be restarted" >&2
+        exit 1
+      fi
+
+      echo "build ok, restarting stocks-dev-server"
 
       # Bypass the sync throttle for this restart: upstream moving is when the
       # dev database should be re-aligned with main's.
