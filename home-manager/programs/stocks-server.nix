@@ -12,6 +12,8 @@ let
   # unit" IS the rebuild; nothing else needs to compile here.
   stocksDir = "${config.home.homeDirectory}/Documents/play/stocks";
 
+  endpoints = import ../../lib/stocks-endpoints.nix;
+
   # Fast-forward the checkout from origin/main and bounce the server only when
   # HEAD actually moved. Looks similar to the stocks repo's scripts/git-poll.sh
   # but encodes the opposite policy on purpose — don't merge them: git-poll is
@@ -80,6 +82,12 @@ in
       };
       Service = {
         WorkingDirectory = stocksDir;
+        # The hosts the front accepts besides loopback — exactly what caddy is
+        # bound to in nixos/services/stocks-proxy.nix. Without it every proxied
+        # request is a 403 from crates/backend/src/security.rs. Set here rather
+        # than in the checkout's .env so the tree stays clean for the updater
+        # above.
+        Environment = "STOCKS_ALLOWED_ORIGINS=${endpoints.allowedOriginsFor endpoints.ports.stocks}";
         ExecStart = "${lib.getExe pkgs.nix} run ${stocksDir}#server";
         # on-failure with 30s spacing retries indefinitely (never trips the
         # default start-rate limit). Deliberate: transient build/boot failures

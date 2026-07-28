@@ -17,6 +17,8 @@ let
   devDir = "${config.home.homeDirectory}/Documents/play/stocks-dev";
   devBranch = "stocks-dev";
 
+  endpoints = import ../../lib/stocks-endpoints.nix;
+
   # The deployment checkout's database — the sync source, only ever read here.
   mainDb = "${config.home.homeDirectory}/Documents/play/stocks/data/stocks.db";
 
@@ -176,6 +178,9 @@ in
       };
       Service = {
         WorkingDirectory = devDir;
+        # Same allowlist as the main server, on this worktree's port — see the
+        # note in stocks-server.nix.
+        Environment = "STOCKS_ALLOWED_ORIGINS=${endpoints.allowedOriginsFor endpoints.ports.stocks-dev}";
         # Re-align the database with main before every boot, so `systemctl
         # --user restart stocks-dev-server` is also how you refresh the dev
         # data. Soft-fails into "keep the current database".
