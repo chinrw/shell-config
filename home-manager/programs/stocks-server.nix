@@ -82,11 +82,10 @@ in
       };
       Service = {
         WorkingDirectory = stocksDir;
-        # The hosts the front accepts besides loopback — exactly what caddy is
-        # bound to in nixos/services/stocks-proxy.nix. Without it every proxied
-        # request is a 403 from crates/backend/src/security.rs. Set here rather
-        # than in the checkout's .env so the tree stays clean for the updater
-        # above.
+        # Hosts the front accepts besides loopback, i.e. what caddy is bound to
+        # in stocks-proxy.nix. Without it every proxied request is a 403. Set
+        # here rather than in the checkout's .env, which would dirty the tree
+        # the updater above needs clean.
         Environment = "STOCKS_ALLOWED_ORIGINS=${endpoints.allowedOriginsFor endpoints.ports.stocks}";
         ExecStart = "${lib.getExe pkgs.nix} run ${stocksDir}#server";
         # on-failure with 30s spacing retries indefinitely (never trips the

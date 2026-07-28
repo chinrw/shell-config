@@ -1,13 +1,13 @@
 # Where the stocks stacks are reachable from outside their own loopback.
 #
-# Defined once because three files have to agree and a mismatch fails opaquely:
-# the Rust front (crates/backend/src/security.rs, `request_host_is_allowed`)
-# serves a request only when its `Host` is loopback or an exact entry in
-# `STOCKS_ALLOWED_ORIGINS`. An address caddy binds but the allowlist omits
-# answers 403 with nothing pointing at the address as the cause.
+# Defined once because three files have to agree. The Rust front
+# (crates/backend/src/security.rs, `request_host_is_allowed`) serves a request
+# only when its `Host` is loopback or an exact entry in
+# `STOCKS_ALLOWED_ORIGINS`, so an address caddy binds but the allowlist omits
+# answers 403 without saying which part was wrong.
 #
 # Consumers:
-#   - nixos/services/stocks-proxy.nix              (caddy bind + site addresses)
+#   - home-manager/programs/stocks-proxy.nix       (caddy bind + site addresses)
 #   - home-manager/programs/stocks-server.nix      (STOCKS_ALLOWED_ORIGINS)
 #   - home-manager/programs/stocks-dev-server.nix  (STOCKS_ALLOWED_ORIGINS)
 #
@@ -15,9 +15,8 @@
 # 100.x/fd7a: pair plus the MagicDNS name are its tailnet identity, which
 # tailscale keeps stable per node.
 let
-  # Interfaces caddy binds. Loopback is deliberately absent — the servers own
-  # 127.0.0.1:<port> themselves, and binding these addresses explicitly is what
-  # keeps caddy off a wildcard that would collide with them.
+  # Interfaces caddy binds. No loopback: the servers hold 127.0.0.1:<port>, so
+  # caddy has to name its addresses instead of taking a wildcard.
   addresses = [
     "192.168.0.240" # LAN (ens18)
     "100.106.89.118" # tailnet v4
