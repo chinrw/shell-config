@@ -294,6 +294,7 @@ in
         marksman
         pyrefly
         mypy # Optional static typing for Python
+        gh-dash
       ]
       ++ lib.optionals (!smallNode && isLinux) [
         conda
