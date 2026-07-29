@@ -98,6 +98,67 @@ let
   codexPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
   claudePackage = inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
+  # ── Browser automation runtime ──────────────────────────────────
+  # The Ubuntu container only bind-mounts /nix/store; installing a browser
+  # package on the host does not make Ubuntu's dynamic loader discover its
+  # libraries. Point browser clients at Nix-patched executables instead, whose
+  # complete runtime closure is encoded in their RPATH/wrappers.
+  browserFonts = with pkgs; [
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-color-emoji
+  ];
+  browserFontConfig = pkgs.makeFontsConf {
+    fontDirectories = browserFonts;
+  };
+
+  # Generic Chromium consumers (Hermes agent-browser, Puppeteer, Selenium,
+  # Lighthouse, etc.) share this executable. The flags are scoped to this
+  # wrapper and are required for an unprivileged browser inside Docker.
+  hermesChromium = pkgs.chromium.override {
+    commandLineArgs = "--no-sandbox --disable-dev-shm-usage";
+  };
+  hermesChromiumExecutable = lib.getExe hermesChromium;
+
+  # Playwright browser revisions are tied to the Playwright driver version.
+  # Keep its Nix-patched Chromium + headless-shell + ffmpeg set separate from
+  # pkgs.chromium instead of forcing Playwright onto an arbitrary system build.
+  playwrightChromiumBrowsers = pkgs.playwright-driver.browsers.override {
+    withFirefox = false;
+    withWebkit = false;
+    fontconfig_file = browserFontConfig;
+  };
+
+  # Both the Python CLI and in-process API spawn the Nix-pinned Node driver
+  # through get_driver_env(). Inject its revision-coupled browser cache at that
+  # boundary so unrelated Playwright consumers keep their own cache/revision.
+  pythonPlaywright = pkgs.python312Packages.playwright.overrideAttrs (oldAttrs: {
+    postPatch = (oldAttrs.postPatch or "") + ''
+      substituteInPlace playwright/_impl/_driver.py \
+        --replace-fail \
+          '    env = os.environ.copy()' \
+          '    env = os.environ.copy()
+          env["PLAYWRIGHT_BROWSERS_PATH"] = "${playwrightChromiumBrowsers}"
+          env["PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD"] = "1"'
+    '';
+  });
+  pythonPlaywrightPath = lib.makeSearchPath pkgs.python312.sitePackages [
+    pythonPlaywright
+    pkgs.python312Packages.greenlet
+    pkgs.python312Packages.pyee
+  ];
+
+  # PATH-based discovery pins agent-browser itself (avoiding its npx fallback)
+  # and covers chromedriver/Selenium plus the Playwright CLI. Python Playwright
+  # is also added to PYTHONPATH below because Hermes' Google Meet plugin imports
+  # it in-process from the sealed Python runtime.
+  browserAutomationPath = lib.makeBinPath [
+    pkgs.agent-browser
+    hermesChromium
+    pkgs.chromedriver
+    pythonPlaywright
+  ];
+
   # The upstream NixOS module currently renders settings only to the default
   # profile's config.yaml. Named Hermes profiles each have an independent
   # config.yaml under profiles/<name>/, so merge the Nix-owned leaves into
@@ -269,13 +330,39 @@ in
         "--env"
         "no_proxy=192.168.0.0/24,127.0.0.1,localhost,slack.com,.slack.com"
 
+        # Nix-managed browser automation. Export only version-agnostic browser
+        # discovery globally. Playwright's revision-coupled cache is scoped to
+        # the matching Python driver above.
+        "--env"
+        "AGENT_BROWSER_EXECUTABLE_PATH=${hermesChromiumExecutable}"
+        "--env"
+        "AGENT_BROWSER_ARGS=--no-sandbox,--disable-dev-shm-usage"
+        "--env"
+        "CHROME_BIN=${hermesChromiumExecutable}"
+        "--env"
+        "CHROME_PATH=${hermesChromiumExecutable}"
+        "--env"
+        "CHROMIUM_BIN=${hermesChromiumExecutable}"
+        "--env"
+        "CHROMIUM_PATH=${hermesChromiumExecutable}"
+        "--env"
+        "PUPPETEER_EXECUTABLE_PATH=${hermesChromiumExecutable}"
+        "--env"
+        "PUPPETEER_SKIP_DOWNLOAD=true"
+        "--env"
+        "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true"
+        "--env"
+        "FONTCONFIG_FILE=${browserFontConfig}"
+
         # Load the Codex provider/picker bridge in Hermes' sealed Python. Its
         # app-server hook is dormant on the default "auto" runtime. Keep the
         # host-provided bubblewrap on PATH for an explicit app-server switch.
+        # Also expose the Nix Python Playwright package; its child driver gets
+        # the matching browser cache from the package override above.
         "--env"
-        "PYTHONPATH=${codexAppServerBridge}/${pkgs.python312.sitePackages}"
+        "PYTHONPATH=${codexAppServerBridge}/${pkgs.python312.sitePackages}:${pythonPlaywrightPath}"
         "--env"
-        "PATH=${pkgs.bubblewrap}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${codexPackage}/bin:${claudePackage}/bin"
+        "PATH=${pkgs.bubblewrap}/bin:${browserAutomationPath}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${codexPackage}/bin:${claudePackage}/bin"
       ];
     };
 
