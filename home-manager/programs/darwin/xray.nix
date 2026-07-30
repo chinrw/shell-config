@@ -6,10 +6,22 @@
 # per-user launchd agent that starts at login.
 #
 # Imported via programs/darwin/default.nix (macOS only).
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   # Concrete on darwin, e.g. /Users/chin39/.config/sops-nix/secrets/xray.
   xrayConfig = config.sops.secrets."xray".path;
+
+  # Backport Xray #6095; drop when stable Nixpkgs includes it.
+  xrayPatched = pkgs.xray.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [
+      ../../../patches/xray/9d9eaf3-close-xhttp-body.patch
+    ];
+  });
 
   # launchd has no systemd-style `After=`/`Requires=`. sops-nix decrypts this
   # config from its *own* login agent (org.nix-community.home.sops-nix, also
@@ -25,7 +37,7 @@ let
     i=0
     while [ "$i" -lt 60 ]; do
       if [ -e "$cfg" ]; then
-        exec ${pkgs.xray}/bin/xray run -config "$cfg" -format json
+        exec ${xrayPatched}/bin/xray run -config "$cfg" -format json
       fi
       sleep 1
       i=$((i + 1))
@@ -45,7 +57,7 @@ in
   };
 
   # `xray` on PATH for manual inspection (`xray version`, `xray run -test`).
-  home.packages = [ pkgs.xray ];
+  home.packages = [ xrayPatched ];
 
   launchd.agents.xray = {
     enable = true;
