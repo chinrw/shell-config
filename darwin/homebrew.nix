@@ -1,7 +1,14 @@
-{ lib, ... }:
+{ lib, pkgs, ... }:
 let
   # Same local proxy the nix-daemon uses (see ./nix-daemon-proxy.nix).
   proxyURL = "http://127.0.0.1:10809";
+  # The proxy occasionally terminates long HTTP/2 downloads with curl error
+  # 92. Keep Homebrew downloads on HTTP/1.1 and retry transient transfer
+  # failures; HOMEBREW_CURLRC makes Homebrew pass this file to curl explicitly.
+  homebrewCurlrc = pkgs.writeText "homebrew-curlrc" ''
+    http1.1
+    retry-all-errors
+  '';
 in
 {
   # nix-darwin's built-in homebrew module talks to the existing /opt/homebrew
@@ -15,7 +22,7 @@ in
     onActivation = {
       cleanup = "zap";
       autoUpdate = true;
-      upgrade = true;
+      upgrade = false;
       # Homebrew 5.1+ refuses `brew bundle --cleanup` unless one of --force,
       # --force-cleanup or $HOMEBREW_ASK is given. nix-darwin doesn't pass one,
       # so add it here. --force-cleanup runs the zap cleanup non-interactively
@@ -69,7 +76,6 @@ in
       "keka"
       "mactex"
       "miniconda"
-      "mono-mdk-for-visual-studio"
       "obs"
       "obsidian"
       "onedrive"
@@ -96,24 +102,21 @@ in
     masApps = { };
   };
 
-  # Route Homebrew through the local proxy.
-  #
-  # Interactive `brew` already inherits http_proxy/https_proxy from the zsh
-  # session (see home-manager/programs/zsh), but set the Homebrew-specific
-  # variants too: they survive brew's environment sanitization and make the
-  # intent explicit for login shells.
-  environment.variables = {
-    HOMEBREW_HTTP_PROXY = proxyURL;
-    HOMEBREW_HTTPS_PROXY = proxyURL;
-  };
-
   # The nix-darwin homebrew activation runs `brew bundle` during
-  # `darwin-rebuild switch` with a sanitized environment (sudo strips the
-  # caller's http_proxy), so the auto-update / upgrade / bundle would otherwise
-  # bypass the proxy. Export it right before the bundle command runs — mkBefore
-  # prepends into the same activation shell as the module's `brew bundle` line.
+  # `darwin-rebuild switch` as the desktop user via sudo. Homebrew uses curl's
+  # standard lowercase proxy variables; HOMEBREW_HTTP_PROXY and
+  # HOMEBREW_HTTPS_PROXY are not supported Homebrew settings.
+  #
+  # Keep the variables scoped to activation, then allow sudo to pass them to
+  # the `brew bundle` process. Interactive brew already gets its proxy from the
+  # zsh session (see home-manager/programs/zsh).
+  security.sudo.extraConfig = ''
+    Defaults:root env_keep += "http_proxy https_proxy HOMEBREW_CURLRC"
+  '';
+
   system.activationScripts.homebrew.text = lib.mkBefore ''
-    export HOMEBREW_HTTP_PROXY="${proxyURL}"
-    export HOMEBREW_HTTPS_PROXY="${proxyURL}"
+    export http_proxy="${proxyURL}"
+    export https_proxy="${proxyURL}"
+    export HOMEBREW_CURLRC="${homebrewCurlrc}"
   '';
 }
