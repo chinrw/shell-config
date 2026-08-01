@@ -1074,7 +1074,8 @@
         "sops-nix": "sops-nix",
         "yazi": "yazi",
         "zj-sysinfo": "zj-sysinfo",
-        "zjstatus": "zjstatus"
+        "zjstatus": "zjstatus",
+        "agent-skills": "agent-skills"
       }
     },
     "rust-overlay": {
@@ -1461,6 +1462,23 @@
       "original": {
         "owner": "dj95",
         "repo": "zjstatus",
+        "type": "github"
+      }
+    },
+    "agent-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785562161,
+        "narHash": "sha256-Q5atgvyAbqwhX8/J8+JNaAoDXXS5910t92sjxjWTUa4=",
+        "owner": "chinrw",
+        "repo": "agent-skills",
+        "rev": "63ff483442569906e3c1051638638cc2393d12b7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "chinrw",
+        "ref": "main",
+        "repo": "agent-skills",
         "type": "github"
       }
     }

@@ -155,6 +155,13 @@ let
             name = "aihot";
             source = "${inputs.khazix-skills}/aihot";
           }
+          # Codex CLI port of babysit-prs (github:chinrw/agent-skills). Lives in
+          # ~/.agents/skills only — the Claude Code variant of the same repo is
+          # linked into ~/.claude/skills by the activation below.
+          {
+            name = "babysit-prs-codex";
+            source = "${inputs.agent-skills}/codex-skills/babysit-prs-codex";
+          }
         ]
         ++ mattSkillSources
       );
@@ -817,6 +824,18 @@ in
           link_children "$REPO/commands" "$CLAUDE/commands" "" "${commandDenylistShell}"
           link_children "$REPO/skills"   "$CLAUDE/skills"   "${skillAllowlistShell}"
           link_children "$REPO/rules"    "$CLAUDE/rules"   "" "${ruleDenylistShell}"
+
+          # agent-skills (github:chinrw/agent-skills): the user's own
+          # version-controlled Claude Code skills and companion agents.
+          # Linked with the same helper; $REPO is swapped so the stale-link
+          # sweep matches this input's store path instead of the ECC source.
+          # ln -sfn deliberately overwrites any working-copy links left by the
+          # repository's own install.sh — Nix owns these paths now.
+          ECC_REPO="$REPO"
+          REPO="${inputs.agent-skills}"
+          link_children "${inputs.agent-skills}/skills" "$CLAUDE/skills"
+          link_children "${inputs.agent-skills}/agents" "$CLAUDE/agents"
+          REPO="$ECC_REPO"
 
           CLAUDE_MD_BASE="${baseClaudeMdFile}"
           LOCAL_MD="$CLAUDE/CLAUDE.local.md"

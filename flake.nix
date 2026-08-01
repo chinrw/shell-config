@@ -139,6 +139,11 @@
       flake = false;
     };
 
+    agent-skills = {
+      url = "github:chinrw/agent-skills?ref=main";
+      flake = false;
+    };
+
     mattpocock-skills = {
       url = "github:mattpocock/skills?ref=main";
       flake = false;
