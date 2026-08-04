@@ -207,8 +207,8 @@ in
       preset = "openai";
       presets.openai = {
         orchestrator = {
-          model = "openai/gpt-5.6-terra";
-          variant = "medium";
+          model = "openai/gpt-5.6-terra-fast";
+          variant = "xhigh";
           skills = [ "*" ];
           mcps = [
             "*"
@@ -222,30 +222,29 @@ in
           mcps = [ ];
         };
         librarian = {
-          model = "openai/gpt-5.6-luna";
+          model = "openai/gpt-5.6-luna-fast";
           variant = "low";
           skills = [ ];
           mcps = [
-            "websearch"
             "context7"
             "gh_grep"
           ];
         };
         explorer = {
-          model = "openai/gpt-5.6-luna";
+          model = "openai/gpt-5.6-luna-fast";
           variant = "low";
           skills = [ ];
           mcps = [ ];
         };
         designer = {
-          model = "openai/gpt-5.6-luna";
+          model = "openai/gpt-5.6-sol";
           variant = "medium";
           skills = [ ];
           mcps = [ ];
         };
         fixer = {
-          model = "openai/gpt-5.6-luna";
-          variant = "high";
+          model = "openai/gpt-5.6-luna-fast";
+          variant = "max";
           skills = [ ];
           mcps = [ ];
         };
