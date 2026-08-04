@@ -222,7 +222,12 @@ in
         oracle = {
           model = "openai/gpt-5.6-sol";
           variant = "max";
-          skills = [ "simplify" ];
+          # oracle owns the review lane; verification-planning is the
+          # evidence-path methodology that lane needs.
+          skills = [
+            "simplify"
+            "verification-planning"
+          ];
           mcps = [ ];
         };
         librarian = {
