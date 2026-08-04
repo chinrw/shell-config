@@ -1,0 +1,66 @@
+# ~/.codex/AGENTS.md — Codex's user-scope instruction file, the counterpart to
+# ~/.claude/CLAUDE.md.
+#
+# Not managed with home.file: that produces a read-only store symlink, and the
+# same path has to absorb host-local additions. Assembled in activation from
+# the Nix base plus an untracked AGENTS.local.md, mirroring how CLAUDE.md is
+# built in ../claude-code/default.nix.
+#
+# The rest of ~/.codex (config.toml, rules/, the sqlite state) stays owned by
+# the Codex app, which rewrites those files at runtime.
+{
+  config,
+  lib,
+  pkgs,
+  hostname,
+}:
+let
+  sharedAgentInstructions = import ../agent-instructions { inherit lib pkgs; };
+  baseFile = pkgs.writeText "codex-agents-base" (
+    "# User-scope Codex Configuration\n\n" + sharedAgentInstructions.text
+  );
+in
+{
+  home.activation.codexAgentsMd = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    CODEX="${config.home.homeDirectory}/.codex"
+    LOCAL_MD="$CODEX/AGENTS.local.md"
+    FINAL_MD="$CODEX/AGENTS.md"
+
+    run ${pkgs.coreutils}/bin/mkdir -p "$CODEX"
+
+    # Seed AGENTS.local.md on first run only — never touch existing content.
+    if [ ! -e "$LOCAL_MD" ] && [ ! -L "$LOCAL_MD" ]; then
+      ${pkgs.coreutils}/bin/cat > "$LOCAL_MD" <<'EOF'
+    <!--
+    This file is local to this host and not tracked by Nix.
+    Edits land in ~/.codex/AGENTS.md after the next `home-manager switch`,
+    appended below the Nix-managed base content.
+
+    Use it for host-specific shortcuts, side-project context, or anything you
+    want Codex to see at user scope but don't want to commit to the
+    shell-config flake.
+
+    Replace this comment with real content. Codex ignores HTML comments in
+    markdown, so the seed text is not visible in AGENTS.md until you replace it.
+    -->
+    EOF
+    fi
+
+    # Strip a previous Nix symlink at ~/.codex/AGENTS.md if present, then rebuild.
+    if [ -L "$FINAL_MD" ]; then
+      case "$(${pkgs.coreutils}/bin/readlink "$FINAL_MD")" in
+        /nix/store/*) run rm "$FINAL_MD" ;;
+      esac
+    fi
+
+    TMP_MD="$(${pkgs.coreutils}/bin/mktemp -p "$CODEX")"
+    {
+      ${pkgs.coreutils}/bin/cat "${baseFile}"
+      if [ -s "$LOCAL_MD" ]; then
+        printf '\n\n## Local additions (%s)\n\n' "${hostname}"
+        ${pkgs.coreutils}/bin/cat "$LOCAL_MD"
+      fi
+    } > "$TMP_MD"
+    run ${pkgs.coreutils}/bin/mv "$TMP_MD" "$FINAL_MD"
+  '';
+}

@@ -98,6 +98,14 @@ in
   ]
   ++ lib.optionals (!smallNode) [
     ./programs/opencode.nix
+    (import ./programs/codex {
+      inherit
+        lib
+        pkgs
+        config
+        hostname
+        ;
+    })
     (import ./programs/claude-code {
       inherit
         lib

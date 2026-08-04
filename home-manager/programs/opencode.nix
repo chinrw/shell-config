@@ -131,6 +131,9 @@ let
     export const GoalPlugin = (context) => goalModule.server(context, options);
   '';
   goalTuiPluginSpec = "file://${goalPluginPackage}/src/tui.ts";
+  # Shared with Claude and Codex. Host-local additions still go in
+  # ~/.config/opencode/AGENTS.md, which opencode loads on its own.
+  sharedAgentInstructions = import ./agent-instructions { inherit lib pkgs; };
   jsonFormat = pkgs.formats.json { };
   # opencode's permission rules are order-sensitive, and a plain Nix attribute
   # set has no order to give them -- see the comment on permission.bash below.
@@ -153,6 +156,7 @@ in
       source = orderedJsonFormat.generate "opencode.jsonc" {
         "$schema" = "https://opencode.ai/config.json";
         plugin = [ ];
+        instructions = [ "${sharedAgentInstructions.file}" ];
 
         # opencode resolves bash permissions with findLast: the LAST matching
         # rule wins, and a more specific pattern carries no extra weight

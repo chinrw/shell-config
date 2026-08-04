@@ -173,7 +173,9 @@ let
     register_agent_skill ${lib.escapeShellArg skill.name} ${lib.escapeShellArg skill.source}
   '') agentSkillSources;
 
-  baseClaudeMd = builtins.readFile ./CLAUDE.md;
+  # Claude-specific rules first, then the rules Codex and opencode also get.
+  sharedAgentInstructions = import ../agent-instructions { inherit lib pkgs; };
+  baseClaudeMd = builtins.readFile ./CLAUDE.md + "\n" + sharedAgentInstructions.text;
   withHostExtra =
     if extraInstructions == "" then
       baseClaudeMd
