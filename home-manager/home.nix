@@ -342,6 +342,15 @@ in
   # Enable home-manager and git
   programs.home-manager.enable = true;
 
+  programs.pi-coding-agent = {
+    enable = !smallNode;
+    package = pkgs.unstable.pi-coding-agent;
+    extraPackages = with pkgs; [
+      nodejs
+      bun
+    ];
+  };
+
   programs._1password-shell-plugins = {
     # enable 1Password shell plugins for bash, zsh, and fish shell
     enable = true;
