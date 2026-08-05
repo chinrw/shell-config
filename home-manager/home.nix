@@ -298,6 +298,7 @@ in
         inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
         codexPackage
         codexZshCompletion
+        oh-my-pi
         rustscan # modern scanner
         marksman
         pyrefly

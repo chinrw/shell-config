@@ -159,6 +159,13 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    # Upstream does not expose flake outputs. Package the locked source in
+    # pkgs/oh-my-pi instead.
+    oh-my-pi = {
+      url = "github:can1357/oh-my-pi?ref=main";
+      flake = false;
+    };
+
     pwndbg = {
       url = "github:pwndbg/pwndbg";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
@@ -219,7 +226,13 @@
     // {
       # Your custom packages
       # Accessible through 'nix build', 'nix shell', etc
-      packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
+      packages = forAllSystems (
+        system:
+        import ./pkgs {
+          inherit inputs;
+          pkgs = nixpkgs.legacyPackages.${system};
+        }
+      );
 
       # Your custom packages and modifications, exported as overlays
       overlays = import ./overlays { inherit inputs; };

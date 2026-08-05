@@ -919,6 +919,23 @@
         "type": "github"
       }
     },
+    "oh-my-pi": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785815615,
+        "narHash": "sha256-DYU4XKCLmWXP8JsrStb/k4pbGwY0xOOQ8Pb4TFUwePI=",
+        "owner": "can1357",
+        "repo": "oh-my-pi",
+        "rev": "003bb5548c7c1e759336e264305790de435708d1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "can1357",
+        "ref": "main",
+        "repo": "oh-my-pi",
+        "type": "github"
+      }
+    },
     "opencode-goal-plugin": {
       "flake": false,
       "locked": {
@@ -1085,6 +1102,7 @@
         "nixpkgs-stable": "nixpkgs-stable",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "oh-my-opencode-slim": "oh-my-opencode-slim",
+        "oh-my-pi": "oh-my-pi",
         "opencode-goal-plugin": "opencode-goal-plugin",
         "pwndbg": "pwndbg",
         "rust-overlay": "rust-overlay",
