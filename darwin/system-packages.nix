@@ -50,6 +50,8 @@
 
     # Media / docs deps
     ffmpeg
+    libtiff
+    libwebp
     poppler
 
     # Net / sysadmin
