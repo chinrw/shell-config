@@ -1462,11 +1462,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784261669,
-        "narHash": "sha256-v+z9hwTtEXcUZZtM94rBAY13gMoRptkqafTL2mdQQZo=",
+        "lastModified": 1785828603,
+        "narHash": "sha256-/YZzFWyn4D2k+i5XyuGTE3FAY7Eej5umCoKg8dHxRxU=",
         "owner": "chinrw",
         "repo": "zj-sysinfo",
-        "rev": "8dd36991606e63f5b3c8027c941be5979fdb2110",
+        "rev": "f275c6610873d836f281f0be704550ed00684590",
         "type": "github"
       },
       "original": {
