@@ -4,6 +4,15 @@
   config,
   ...
 }:
+let
+  # zellij's cache dir: XDG on Linux, reverse-DNS bundle dir on darwin.
+  # Writing ~/.cache/zellij on a Mac is a silent no-op.
+  zellijCacheDir =
+    if pkgs.stdenv.isDarwin then
+      "${config.home.homeDirectory}/Library/Caches/org.Zellij-Contributors.Zellij"
+    else
+      "${config.xdg.cacheHome}/zellij";
+in
 {
 
   home.file = {
@@ -22,30 +31,47 @@
     };
   };
 
-  # zj-sysinfo is a background (paneless) plugin, so it can never show the
-  # interactive FullHdAccess/MessageAndLaunchOtherPlugins permission prompt
-  # (zellij has nowhere to render it). Without a pre-seeded grant the
-  # widgets just stay silently blank forever. Seed the grant into zellij's
-  # own permission cache on every switch, keyed by the stable
-  # zj-sysinfo.wasm symlink path above. Idempotent by construction: only
-  # appends when the entry is absent, and never rewrites the rest of the
-  # file, since zellij owns and rewrites permissions.kdl itself at runtime.
+  # zj-sysinfo is paneless, so it can never answer zellij's permission
+  # prompt; without a pre-seeded grant the widgets stay blank. Replace rather
+  # than append-if-missing: zellij auto-grants only when the cached entry
+  # covers everything requested, so a stale entry re-prompts invisibly.
+  # Other entries, which zellij owns and rewrites, pass through untouched.
+  # Running sessions keep their in-memory permissions until restarted.
   home.activation.zjSysinfoPermissions = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    ZELLIJ_CACHE_DIR="${config.xdg.cacheHome}/zellij"
+    ZELLIJ_CACHE_DIR="${zellijCacheDir}"
     ZELLIJ_PERMISSIONS="$ZELLIJ_CACHE_DIR/permissions.kdl"
     ZJ_SYSINFO_PLUGIN_PATH="${config.xdg.configHome}/zellij-plugins/zj-sysinfo.wasm"
 
     run ${pkgs.coreutils}/bin/mkdir -p "$ZELLIJ_CACHE_DIR"
 
-    if [ ! -f "$ZELLIJ_PERMISSIONS" ] || \
-       ! ${pkgs.gnugrep}/bin/grep -F -q "$ZJ_SYSINFO_PLUGIN_PATH" "$ZELLIJ_PERMISSIONS"; then
-      ${pkgs.coreutils}/bin/cat >> "$ZELLIJ_PERMISSIONS" <<EOF
+    {
+      # Drop our own block. permissions.kdl blocks are flat, so matching the
+      # quoted path and skipping to the next `}` is enough.
+      if [ -f "$ZELLIJ_PERMISSIONS" ]; then
+        ${pkgs.gawk}/bin/awk -v target="$ZJ_SYSINFO_PLUGIN_PATH" '
+          {
+              line = $0
+              sub(/^[ \t]+/, "", line)
+              sub(/[ \t]+$/, "", line)
+              if (skip) {
+                  if (line == "}") { skip = 0 }
+                  next
+              }
+              if (line == "\"" target "\" {") { skip = 1; next }
+              print
+          }
+        ' "$ZELLIJ_PERMISSIONS"
+      fi
+      ${pkgs.coreutils}/bin/cat <<EOF
 "$ZJ_SYSINFO_PLUGIN_PATH" {
     FullHdAccess
     MessageAndLaunchOtherPlugins
+    RunCommands
 }
 EOF
-    fi
+    } > "$ZELLIJ_PERMISSIONS.hm-new"
+
+    run ${pkgs.coreutils}/bin/mv -f "$ZELLIJ_PERMISSIONS.hm-new" "$ZELLIJ_PERMISSIONS"
   '';
 
   # programs.zellij = {
