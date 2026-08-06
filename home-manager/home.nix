@@ -98,6 +98,7 @@ in
   ]
   ++ lib.optionals (!smallNode) [
     ./programs/opencode.nix
+    ./programs/pi
     (import ./programs/codex {
       inherit
         lib
@@ -341,25 +342,6 @@ in
 
   # Enable home-manager and git
   programs.home-manager.enable = true;
-
-  programs.pi-coding-agent = {
-    enable = !smallNode;
-    package = pkgs.unstable.pi-coding-agent;
-    extraPackages = with pkgs; [
-      nodejs
-      bun
-    ];
-    keybindings = {
-      "tui.editor.cursorUp" = [
-        "up"
-        "ctrl+p"
-      ];
-      "tui.editor.cursorDown" = [
-        "down"
-        "ctrl+n"
-      ];
-    };
-  };
 
   programs._1password-shell-plugins = {
     # enable 1Password shell plugins for bash, zsh, and fish shell
