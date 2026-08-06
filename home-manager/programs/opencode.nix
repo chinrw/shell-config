@@ -15,24 +15,66 @@ let
   ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
     "--backend=copyfile"
   ];
+  # Derive dependencies from each flake input's upstream bun.lock. This keeps
+  # source and transitive dependencies in sync without a second lock file, and
+  # lets one machine evaluate every target platform. Bun's text lock is JSON
+  # with trailing commas, so strip only commas before a closing object or array.
+  parseBunLock =
+    source:
+    let
+      parts = builtins.split ",([[:space:]]*(}|]))" (builtins.readFile "${source}/bun.lock");
+      json = builtins.concatStringsSep "" (
+        map (part: if builtins.isList part then builtins.elemAt part 0 else part) parts
+      );
+    in
+    builtins.fromJSON json;
+  bunNixFromLock =
+    name: source:
+    let
+      packageTuples = builtins.attrValues (parseBunLock source).packages;
+      packageEntry =
+        fetchurl: tuple:
+        let
+          package = if builtins.length tuple > 0 then builtins.elemAt tuple 0 else null;
+          hash = if builtins.length tuple > 3 then builtins.elemAt tuple 3 else null;
+          scoped =
+            if builtins.isString package then builtins.match "^(@[^/]+/([^@]+))@(.+)$" package else null;
+          unscoped = if builtins.isString package then builtins.match "^([^@]+)@(.+)$" package else null;
+          packageInfo =
+            if scoped != null then
+              {
+                registryName = builtins.elemAt scoped 0;
+                tarballName = builtins.elemAt scoped 1;
+                version = builtins.elemAt scoped 2;
+              }
+            else if unscoped != null then
+              {
+                registryName = builtins.elemAt unscoped 0;
+                tarballName = builtins.elemAt unscoped 0;
+                version = builtins.elemAt unscoped 1;
+              }
+            else
+              null;
+        in
+        if packageInfo == null || !builtins.isString hash then
+          throw "opencode: ${name} has a non-registry Bun dependency unsupported by the pure lock parser"
+        else
+          {
+            name = package;
+            value = fetchurl {
+              url =
+                "https://registry.npmjs.org/${packageInfo.registryName}/-/"
+                + "${packageInfo.tarballName}-${packageInfo.version}.tgz";
+              inherit hash;
+            };
+          };
+    in
+    { fetchurl, ... }:
+    builtins.listToAttrs (map (packageEntry fetchurl) packageTuples);
   # `files` is upstream's own declaration of what a published copy needs at
   # runtime, so it is the authority on what belongs in the store output.
   packageFiles =
     source: (builtins.fromJSON (builtins.readFile "${source}/package.json")).files or [ ];
-  # Generate bun2nix's dependency expression directly from each flake input's
-  # upstream bun.lock. This intentionally uses IFD so `nix flake update`
-  # updates source and transitive dependencies together without a second
-  # repository-local lock file or fixed-output hash. The cost is that any
-  # evaluation of this module has to build bun2nix and run it, so
-  # `--no-allow-import-from-derivation` (and CI that sets it) cannot evaluate
-  # these attributes at all.
-  bunNixFromLock =
-    name: source:
-    pkgs.runCommand "${name}-bun-deps.nix" { nativeBuildInputs = [ bun2nixPackage ]; } ''
-      bun2nix \
-        --lock-file "${source}/bun.lock" \
-        --output-file "$out"
-    '';
   mkBunPluginPackage =
     {
       pname,
