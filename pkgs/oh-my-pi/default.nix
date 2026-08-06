@@ -64,7 +64,7 @@ let
     pname = "oh-my-pi";
     inherit version;
     src = source;
-    hash = "sha256-dCg4aH0ToAs+8Gq1MBNhHY255ZetHVackU5rqMvUQQc=";
+    hash = "sha256-DJzwmMpv7SaMIyOmOkpCpM/sTMcxGgB1wBZiu4fl+ns=";
   };
 
   linuxLibraryPath = lib.makeLibraryPath [
