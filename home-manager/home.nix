@@ -349,6 +349,16 @@ in
       nodejs
       bun
     ];
+    keybindings = {
+      "tui.editor.cursorUp" = [
+        "up"
+        "ctrl+p"
+      ];
+      "tui.editor.cursorDown" = [
+        "down"
+        "ctrl+n"
+      ];
+    };
   };
 
   programs._1password-shell-plugins = {
