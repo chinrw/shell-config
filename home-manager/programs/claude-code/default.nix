@@ -258,8 +258,15 @@ let
     showSeparators = true;
     display = {
       showTools = false;
+      showAgents = true;
       # Hide the 7d window unless usage hits 100%; keep the 5h window visible.
       sevenDayThreshold = 100;
+    };
+    gitStatus = {
+      enabled = true;
+      showDirty = true;
+      showAheadBehind = true;
+      showFileStats = false;
     };
   };
 
