@@ -319,6 +319,7 @@ in
     android-tools
     python3
     nftables
+    bat
   ];
 
   # Host ZFS pool shared into this VM via virtiofs. This VM runs on the
