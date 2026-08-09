@@ -64,6 +64,7 @@ in
       fi
       ${pkgs.coreutils}/bin/cat <<EOF
 "$ZJ_SYSINFO_PLUGIN_PATH" {
+    ReadApplicationState
     FullHdAccess
     MessageAndLaunchOtherPlugins
     RunCommands
