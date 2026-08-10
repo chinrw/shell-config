@@ -84,15 +84,6 @@ let
       ];
     };
 
-  # Compatibility bridge for the pinned Hermes revision. Its picker remap is
-  # still needed to route OpenAI models through openai-codex (subscription
-  # billing). The app-server turn hook is dormant while openai_runtime is
-  # "auto", but remains available for an explicit temporary switch.
-  # Remove it once upstream covers both behaviors.
-  codexAppServerBridge = pkgs.writeTextDir "${pkgs.python312.sitePackages}/sitecustomize.py" (
-    builtins.readFile ./hermes-codex-app-server-sitecustomize.py
-  );
-
   # Same codex/claude builds home-manager installs — nix-provided so they
   # survive container recreation (replacing the npm-global copies).
   codexPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
@@ -363,13 +354,12 @@ in
         "--env"
         "FONTCONFIG_FILE=${browserFontConfig}"
 
-        # Load the Codex provider/picker bridge in Hermes' sealed Python. Its
-        # app-server hook is dormant on the default "auto" runtime. Keep the
-        # host-provided bubblewrap on PATH for an explicit app-server switch.
-        # Also expose the Nix Python Playwright package; its child driver gets
-        # the matching browser cache from the package override above.
+        # Expose the Nix Python Playwright package to Hermes' sealed Python;
+        # its child driver gets the matching browser cache from the package
+        # override above. Keep host-provided bubblewrap on PATH for an
+        # explicit codex app-server switch.
         "--env"
-        "PYTHONPATH=${codexAppServerBridge}/${pkgs.python312.sitePackages}:${pythonPlaywrightPath}"
+        "PYTHONPATH=${pythonPlaywrightPath}"
         "--env"
         "PATH=${pkgs.bubblewrap}/bin:${browserAutomationPath}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${codexPackage}/bin:${claudePackage}/bin"
       ];
@@ -499,6 +489,7 @@ in
         # above puts that trigger near 231K, so 200K survives unclamped and
         # the server always gets the first shot at compaction.
         codex_responses_compact_threshold = 200000;
+        idle_compact_after_seconds = 1800;
       };
 
       # Quick model switches. Luna/Terra/Sol use ChatGPT subscription auth;
