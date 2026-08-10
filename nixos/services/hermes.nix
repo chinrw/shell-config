@@ -171,8 +171,17 @@ let
   profileConfig = model: reasoningEffort: toolsets: {
     model = (codexTarget model) // {
       openai_runtime = "auto";
+      api_mode = "codex_responses";
     };
     agent.reasoning_effort = reasoningEffort;
+
+    # Profile config.yaml files are standalone clones, not overlays on the
+    # default profile, so the native-compaction opt-in has to be repeated
+    # here or every Profile session silently stays on Hermes' summarizer.
+    compression = {
+      codex_responses_native = true;
+      codex_responses_compact_threshold = 200000;
+    };
 
     # `platform_toolsets.cli` is what direct CLI sessions and Kanban workers
     # resolve. Every entry is a real 0.19.0 toolset; `gateway` is a process-
@@ -384,6 +393,14 @@ in
         default = codexTerra;
         provider = "openai-codex";
         openai_runtime = "auto";
+
+        # Overwrites the stale `codex_app_server` the 2026-07-19 app-server
+        # experiment left behind — the additive merge cannot delete keys.
+        # Inert for openai-codex (all three resolution paths hard-set
+        # codex_responses: runtime_provider.py:465/1533/1958), but a later
+        # provider switch would honour the persisted value verbatim.
+        api_mode = "codex_responses";
+
         base_url = "";
         api_key = "";
       };
@@ -462,9 +479,26 @@ in
 
       compression = {
         enabled = true;
+
+        # Reaches the main model raised, not as written: context_compressor
+        # floors sub-512K windows at 0.75, and the Codex gpt-5.6 autoraise
+        # takes it to 0.85. Only >=512K fallback models see 0.50.
         threshold = 0.50;
+
         target_ratio = 0.20;
         protect_last_n = 20;
+
+        # OpenAI server-side compaction on the Responses API. Gated in
+        # native_compaction.py to the gpt-5.6 family on api.openai.com or the
+        # Codex backend, so DeepSeek/Kimi/Go-plan models stay on Hermes'
+        # summarizer without extra config. Local compression remains the
+        # fallback owner and takes over if the provider rejects the field.
+        codex_responses_native = true;
+
+        # Clamped at request time to (local trigger - 8192). The autoraise
+        # above puts that trigger near 231K, so 200K survives unclamped and
+        # the server always gets the first shot at compaction.
+        codex_responses_compact_threshold = 200000;
       };
 
       # Quick model switches. Luna/Terra/Sol use ChatGPT subscription auth;
