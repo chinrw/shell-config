@@ -136,7 +136,9 @@ let
     # compacts first without assuming a fixed gpt-5.6 window.
     codex_responses_compact_threshold = 200000;
 
-    idle_compact_after_seconds = 1800;
+    # OpenAI evicts cached prefixes within an hour, so a resume after this
+    # gap never has a warm cache — compact the stale history up front.
+    idle_compact_after_seconds = 3600;
   };
 
   # Same codex/claude builds home-manager installs — nix-provided so they
