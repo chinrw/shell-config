@@ -16,18 +16,10 @@ in
   homebrew = {
     enable = true;
 
-    # force to update the cask bundles
-    greedyCasks = true;
-
     onActivation = {
       cleanup = "zap";
       autoUpdate = true;
       upgrade = false;
-      # Homebrew 5.1+ refuses `brew bundle --cleanup` unless one of --force,
-      # --force-cleanup or $HOMEBREW_ASK is given. nix-darwin doesn't pass one,
-      # so add it here. --force-cleanup runs the zap cleanup non-interactively
-      # and, unlike --force, doesn't also imply install --overwrite.
-      extraFlags = [ "--force-cleanup" ];
     };
 
     global = {
@@ -63,11 +55,7 @@ in
       "adobe-acrobat-pro"
       "android-file-transfer"
       "discord"
-      # Opt out of greedy
-      {
-        name = "docker-desktop";
-        greedy = false;
-      }
+      "docker-desktop"
       "firefox"
       "google-chrome"
       "iina"
@@ -88,11 +76,7 @@ in
       "utm"
       "visual-studio-code"
       "vnc-viewer"
-      # Opt out of greedy
-      {
-        name = "wezterm@nightly";
-        greedy = false;
-      }
+      "wezterm@nightly"
       "wireshark-app"
       "zed@preview"
       "zoom"
