@@ -84,6 +84,61 @@ let
       ];
     };
 
+  # Summarization is extraction, not reasoning — high is enough. The effort
+  # is shared with the chain: this rev only honours per-entry timeout and
+  # api_key (auxiliary_client.py:4713/5419). No timeout key: compression
+  # timeouts are already floored at 300s (auxiliary_client.py:7737).
+  compressionAux = (codexTarget codexTerra) // {
+    reasoning_effort = "high";
+    # Per-entry 300s — otherwise a fallback runs on whatever is left of the
+    # primary's deadline (#62452).
+    fallback_chain = [
+      ((deepseekApiTarget deepseekPro) // { timeout = 300; })
+      ((deepseekApiTarget deepseekFlash) // { timeout = 300; })
+    ];
+  };
+
+  # Shared by the default config and every named profile; profiles are
+  # standalone clones, so a key left out here diverges silently.
+  compressionPolicy = {
+    enabled = true;
+
+    # Reaches the main model raised, not as written: context_compressor
+    # floors sub-512K windows at 0.75, and the Codex gpt-5.6 autoraise
+    # takes it to 0.85. Only >=512K fallback models see 0.50.
+    threshold = 0.50;
+
+    target_ratio = 0.20;
+    protect_last_n = 20;
+
+    # Bulky tool output can fill the whole tail budget; keep the last 3
+    # real user turns verbatim.
+    min_tail_user_messages = 3;
+
+    # Default false swaps the middle window for a placeholder when the
+    # summary call fails, losing history. Freeze instead; /compress resumes.
+    abort_on_summary_failure = true;
+
+    # No-LLM prune of stale large tool results, which the 0.85 trigger
+    # otherwise re-sends every turn until ~231K. min_reclaim keeps the
+    # prompt-cache breaks episodic rather than per-turn.
+    proactive_prune_tokens = 96000;
+    proactive_prune_min_result_chars = 12000;
+    proactive_prune_min_reclaim_tokens = 8192;
+
+    # OpenAI server-side compaction on the Responses API. Gated in
+    # native_compaction.py to the gpt-5.6 family on api.openai.com or the
+    # Codex backend; other models stay on the local summarizer, which also
+    # remains the fallback owner.
+    codex_responses_native = true;
+
+    # Clamped at request time to (local trigger - 8192), so the server
+    # compacts first without assuming a fixed gpt-5.6 window.
+    codex_responses_compact_threshold = 200000;
+
+    idle_compact_after_seconds = 1800;
+  };
+
   # Same codex/claude builds home-manager installs — nix-provided so they
   # survive container recreation (replacing the npm-global copies).
   codexPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
@@ -167,12 +222,10 @@ let
     agent.reasoning_effort = reasoningEffort;
 
     # Profile config.yaml files are standalone clones, not overlays on the
-    # default profile, so the native-compaction opt-in has to be repeated
-    # here or every Profile session silently stays on Hermes' summarizer.
-    compression = {
-      codex_responses_native = true;
-      codex_responses_compact_threshold = 200000;
-    };
+    # default profile, so the policy and the aux summarizer must be
+    # repeated here or Profile sessions silently diverge.
+    compression = compressionPolicy;
+    auxiliary.compression = compressionAux;
 
     # `platform_toolsets.cli` is what direct CLI sessions and Kanban workers
     # resolve. Every entry is a real 0.19.0 toolset; `gateway` is a process-
@@ -464,33 +517,10 @@ in
 
         # Compression — upstream has dedicated Codex handling (272K cap,
         # codex_gpt55_autoraise); DeepSeek chain backstops it like the rest.
-        compression = codexAuxTarget codexTerra;
+        compression = compressionAux;
       };
 
-      compression = {
-        enabled = true;
-
-        # Reaches the main model raised, not as written: context_compressor
-        # floors sub-512K windows at 0.75, and the Codex gpt-5.6 autoraise
-        # takes it to 0.85. Only >=512K fallback models see 0.50.
-        threshold = 0.50;
-
-        target_ratio = 0.20;
-        protect_last_n = 20;
-
-        # OpenAI server-side compaction on the Responses API. Gated in
-        # native_compaction.py to the gpt-5.6 family on api.openai.com or the
-        # Codex backend, so DeepSeek/Kimi/Go-plan models stay on Hermes'
-        # summarizer without extra config. Local compression remains the
-        # fallback owner and takes over if the provider rejects the field.
-        codex_responses_native = true;
-
-        # Clamped at request time to (local trigger - 8192). The autoraise
-        # above puts that trigger near 231K, so 200K survives unclamped and
-        # the server always gets the first shot at compaction.
-        codex_responses_compact_threshold = 200000;
-        idle_compact_after_seconds = 1800;
-      };
+      compression = compressionPolicy;
 
       # Quick model switches. Luna/Terra/Sol use ChatGPT subscription auth;
       # DeepSeek aliases use its native API, while `pro` retains the previous
