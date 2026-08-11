@@ -1,0 +1,27 @@
+{
+  "nixd": {
+    "command": ["nixd"],
+    "extensions": [".nix"]
+  },
+  "rust-analyzer": {
+    "command": ["rust-analyzer"],
+    "extensions": [".rs"],
+    "pullDiagnosticsGraceMs": 5000
+  },
+  "clangd": {
+    "command": ["clangd", "--background-index", "--clang-tidy"],
+    "extensions": [".c", ".h", ".cpp", ".hpp", ".cc", ".hh", ".cxx", ".hxx"]
+  },
+  "basedpyright": {
+    "command": ["basedpyright-langserver", "--stdio"],
+    "extensions": [".py", ".pyi"]
+  },
+  "ruff": {
+    "command": ["ruff", "server"],
+    "extensions": [".py", ".pyi"]
+  },
+  "vtsls": {
+    "command": ["vtsls", "--stdio"],
+    "extensions": [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"]
+  }
+}

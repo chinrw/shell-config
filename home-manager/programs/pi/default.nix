@@ -17,6 +17,9 @@ in
     extraPackages = with pkgs; [
       nodejs
       bun
+      nixd
+      ruff
+      vtsls
     ];
 
     context = banner + "\n# User-scope Pi Configuration\n\n" + sharedAgentInstructions.text;
@@ -54,4 +57,7 @@ in
       ];
     };
   };
+
+  # Server catalog for @narumitw/pi-lsp. Replaces the built-in catalog
+  home.file.".pi/agent/pi-lsp.json".source = ./pi-lsp.json;
 }
