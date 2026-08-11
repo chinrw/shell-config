@@ -93,11 +93,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786163539,
-        "narHash": "sha256-/+tWOBbEjnFJdxlf5+pdwUVBImxV/GxWL8bWyMPmFeU=",
+        "lastModified": 1786406106,
+        "narHash": "sha256-DUsZjKnhNbwALlHvG6jAAMAjUQqlCtGSjHoRaNSMKuA=",
         "owner": "chinrw",
         "repo": "claude-code-nix",
-        "rev": "a56bbf37f75a3582ecbe298003ba33aab4baae0b",
+        "rev": "6e793c46e28bcae8080acf74b07b69f5f2ae5415",
         "type": "github"
       },
       "original": {
@@ -187,11 +187,11 @@
     "everything-claude-code": {
       "flake": false,
       "locked": {
-        "lastModified": 1786313725,
-        "narHash": "sha256-7/2yUmDD87lbfaxltXto6kNlTHL1IFHBUxWsup14mEE=",
+        "lastModified": 1786404715,
+        "narHash": "sha256-v2dU78od+rQTiTKjudrjJD4V+3nN2oM4ZsrqdfhwIL8=",
         "owner": "affaan-m",
         "repo": "everything-claude-code",
-        "rev": "ae303fb6c19e3f7cb88cb9fd9f15ddcf235294b6",
+        "rev": "3d4ef3184b7141b18f2d0823b8fe62d2c67218bf",
         "type": "github"
       },
       "original": {
@@ -478,11 +478,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1786360054,
-        "narHash": "sha256-bR9tfoZ6xq+OAt+EC0ww4RWQoNuGYLuCYEqjTwXKalk=",
+        "lastModified": 1786410299,
+        "narHash": "sha256-knCTnvb5/Rv8uHbfhJ68jXz0+VLB7NUShXdaJcsXRb0=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "03fa32c92dd445eb64c7f67434dd91b32c40701d",
+        "rev": "33f8e96a72945afb29f3bc9ef9991940f0bedcf7",
         "type": "github"
       },
       "original": {
@@ -535,11 +535,11 @@
     "khazix-skills": {
       "flake": false,
       "locked": {
-        "lastModified": 1786227872,
-        "narHash": "sha256-G8Yy3MKVv7eUeuRXZL2x/rBbV7Ew6lizM5kOn/Ut9/k=",
+        "lastModified": 1786407429,
+        "narHash": "sha256-v49pN0i+N6F7oGimWgB9BYC9G/oBuqKcXX2oTaIRUgg=",
         "owner": "KKKKhazix",
         "repo": "khazix-skills",
-        "rev": "651a45affc65919c0e3facc6124f1656d43c4ad2",
+        "rev": "741eb55ba5acf2050b0e209723c2985e956e4f7c",
         "type": "github"
       },
       "original": {
@@ -804,11 +804,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1786377012,
-        "narHash": "sha256-TFcUI+g7ovzT9li6RWnu85K5sucsjMeAswSDq4yhEg4=",
+        "lastModified": 1786411020,
+        "narHash": "sha256-jpCz3y6FCzlYpvda5LLO61Ft/6Oyhbg6XnbX39CWTvU=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "81788f7597ea358312f10f38300753746b2a90e4",
+        "rev": "e4525682274b666ccaecf5be2ed67d4590ee7fb6",
         "type": "github"
       },
       "original": {
@@ -905,11 +905,11 @@
     "oh-my-opencode-slim": {
       "flake": false,
       "locked": {
-        "lastModified": 1786373289,
-        "narHash": "sha256-+LPMcQHg2LaXXIGoxUsT0V81wI3asrnJBy46v8fNxbM=",
+        "lastModified": 1786399104,
+        "narHash": "sha256-xhHTQayhSyodbVBMMQTOAFK93VAsF4bDxtSh1ZxvJgc=",
         "owner": "alvinunreal",
         "repo": "oh-my-opencode-slim",
-        "rev": "2c691323e5fd286d9d673e40c7754178bbd325f1",
+        "rev": "fb58dd59cf58f6053f45cb2c71c344c53d0c0549",
         "type": "github"
       },
       "original": {
@@ -1439,11 +1439,11 @@
         "rust-overlay": "rust-overlay_3"
       },
       "locked": {
-        "lastModified": 1786167302,
-        "narHash": "sha256-z3TsqVoVlqa8QgxdA5Khh4RNZlykwj0cmUed/TNAlNo=",
+        "lastModified": 1786388945,
+        "narHash": "sha256-UFVq1da1R5sdXTvtpFRh+isCBgVKs1Hqm29WGZbbDnM=",
         "owner": "sxyazi",
         "repo": "yazi",
-        "rev": "9d5541d627bc65bbabae6f8b354db6af84b534f0",
+        "rev": "7595a1c573b30006ec56a030077daeb95de99146",
         "type": "github"
       },
       "original": {
@@ -1462,11 +1462,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786370163,
-        "narHash": "sha256-l0A06pDYFkIvbtTSUfEChqu9D/FLtibB4TaN0Te/AK0=",
+        "lastModified": 1786411641,
+        "narHash": "sha256-yRKtFWXBbAvX9v/EaGeb3u970JdUSzL4mbaFgZTaxC4=",
         "owner": "chinrw",
         "repo": "zj-sysinfo",
-        "rev": "343de233a5520f3bf5c2b82e623eee424163648e",
+        "rev": "22b5f9d37f22043973128b60dc0c72298d2f94a9",
         "type": "github"
       },
       "original": {
