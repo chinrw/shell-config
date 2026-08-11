@@ -55,8 +55,9 @@ layout {
     }
     tab name="play" {}
     tab name="nvim" {}
-    tab name="upgrade" {}
-    tab name="yazi" {}
+    tab name="ops" {}
+    tab name="agent" {}
     tab name="kernel" {}
+    tab name="misc" {}
 }
 
