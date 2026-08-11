@@ -32,14 +32,13 @@ let
   };
 
   # ── opencode Zen "Go" plan gateway ──────────────────────────────
-  # OpenAI-compatible multi-model endpoint, now only behind the legacy
-  # `/model pro` shortcut and the switchable `opencode-go` custom provider.
-  # provider "custom" + explicit base_url/api_key is Hermes' generic
-  # OpenAI-compatible shape.
+  # Multi-model endpoint behind the legacy `/model pro` shortcut and the
+  # switchable `opencode-go` custom provider. The first-class provider keeps
+  # Hermes' per-model Go routing and reasoning request shaping active.
   opencodeGoEndpoint = "https://opencode.ai/zen/go/v1";
 
   goBase = {
-    provider = "custom";
+    provider = "opencode-go";
     base_url = opencodeGoEndpoint;
     api_key = "\${OPENCODE_API_KEY}";
   };
@@ -52,11 +51,10 @@ let
   # This backs the fallback chain on Hermes' default runtime plus the manual
   # `/model deepseek` and `/model deepseek-flash` switches.
   #
-  # provider = "deepseek" is hermes' built-in named provider
-  # (plugins/model-providers/deepseek): it activates DeepSeekProfile, which
-  # emits the extra_body.thinking / reasoning_effort wire shape the V4
-  # family requires to avoid the "reasoning_content must be passed back"
-  # HTTP 400 trap that a raw custom provider would hit.
+  # provider = "deepseek" is Hermes' built-in native provider. It activates
+  # DeepSeekProfile for the direct API's thinking controls; Go traffic uses
+  # the separate opencode-go profile because that relay has its own request
+  # shaping and per-model protocol routing.
   #
   # base_url is pinned explicitly (not left to the provider default) ON
   # PURPOSE: hermes derives the credential from the base_url HOST
@@ -456,12 +454,24 @@ in
       # tool_use_enforcement is deliberately not pinned: "auto" is already the
       # upstream default and it has never been set in the stateful config, so
       # declaring it would only add a leaf that always matches the default.
-      agent.reasoning_effort = "medium";
+      agent = {
+        reasoning_effort = "high";
+
+        # Main fallback activation resolves effort by model ID, not by the
+        # fallback entry. These overrides therefore also apply to manual
+        # switches to the same Terra and DeepSeek Pro/Flash model IDs.
+        reasoning_overrides = {
+          ${codexTerra} = "xhigh";
+          ${deepseekFlash} = "max";
+          ${deepseekPro} = "max";
+        };
+      };
 
       # Subagent delegation — children run on Luna via the Codex OAuth
       # responses route (delegate_tool.py detects provider openai-codex; no
       # app-server binary involved). They inherit fallback_providers, so a
-      # subscription outage drops them to the native DeepSeek chain.
+      # subscription outage walks the same Terra → Go Pro → native Pro
+      # chain as the parent, skipping an entry identical to the failed backend.
       #
       # Tuning (schema defaults live in hermes_cli/config.py:1388):
       #   max_concurrent_children 4 — parallel children per batch (def 3).
@@ -574,13 +584,14 @@ in
       # inherits the parent's _fallback_chain into spawned children
       # (see tools/delegate_tool.py:1078 / :1113).
       #
-      # It uses the NATIVE DeepSeek API (deepseekApiTarget: provider
-      # "deepseek" → api.deepseek.com + DEEPSEEK_API_KEY), not the Go gateway,
-      # so DeepSeek Pro → flash remains an independent backstop for default-
-      # runtime sessions and delegated work.
+      # Order and credentials are deliberate: try Codex through Terra first,
+      # then use the OpenCode Go-plan Pro route, then the independently
+      # credentialled native DeepSeek Pro route. Hermes skips Terra when the
+      # failed backend was already openai-codex/Terra.
       fallback_providers = [
+        (codexTarget codexTerra)
+        (goTarget deepseekPro)
         (deepseekApiTarget deepseekPro)
-        (deepseekApiTarget deepseekFlash)
       ];
 
       terminal = {
