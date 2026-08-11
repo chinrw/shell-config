@@ -258,7 +258,7 @@ let
     showSeparators = true;
     display = {
       showTools = false;
-      showAgents = true;
+      showAgents = false;
       # Hide the 7d window unless usage hits 100%; keep the 5h window visible.
       sevenDayThreshold = 100;
     };
