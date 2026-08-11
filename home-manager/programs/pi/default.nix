@@ -41,6 +41,17 @@ in
         "down"
         "ctrl+n"
       ];
+      # Moved off ctrl+p/ctrl+n so they don't shadow tui.select.* in selectors.
+      "app.session.togglePath" = [ "alt+shift+p" ];
+      "app.session.toggleNamedFilter" = [ "alt+n" ];
+      "app.models.toggleProvider" = [ "alt+shift+t" ];
+      # thinking.cycle registers before thinking.toggle and first match wins, so
+      # it has to vacate shift+tab rather than just sharing it.
+      "app.thinking.cycle" = [ "alt+t" ];
+      "app.thinking.toggle" = [
+        "shift+tab"
+        "ctrl+t"
+      ];
     };
   };
 }
