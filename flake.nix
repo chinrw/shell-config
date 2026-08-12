@@ -166,6 +166,12 @@
       flake = false;
     };
 
+    # nixpkgs deliberately not followed: the fork's CI builds against pi.nix's
+    # own pin to use the cache
+    pi = {
+      url = "github:chinrw/pi.nix";
+    };
+
     pwndbg = {
       url = "github:pwndbg/pwndbg";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
