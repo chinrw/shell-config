@@ -2,7 +2,8 @@
 #
 # 2026-07-10 fork storm: ~4M forks under uid 1000. The OOM killer shot the
 # small oom_score_adj=200 user services instead of the storm, and nothing
-# recorded the spawner. Guards: TasksMax, auditd exec logging.
+# recorded the spawner. Guards: TasksMax, auditd exec logging (the exec
+# logging was withdrawn 2026-08-12, see below).
 #
 # 2026-07-23 memory exhaustion: ~66 GiB anon (15 rust-analyzer instances
 # alone held 33 GiB), no swap. The box thrashed file pages for ~90 min and
@@ -19,15 +20,9 @@
 
   security.audit = {
     enable = true;
-    # One boot produced ~57M exec records; cap kauditd, sampled coverage
-    # still attributes a spawner.
     rateLimit = 2000;
-    # auid is stamped at login and inherited; daemons and nix builders
-    # have none, which keeps volume down.
-    rules = [
-      "-a exit,always -F arch=b64 -F auid=1000 -S execve,execveat -k user-exec"
-      "-a exit,always -F arch=b32 -F auid=1000 -S execve,execveat -k user-exec"
-    ];
+    backlogLimit = 8192;
+    rules = [ ];
   };
 
   # Audit records stay in auditd's capped log. This socket feeds the
@@ -41,11 +36,12 @@
 
   security.auditd = {
     enable = true;
-    # ~1 GiB of /var/log/audit; the compiled-in 8 MiB rotation overruns
-    # in a day of agent execs.
+    # Was 200 MiB x 5 to hold a day of agent execs. With no execve rules
+    # only login and AVC records land here, so 150 MiB is ample and the
+    # compiled-in 8 MiB rotation is still too small to be useful.
     settings = {
-      max_log_file = 200;
-      num_logs = 5;
+      max_log_file = 50;
+      num_logs = 3;
       max_log_file_action = "rotate";
     };
   };
