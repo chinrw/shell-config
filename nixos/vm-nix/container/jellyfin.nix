@@ -1,6 +1,12 @@
 # Auto-generated using compose2nix v0.3.2-pre, then edited.
-{ pkgs, lib, ... }:
+{ pkgs, lib, config, ... }:
 let
+  # Keeps volumes, the mount-ready gate and RequiresMountsFor in sync.
+  mountsDir = "/home/chin39/mounts";
+  mediaDir = "/mnt/data/Video/jellyfin";
+  # networking.proxy.* in vm-nix/default.nix.
+  proxy = config.networking.proxy.default;
+  noProxy = config.networking.proxy.noProxy;
   jellyfinCjkFonts = pkgs.symlinkJoin {
     name = "jellyfin-cjk-fonts";
     paths = [
@@ -32,15 +38,20 @@ in
       "PGID" = "100";
       "PUID" = "1000";
       "TZ" = "Asia/Shanghai";
-      "http_proxy" = "http://192.168.0.240:10809";
-      "https_proxy" = "http://192.168.0.240:10809";
+    } // lib.optionalAttrs (proxy != null) {
+      "http_proxy" = proxy;
+      "https_proxy" = proxy;
+    } // lib.optionalAttrs (noProxy != null) {
+      "no_proxy" = noProxy;
     };
     volumes = [
       "/home/chin39/Documents/container/jellyfin/cache:/cache:rw"
       "/home/chin39/Documents/container/jellyfin/config-jellyfin:/config:rw"
       "${jellyfinCjkFonts}/share/fonts/opentype/noto-cjk:/config/fonts:ro"
-      "/home/chin39/mounts:/mounts:rw"
-      "/mnt/data/Video/jellyfin:/jellyfin-media:rw"
+      # rslave: a remount on the host (rclone restart) propagates into the
+      # running container; rprivate would pin the dead FUSE mount instead.
+      "${mountsDir}:/mounts:rw,rslave"
+      "${mediaDir}:/jellyfin-media:rw"
     ];
     ports = [
       "8096:8096/tcp"
@@ -59,7 +70,7 @@ in
     ];
   };
   systemd.services."jellyfin-mount-ready" = {
-    description = "Wait for user-scope rclone FUSE mounts to be ready";
+    description = "Wait for the alist FUSE mount to be ready";
     path = [
       pkgs.coreutils
       pkgs.util-linux
@@ -67,27 +78,27 @@ in
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      TimeoutStartSec = "180";
+      # Retry until the mount is up: systemd never retries a dependency
+      # failure, so a single failed run would block docker-jellyfin for good.
+      Restart = "on-failure";
+      RestartSec = "15s";
+      StartLimitIntervalSec = "0";
     };
     script = ''
       set -eu
-      deadline=$(( $(date +%s) + 120 ))
-      for m in /home/chin39/mounts/{alist,115-single,union-115}; do
-        while ! ( mountpoint -q "$m" \
-                  && [ -n "$(ls -A "$m" 2>/dev/null | head -n1)" ] ); do
-          if [ "$(date +%s)" -gt "$deadline" ]; then
-            echo "timeout waiting for $m" >&2
-            exit 1
-          fi
-          sleep 2
-        done
-      done
+      m=${mountsDir}/alist
+      mountpoint -q "$m" && [ -n "$(ls -A "$m" 2>/dev/null | head -n1)" ]
+      # Boot race: a failed gate cancels docker-jellyfin's start job for good,
+      # leaving it inactive (not failed), so no state check is reliable.
+      # Unconditional start recovers it; no-op if already running or queued.
+      systemctl --no-block start docker-jellyfin.service
     '';
   };
 
   systemd.services."docker-jellyfin" = {
     unitConfig = {
-      RequiresMountsFor = [ "/mnt/data/video/jellyfin" ];
+      # Implies Requires/After on mnt-data.mount.
+      RequiresMountsFor = [ mediaDir ];
       StartLimitIntervalSec = "10min";
       StartLimitBurst = 5;
     };
@@ -98,12 +109,10 @@ in
     after = [
       "docker-network-jellyfin_default.service"
       "jellyfin-mount-ready.service"
-      "mnt-data.mount"
     ];
     requires = [
       "docker-network-jellyfin_default.service"
       "jellyfin-mount-ready.service"
-      "mnt-data.mount"
     ];
     partOf = [ "docker-compose-jellyfin-root.target" ];
   };
