@@ -62,4 +62,10 @@ in
 
   # Server catalog for @narumitw/pi-lsp. Replaces the built-in catalog
   home.file.".pi/agent/pi-lsp.json".source = ./pi-lsp.json;
+
+  # pi-interactive-shell spawn shortcut. Default alt+shift+p collides with our
+  # app.session.togglePath binding; move the extension onto a free key.
+  home.file.".pi/agent/interactive-shell.json".text = builtins.toJSON {
+    spawn.shortcut = "alt+i";
+  };
 }
