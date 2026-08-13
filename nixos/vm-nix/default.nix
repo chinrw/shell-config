@@ -223,6 +223,23 @@ in
   # through dnscrypt-proxy — falls through to the LAN proxy until it recovers.
   # Strict priority, not load balancing: an outbound the observatory has no
   # verdict on yet counts as alive, so a fresh start still uses `proxy`.
+  #
+  # The secret also carries a `geosite:google-cn` override, in both the DNS
+  # server list and as a routing rule placed ahead of `geosite:cn -> direct`.
+  # Reason: the geosite.dat we ship (Loyalsoldier's v2ray-rules-dat, via
+  # pkgs.xray's V2RAY_LOCATION_ASSET) folds the 112-entry `google-cn` list into
+  # `geosite:cn`, and every one of those names — www.gstatic.com,
+  # fonts.googleapis.com, dl.google.com, ocsp.pki.goog … — is also a real
+  # foreign Google domain. They are stored as `full:` entries, which outrank the
+  # `domain:gstatic.com` suffix entries in `geosite:geolocation-!cn`, so without
+  # the override AliDNS wins DNS server selection and the direct rule wins
+  # routing. Those domains are RST by the GFW on the direct path, so Google's
+  # static assets broke while google.com itself worked.
+  #
+  # AliDNS also carries `skipFallback` so it is not the last-resort resolver for
+  # every domain: it answers www.google.com with a Meta IP (69.171.235.22), and
+  # a hard DNS failure when both DoH servers are unreachable beats silently
+  # connecting to the wrong host.
   services.xray = {
     enable = true;
     package = xrayPatched;
