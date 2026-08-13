@@ -50,6 +50,10 @@ let
         Service = {
           Type = "notify";
           TimeoutSec = "900";
+          # Drop any stale mount left by an unclean stop; a leftover blocks
+          # every remount ("directory already mounted"). "-" ignores the
+          # error when there is nothing to clean.
+          ExecStartPre = "-/run/wrappers/bin/fusermount -zu ${MOUNT_DIR}";
           ExecStart = ''
             ${pkgs.rclone}/bin/rclone mount \
                         --config=${config.xdg.configHome}/rclone/rclone.conf \
@@ -96,7 +100,9 @@ let
                         ${REMOTE_NAME}:${REMOTE_PATH} ${MOUNT_DIR}
           '';
           ExecStartPost = "${pkgs.bash}/bin/bash -c ${POST_MOUNT_SCRIPT}";
-          ExecStop = "${pkgs.fuse}/bin/fusermount -zu ${MOUNT_DIR}";
+          # Setuid wrapper, not the store binary: unmounting FUSE as non-root
+          # is otherwise "Operation not permitted".
+          ExecStop = "/run/wrappers/bin/fusermount -zu ${MOUNT_DIR}";
           Environment = [ "PATH=/run/wrappers/bin/:$PATH" ];
           Restart = "always";
           RestartSec = "10s";
@@ -118,30 +124,30 @@ in
       RCLONE_MOUNT_VFS_CACHE_MODE = "full";
       RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "48h0m0s";
     })
-    (rcloneService {
-      name = "union-115";
-      REMOTE_NAME = "union-115";
-      REMOTE_PATH = "/";
-      RCLONE_TEMP_DIR = "${config.xdg.cacheHome}/rclone";
-      RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
-      RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
-      RCLONE_MOUNT_TRANSFER = "6";
-      RCLONE_MOUNT_VFS_CACHE_MODE = "full";
-      RCLONE_MOUNT_TIMEOUT = "120m";
-      RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "48h0m0s";
-    })
-    (rcloneService {
-      name = "115-single";
-      REMOTE_NAME = "encrypted-115-single";
-      REMOTE_PATH = "/";
-      RCLONE_TEMP_DIR = "${config.xdg.cacheHome}/rclone";
-      RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
-      RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
-      RCLONE_MOUNT_TRANSFER = "4";
-      RCLONE_MOUNT_VFS_CACHE_MODE = "full";
-      RCLONE_MOUNT_TIMEOUT = "120m";
-      RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "48h0m0s";
-    })
+    # (rcloneService {
+    #   name = "union-115";
+    #   REMOTE_NAME = "union-115";
+    #   REMOTE_PATH = "/";
+    #   RCLONE_TEMP_DIR = "${config.xdg.cacheHome}/rclone";
+    #   RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
+    #   RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
+    #   RCLONE_MOUNT_TRANSFER = "6";
+    #   RCLONE_MOUNT_VFS_CACHE_MODE = "full";
+    #   RCLONE_MOUNT_TIMEOUT = "120m";
+    #   RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "48h0m0s";
+    # })
+    # (rcloneService {
+    #   name = "115-single";
+    #   REMOTE_NAME = "encrypted-115-single";
+    #   REMOTE_PATH = "/";
+    #   RCLONE_TEMP_DIR = "${config.xdg.cacheHome}/rclone";
+    #   RCLONE_MOUNT_DAEMON_TIMEOUT = "1h";
+    #   RCLONE_MOUNT_MULTI_THREAD_STREAMS = "0";
+    #   RCLONE_MOUNT_TRANSFER = "4";
+    #   RCLONE_MOUNT_VFS_CACHE_MODE = "full";
+    #   RCLONE_MOUNT_TIMEOUT = "120m";
+    #   RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "48h0m0s";
+    # })
     {
       # "rclone_onedrive_sync" = {
       #   Unit = {
