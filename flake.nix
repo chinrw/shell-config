@@ -159,6 +159,11 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    deepseek-harness-nix = {
+      url = "github:chinrw/deepseek-harness-nix";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     # Upstream does not expose flake outputs. Package the locked source in
     # pkgs/oh-my-pi instead.
     oh-my-pi = {
