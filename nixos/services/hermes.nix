@@ -32,15 +32,21 @@ let
   };
 
   # ── opencode Zen "Go" plan gateway ──────────────────────────────
-  # Multi-model endpoint behind the legacy `/model pro` shortcut and the
-  # switchable `opencode-go` custom provider. The first-class provider keeps
+  # Multi-model endpoint behind the `/model pro` and `/model flash` shortcuts
+  # and the switchable `opencode-go` provider. The first-class provider keeps
   # Hermes' per-model Go routing and reasoning request shaping active.
   opencodeGoEndpoint = "https://opencode.ai/zen/go/v1";
 
+  # OPENCODE_GO_API_KEY, not OPENCODE_API_KEY: hermes' built-in opencode-go
+  # provider only reads the former (hermes_cli/auth.py PROVIDER_REGISTRY), and
+  # /model switches resolve credentials through that registry rather than
+  # through the api_key written here. With the old name, every `/model pro`
+  # died on "No usable credentials found for provider 'opencode-go'" even
+  # though the chat path worked — it expands this ${VAR} itself.
   goBase = {
     provider = "opencode-go";
     base_url = opencodeGoEndpoint;
-    api_key = "\${OPENCODE_API_KEY}";
+    api_key = "\${OPENCODE_GO_API_KEY}";
   };
 
   # A specific Go-plan model reached through the Go gateway.
@@ -535,8 +541,15 @@ in
       compression = compressionPolicy;
 
       # Quick model switches. Luna/Terra/Sol use ChatGPT subscription auth;
-      # DeepSeek aliases use its native API, while `pro` retains the previous
-      # OpenCode Go-plan shortcut.
+      # `deepseek`/`deepseek-flash` use the native API, `pro`/`flash` the Go
+      # plan.
+      #
+      # For the Go DeepSeek models the alias is the ONLY reliable route.
+      # model_switch.resolve_alias() also reverse-matches a typed model id
+      # against every alias' model, then overwrites base_url with that alias'
+      # (model_switch.py:976 + :1772) — so `/model deepseek-v4-flash
+      # --provider custom:opencode-go`, and picking it from the /model picker,
+      # both land on api.deepseek.com. Alias-name lookup wins before that.
       model_aliases = {
         luna = codexTarget codexLuna;
         terra = codexTarget codexTerra;
@@ -547,8 +560,9 @@ in
         deepseek = deepseekApiTarget deepseekPro;
         deepseek-flash = deepseekApiTarget deepseekFlash;
 
-        # Existing Go-plan shortcut retained for compatibility.
+        # Go-plan DeepSeek tiers.
         pro = goTarget deepseekPro;
+        flash = goTarget deepseekFlash;
       };
 
       # Named custom providers exposed to the `/model` picker. Only the Go
@@ -556,22 +570,30 @@ in
       # the rest of the local-llama wiring.
       custom_providers = [
         # opencode Zen "Go" plan — discover_models hits /v1/models on the
-        # gateway and enumerates every Go-plan model into the /model
-        # picker. Switch syntax: /model custom:opencode-go:<model-name>
-        # (e.g. glm-5.2, qwen3.7-max, kimi-k2.7-code, minimax-m3).
+        # gateway and enumerates every Go-plan model into the /model picker.
+        # Switch syntax: /model <model-name> --provider opencode-go
+        # (e.g. glm-5.2, qwen3.7-max, kimi-k2.7-code, minimax-m3), or the
+        # `pro`/`flash` aliases for DeepSeek. There is no
+        # `custom:<name>:<model>` form — that string is taken as a model id
+        # and rejected by the current provider.
         #
         # key_env (NOT api_key) is mandatory here: the discovery path
         # (model_switch.py: fetch_api_models) reads the entry's api_key
         # verbatim and does NOT interpolate a "${VAR}" — a literal
-        # "${OPENCODE_API_KEY}" would be sent as the Bearer and 401, so the
+        # "${OPENCODE_GO_API_KEY}" would be sent as the Bearer and 401, so the
         # picker shows zero models. key_env defers to a live
-        # os.environ.get("OPENCODE_API_KEY") at /model time instead. (The
+        # os.environ.get("OPENCODE_GO_API_KEY") at /model time instead. (The
         # main chat path — model/auxiliary/fallback above — does expand
-        # "${VAR}", which is why those keep the ${OPENCODE_API_KEY} form.)
+        # "${VAR}", which is why those keep the ${OPENCODE_GO_API_KEY} form.)
+        #
+        # Same var as the built-in provider so both routes share one secret;
+        # with it set, the picker collapses this entry into the built-in
+        # "OpenCode Go" row, which derives api_mode per model — minimax/qwen
+        # need anthropic_messages and 404 on the generic custom: route.
         {
           name = "opencode-go";
           base_url = opencodeGoEndpoint;
-          key_env = "OPENCODE_API_KEY";
+          key_env = "OPENCODE_GO_API_KEY";
           discover_models = true;
         }
       ];
