@@ -280,6 +280,23 @@ let
 
   hermesConfigMerge = pkgs.callPackage (inputs.hermes-agent + "/nix/configMergeScript.nix") { };
 
+  # ── Media bind mounts ───────────────────────────────────────────
+  # File work runs on the filesystem rather than through an MCP file server.
+  # Same path on both sides so nothing has to translate: qB reports absolute
+  # host paths, and the skills address these trees by their host path.
+  # Subtrees only — /mnt/data also holds Key, Documents and backup.
+  #
+  # rslave: /mnt/data is virtiofs from the Proxmox host, so a remount there has
+  # to propagate instead of pinning a dead mount (jellyfin.nix:51).
+  mediaRoot = "/mnt/data";
+  hostPathVolume = path: "${path}:${path}:rw,rslave";
+  mediaVolumes = map hostPathVolume [
+    "${mediaRoot}/harmony"
+    "${mediaRoot}/Downloads"
+    "${mediaRoot}/Video/jellyfin/新番"
+    "${mediaRoot}/baidu"
+  ];
+
   # ── Dashboard ───────────────────────────────────────────────────
   dashboardPort = 9119;
   dashboardWaitSeconds = 30;
@@ -287,18 +304,6 @@ let
 in
 {
   imports = [ inputs.hermes-agent.nixosModules.default ];
-
-  security.sudo.extraRules = [
-    {
-      users = [ "chin39" ];
-      commands = [
-        {
-          command = "/run/current-system/sw/bin/docker";
-          options = [ "NOPASSWD" ];
-        }
-      ];
-    }
-  ];
 
   # ── Sops secret: hermes-env ─────────────────────────────────────
   # Encrypted dotenv file at secrets/hermes.env. sops-nix decrypts
@@ -355,6 +360,12 @@ in
       backend = "docker";
       image = "ubuntu:24.04";
       hostUsers = [ "chin39" ];
+
+      # Write access comes from a named ACL for gid 985 on these trees, not a
+      # supplementary group: the entrypoint drops privileges with
+      # `setpriv --init-groups` (nixosModules.nix:190), which rebuilds the
+      # group list from the container's /etc/group and discards `--group-add`.
+      extraVolumes = mediaVolumes;
 
       # Proxy env passed via `docker create --env` so it lands in the
       # container's PID 1 environ from process startup — visible to
@@ -656,6 +667,72 @@ in
         include_archived_by_default = false;
         render_markdown = true;
       };
+
+      # ── Native stdio MCP servers (media-mcp) ─────────────────────────
+      # Single declarative source: services.hermes-agent.settings is merged
+      # into /data/.hermes/config.yaml at activation (additive merge — Nix
+      # keys win, user keys preserved). The portable agent plugin at
+      # /data/.hermes/plugins/media-mcp stays DISABLED: enabling it would
+      # double-register these servers/tools.
+      #
+      # Commands are in-container paths: the gateway runs inside the Ubuntu
+      # container where /data = /var/lib/hermes on the host, and the venv
+      # python resolves through /home/hermes/.local/share/uv. The ${VAR}
+      # placeholders are Hermes runtime expansions from /data/.hermes/.env
+      # (kept literal here — no secrets in Nix or the store).
+      #
+      # qB's allowlist excludes add, delete, setPreferences, recheck,
+      # forceStart, and watchdog.
+      mcp_servers = {
+        lrr_readonly = {
+          command = "/data/workspace/media-mcp/.venv/bin/media-mcp-lrr";
+          args = [ ];
+          env = {
+            LRR_URL = "http://192.168.0.211:3001";
+          };
+          connect_timeout = 15;
+          timeout = 120;
+          sampling.enabled = false;
+          tools = {
+            include = [
+              "server_info"
+              "list_archives"
+              "search_archives"
+              "get_archive"
+              "get_files"
+              "fingerprint_page"
+            ];
+            prompts = false;
+            resources = false;
+          };
+        };
+
+        qb_bounded = {
+          command = "/data/workspace/media-mcp/.venv/bin/media-mcp-qb";
+          args = [ ];
+          env = {
+            QB_URL = "\${QB_URL}";
+            QB_USER = "\${QB_USER}";
+            QB_PASS = "\${QB_PASS}";
+          };
+          connect_timeout = 15;
+          timeout = 120;
+          sampling.enabled = false;
+          tools = {
+            include = [
+              "server_version"
+              "queue_preferences"
+              "list_torrents"
+              "get_torrent"
+              "queue_diagnosis"
+              "pause_torrent"
+              "resume_torrent"
+            ];
+            prompts = false;
+            resources = false;
+          };
+        };
+      };
     };
 
     extraPackages = with pkgs; [
@@ -709,6 +786,11 @@ in
     restart = "always";
     restartSec = 5;
   };
+
+  # A bind taken before /mnt/data is up captures the empty mountpoint instead
+  # of the virtiofs share. RequiresMountsFor implies Requires/After on
+  # mnt-data.mount (jellyfin.nix:101).
+  systemd.services.hermes-agent.unitConfig.RequiresMountsFor = [ mediaRoot ];
 
   # Upstream has no services.hermes-agent.profiles option yet. Keep Profile
   # model/effort/toolsets, descriptions, and SOULs declarative without
