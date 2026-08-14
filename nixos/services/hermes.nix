@@ -88,17 +88,25 @@ let
       ];
     };
 
+  # The aux model caps the session's compaction trigger, so compression runs
+  # on the Go plan's 1M-window DeepSeek Pro rather than Terra: Terra's Codex
+  # window is 272K, which auto-lowered every 1M-main session (/model pro,
+  # deepseek, or a main-chain fallback) from its 500K trigger down to 272K
+  # (conversation_compression.py:1597). The Go route resolves to the full 1M
+  # because opencode.ai is a known-provider host, so the /models probe that
+  # could report a lower per-plan limit is skipped (model_metadata.py:2745).
+  #
   # Summarization is extraction, not reasoning — high is enough. The effort
   # is shared with the chain: this rev only honours per-entry timeout and
   # api_key (auxiliary_client.py:4713/5419). No timeout key: compression
   # timeouts are already floored at 300s (auxiliary_client.py:7737).
-  compressionAux = (codexTarget codexTerra) // {
+  compressionAux = (goTarget deepseekPro) // {
     reasoning_effort = "high";
     # Per-entry 300s — otherwise a fallback runs on whatever is left of the
     # primary's deadline (#62452).
     fallback_chain = [
       ((deepseekApiTarget deepseekPro) // { timeout = 300; })
-      ((deepseekApiTarget deepseekFlash) // { timeout = 300; })
+      ((codexTarget codexTerra) // { timeout = 300; })
     ];
   };
 
@@ -490,9 +498,11 @@ in
         child_timeout_seconds = 900;
       };
 
-      # Auxiliary side-task models — subscription-first: text chores on Luna,
-      # compression on Terra, each carrying a native-DeepSeek fallback_chain
-      # so a Codex outage degrades to DeepSeek instead of failing.
+      # Auxiliary side-task models — subscription-first for the text chores on
+      # Luna, each carrying a native-DeepSeek fallback_chain so a Codex outage
+      # degrades to DeepSeek instead of failing. Compression is the exception:
+      # it needs a window no smaller than the main model's trigger, so it runs
+      # on the Go plan (see compressionAux).
       #
       # Chain trigger coverage (auxiliary_client.py:6925 should_fallback /
       # is_capacity_error): payment 402s, rate-limit 429s, connection and
@@ -533,8 +543,8 @@ in
         # Video has no Codex route, so it stays on the Go plan's kimi.
         vision = goTarget kimiVision;
 
-        # Compression — upstream has dedicated Codex handling (272K cap,
-        # codex_gpt55_autoraise); DeepSeek chain backstops it like the rest.
+        # Compression — Go-plan DeepSeek Pro so the 1M main models keep their
+        # full trigger; Codex Terra is the last chain entry, not the primary.
         compression = compressionAux;
       };
 
