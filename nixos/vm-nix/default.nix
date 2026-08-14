@@ -40,6 +40,7 @@ in
     ./kernel.nix
     ./oom-guard.nix
     ./zram.nix
+    ./swap.nix
     ../services/hermes.nix
     ../services/llama-loader-shim.nix
     ../services/flaresolverr.nix
