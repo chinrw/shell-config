@@ -150,6 +150,10 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
   boot.initrd.systemd.tpm2.enable = false;
 
+  # chin39 is in the `docker` group, and write access to the docker socket is
+  # already root-equivalent
+  security.sudo.wheelNeedsPassword = false;
+
   # Set your time zone.
   time.timeZone = "Asia/Shanghai";
 
@@ -270,8 +274,7 @@ in
         cache_size = 4096;
 
         sources = { };
-        static.cloudflare.stamp =
-          "sdns://AgcAAAAAAAAABzEuMC4wLjEAEmRucy5jbG91ZGZsYXJlLmNvbQovZG5zLXF1ZXJ5";
+        static.cloudflare.stamp = "sdns://AgcAAAAAAAAABzEuMC4wLjEAEmRucy5jbG91ZGZsYXJlLmNvbQovZG5zLXF1ZXJ5";
       };
     };
     adguardhome = {
