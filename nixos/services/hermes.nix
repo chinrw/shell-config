@@ -88,25 +88,30 @@ let
       ];
     };
 
-  # The aux model caps the session's compaction trigger, so compression runs
-  # on the Go plan's 1M-window DeepSeek Pro rather than Terra: Terra's Codex
-  # window is 272K, which auto-lowered every 1M-main session (/model pro,
-  # deepseek, or a main-chain fallback) from its 500K trigger down to 272K
-  # (conversation_compression.py:1597). The Go route resolves to the full 1M
-  # because opencode.ai is a known-provider host, so the /models probe that
-  # could report a lower per-plan limit is skipped (model_metadata.py:2745).
+  # The aux model caps the session's compaction trigger, so compression must
+  # run on a model that resolves to a window no smaller than the largest main
+  # trigger (conversation_compression.py:1597). Go-route flash qualifies:
+  # the catalog pins deepseek-v4-flash at 1M (model_metadata.py:462), and
+  # opencode.ai is a known-provider host so the /models probe that could
+  # report a lower per-plan limit is skipped (:2745). Summarization is
+  # extraction, not reasoning — flash + high effort is enough; the chain is
+  # flash → Go Pro → native Pro, every entry 1M, so no fallback can cap a
+  # session either.
   #
-  # Summarization is extraction, not reasoning — high is enough. The effort
-  # is shared with the chain: this rev only honours per-entry timeout and
-  # api_key (auxiliary_client.py:4713/5419). No timeout key: compression
-  # timeouts are already floored at 300s (auxiliary_client.py:7737).
-  compressionAux = (goTarget deepseekPro) // {
+  # The explicit top-level timeout OVERWRITES a stale `timeout: 30` user key
+  # the additive merge would otherwise preserve forever. It is harmless to
+  # the built-in compressor (deadlines are floored at 300s,
+  # auxiliary_client.py:7737) but leaks as the default deadline to anything
+  # deriving from the raw key — hermes-lcm's summary timeout did exactly
+  # that until LCM_SUMMARY_TIMEOUT_MS pinned it.
+  compressionAux = (goTarget deepseekFlash) // {
     reasoning_effort = "high";
+    timeout = 300;
     # Per-entry 300s — otherwise a fallback runs on whatever is left of the
     # primary's deadline (#62452).
     fallback_chain = [
+      ((goTarget deepseekPro) // { timeout = 300; })
       ((deepseekApiTarget deepseekPro) // { timeout = 300; })
-      ((codexTarget codexTerra) // { timeout = 300; })
     ];
   };
 
@@ -245,6 +250,21 @@ let
     # resolve. Every entry is a real 0.19.0 toolset; `gateway` is a process-
     # level dispatcher, not an agent toolset in this Hermes release.
     platform_toolsets.cli = toolsets;
+  };
+
+  # Everything hermes-lcm (container env, config leaves, plugin install)
+  # lives in a separate declarative file, same pattern as the profile
+  # definitions below; this module splices its three exports into place.
+  hermesLcm = import ./hermes-lcm.nix {
+    inherit
+      pkgs
+      lib
+      inputs
+      deepseekFlash
+      deepseekPro
+      ;
+    user = config.services.hermes-agent.user;
+    group = config.services.hermes-agent.group;
   };
 
   # Profile-specific model/effort/toolsets, descriptions, and SOULs live in
@@ -435,12 +455,16 @@ in
         # Expose the Nix Python Playwright package to Hermes' sealed Python;
         # its child driver gets the matching browser cache from the package
         # override above. Keep host-provided bubblewrap on PATH for an
-        # explicit codex app-server switch.
+        # explicit codex app-server switch. hermes-lcm's FastEmbed runtime
+        # rides the same variable (hand-filtered against venv collisions —
+        # see hermes-lcm.nix).
         "--env"
-        "PYTHONPATH=${pythonPlaywrightPath}"
+        "PYTHONPATH=${pythonPlaywrightPath}:${hermesLcm.pythonPath}"
         "--env"
         "PATH=${pkgs.bubblewrap}/bin:${browserAutomationPath}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${codexPackage}/bin:${claudePackage}/bin"
-      ];
+      ]
+      # LCM summarizer/behaviour env — see hermes-lcm.nix for the rationale.
+      ++ hermesLcm.containerEnvOptions;
     };
 
     environmentFiles = [
@@ -560,6 +584,11 @@ in
       };
 
       compression = compressionPolicy;
+
+      # hermes-lcm context engine for default-profile/gateway sessions —
+      # scope, interplay with native compaction, and all rationale live in
+      # hermes-lcm.nix. Specialist profiles keep the built-in compressor.
+      inherit (hermesLcm.settings) context plugins;
 
       # Quick model switches. Luna/Terra/Sol use ChatGPT subscription auth;
       # `deepseek`/`deepseek-flash` use the native API, `pro`/`flash` the Go
@@ -776,7 +805,9 @@ in
     # extraPythonPackages are for user-developed plugins only.
     # requests, httpx, pydantic are already in hermes' sealed
     # uv2nix venv; beautifulsoup4 pulls typing-extensions
-    # transitively which collides with the venv. Empty list.
+    # transitively which collides with the venv — as does fastembed
+    # (pillow), which is why LCM's embedding runtime goes through the
+    # hand-filtered PYTHONPATH in hermes-lcm.nix instead. Empty list.
     extraPythonPackages = [ ];
 
     # Bake the `messaging` extra into the sealed uv2nix venv so the
@@ -811,7 +842,7 @@ in
   # Note SOUL.md is Nix-owned from here on: edits made through the Hermes CLI
   # or TUI are overwritten on the next start of this unit.
   systemd.services.hermes-agent-profile-settings = {
-    description = "Nix-managed Hermes Profile settings, descriptions, and SOULs";
+    description = "Nix-managed Hermes Profile settings, SOULs, and plugin links";
     wantedBy = [ "multi-user.target" ];
     before = [ "hermes-agent.service" ];
     requiredBy = [ "hermes-agent.service" ];
@@ -823,7 +854,13 @@ in
     };
 
     script = ''
-      profiles_root=${config.services.hermes-agent.stateDir}/.hermes/profiles
+      hermes_home=${config.services.hermes-agent.stateDir}/.hermes
+
+      # hermes-lcm plugin install (flake-pinned, materialized copy) — the
+      # why-not-a-symlink story is in hermes-lcm.nix.
+      ${hermesLcm.installScript}
+
+      profiles_root=$hermes_home/profiles
 
       ${lib.concatStringsSep "\n" (
         lib.mapAttrsToList (name: assets: ''

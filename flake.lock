@@ -563,6 +563,23 @@
         "type": "github"
       }
     },
+    "hermes-lcm": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784847804,
+        "narHash": "sha256-yJ1Nn+su7YbKd+cgVOizXChzLbKHqTprSprF1p9/HYk=",
+        "owner": "stephenschoettler",
+        "repo": "hermes-lcm",
+        "rev": "49e99a272d2d461e5c90732e7ef2bc20e96f0826",
+        "type": "github"
+      },
+      "original": {
+        "owner": "stephenschoettler",
+        "ref": "v0.20.0",
+        "repo": "hermes-lcm",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -1213,6 +1230,7 @@
         "flake-utils": "flake-utils_3",
         "hardware": "hardware",
         "hermes-agent": "hermes-agent",
+        "hermes-lcm": "hermes-lcm",
         "home-manager": "home-manager_2",
         "khazix-skills": "khazix-skills",
         "linux-src": "linux-src",

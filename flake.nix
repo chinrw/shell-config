@@ -43,6 +43,15 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    # Lossless Context Management engine for hermes, copied into
+    # /var/lib/hermes/.hermes/plugins by services/hermes-lcm.nix (the
+    # container boot chown breaks on store symlinks). Pin release tags only
+    # — the v0.21 line is still rc; back up lcm.db before bumps.
+    hermes-lcm = {
+      url = "github:stephenschoettler/hermes-lcm/v0.20.0";
+      flake = false;
+    };
+
     # Home manager
     home-manager = {
       url = "github:nix-community/home-manager";
