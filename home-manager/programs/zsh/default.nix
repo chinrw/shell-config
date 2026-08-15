@@ -100,7 +100,7 @@ hermes() {
 }
 
 "
-        + lib.optionalString pkgs.stdenv.isDarwin "
+        + lib.optionalString pkgs.stdenv.hostPlatform.isDarwin "
 # Fix Time Machine 'backup failed' on the NAS SMB destination. backupd
 # can only enable TM network volume options on an SMB mount it creates
 # itself; a lingering mount (eject blocked after a successful backup,
@@ -177,7 +177,7 @@ fi
         unset _nix_zsh
       fi
     ''
-    + lib.optionalString pkgs.stdenv.isDarwin ''
+    + lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
       # Homebrew shellenv on macOS — nix-darwin manages the brew manifest
       # but does not put /opt/homebrew/bin (Apple Silicon) or
       # /usr/local/bin (Intel) on PATH for us.

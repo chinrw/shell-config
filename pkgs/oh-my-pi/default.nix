@@ -97,11 +97,11 @@ stdenv.mkDerivation {
     pkgs.pkg-config
     pkgs.python3
   ]
-  ++ lib.optionals stdenv.isLinux [
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
     pkgs.makeWrapper
     pkgs.patchelf
   ]
-  ++ lib.optionals stdenv.isDarwin [
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
     pkgs.darwin.sigtool
     pkgs.llvmPackages.clang
   ];
@@ -110,7 +110,7 @@ stdenv.mkDerivation {
     pkgs.openssl
     pkgs.zlib
   ]
-  ++ lib.optionals stdenv.isDarwin [
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
     pkgs.libiconv
     pkgs.llvmPackages.libclang
   ];
@@ -118,7 +118,7 @@ stdenv.mkDerivation {
   bunInstallFlags = [
     "--linker=hoisted"
   ]
-  ++ lib.optionals stdenv.isDarwin [
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
     "--backend=copyfile"
   ];
   dontRunLifecycleScripts = true;
@@ -136,7 +136,7 @@ stdenv.mkDerivation {
         'process.arch === "x64" ? "baseline" : null;'
   '';
 
-  LIBCLANG_PATH = lib.optionalString stdenv.isDarwin "${lib.getLib pkgs.llvmPackages.libclang}/lib";
+  LIBCLANG_PATH = lib.optionalString stdenv.hostPlatform.isDarwin "${lib.getLib pkgs.llvmPackages.libclang}/lib";
   CARGO_INCREMENTAL = "0";
   # CMake is used by Rust crates; the repository root is not a CMake project.
   dontUseCmakeConfigure = true;
@@ -159,13 +159,13 @@ stdenv.mkDerivation {
     export HOME="$TMPDIR"
     mkdir -p "$out/bin"
   ''
-  + lib.optionalString stdenv.isLinux ''
+  + lib.optionalString stdenv.hostPlatform.isLinux ''
     install -Dm755 ${ompBinary} "$out/libexec/omp"
     patchelf --set-interpreter "${stdenv.cc.bintools.dynamicLinker}" "$out/libexec/omp"
     makeWrapper "$out/libexec/omp" "$out/bin/omp" \
       --prefix LD_LIBRARY_PATH : "${linuxLibraryPath}"
   ''
-  + lib.optionalString stdenv.isDarwin ''
+  + lib.optionalString stdenv.hostPlatform.isDarwin ''
     install -Dm755 ${ompBinary} "$out/bin/omp"
   ''
   + ''
@@ -177,7 +177,7 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
-  dontPatchELF = stdenv.isLinux;
+  dontPatchELF = stdenv.hostPlatform.isLinux;
   doInstallCheck = true;
   installCheckPhase = ''
     export HOME="$TMPDIR"

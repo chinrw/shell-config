@@ -8,7 +8,7 @@ let
   # zellij's cache dir: XDG on Linux, reverse-DNS bundle dir on darwin.
   # Writing ~/.cache/zellij on a Mac is a silent no-op.
   zellijCacheDir =
-    if pkgs.stdenv.isDarwin then
+    if pkgs.stdenv.hostPlatform.isDarwin then
       "${config.home.homeDirectory}/Library/Caches/org.Zellij-Contributors.Zellij"
     else
       "${config.xdg.cacheHome}/zellij";
