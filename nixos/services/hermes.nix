@@ -473,8 +473,15 @@ in
     ];
 
     settings = {
-      # Primary chat model: Terra via Hermes' native agent loop and the Codex
+      # Primary chat model: Luna via Hermes' native agent loop and the Codex
       # Responses OAuth route backed by the Codex CLI's ChatGPT login.
+      # Terra stays one `/model terra` away, remains the first main-chain
+      # fallback, and keeps the hard aux roles (triage_specifier,
+      # kanban_decomposer, goal_judge). Luna runs xhigh by deliberate
+      # reasoning_overrides choice below — quality over latency; the
+      # override applies to every main-loop resolution of the model id
+      # (default sessions, /model luna, fallback, delegation children) but
+      # not to auxiliary tasks, which carry their own reasoning_effort.
       #
       # Empty base_url/api_key values are deliberate. Hermes reconciles these
       # managed settings into its stateful config.yaml with an additive merge:
@@ -482,7 +489,7 @@ in
       # clearing both removes the previous OpenCode Go endpoint and credential
       # reference so openai-codex can resolve the Codex CLI OAuth session.
       model = {
-        default = codexTerra;
+        default = codexLuna;
         provider = "openai-codex";
         openai_runtime = "auto";
 
@@ -510,6 +517,7 @@ in
         # fallback entry. These overrides therefore also apply to manual
         # switches to the same Terra and DeepSeek Pro/Flash model IDs.
         reasoning_overrides = {
+          ${codexLuna} = "xhigh";
           ${codexTerra} = "xhigh";
           ${deepseekFlash} = "max";
           ${deepseekPro} = "max";
