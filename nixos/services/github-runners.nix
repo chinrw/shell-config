@@ -206,19 +206,21 @@ in
     # ci.yml). GitHub artifacts (30d retention) are the rerun-safe fallback,
     # so age aggressively — these tarballs are large.
     "d ${stocksCacheRoot}/share 0755 ${runnerUser} ${runnerGroup} 3d"
-    # No cargo target dir here any more (removed 2026-08-17). ci.yml builds into
-    # the checkout instead. Measured on this host, the persistent dir saved ~25s
-    # of pipeline wall-clock: it cut rust-native 128s->63s and backend 26s->3s,
-    # but both sit off the critical path (frontend -> e2e, ~7.4min), and on
-    # frontend it saved only 105s->80s because wasm-opt reruns whole-program on
-    # any workspace change regardless. Not worth 33G.
+    # Persistent per-runner cargo target dirs (stocks ci.yml). Worth ~30-60s of
+    # pipeline wall-clock, measured cold-vs-warm on this host: without it
+    # rust-native went 2.3->2.8/3.6min and frontend 2.1->2.7/3.5min, and only
+    # frontend is on the critical path (frontend -> e2e). e2e is unaffected — it
+    # consumes the share tarballs and never compiles.
     #
-    # If it is ever reinstated: do NOT give it a tmpfiles age. A 30d age deleted
-    # build-script OUT_DIR products of stable deps (never rewritten after the
-    # first build, and a clippy-only job never reads them) while cargo's
-    # fingerprint DB still recorded them as fresh — cargo then errors with
-    # `couldn't read .../out/<file>` instead of rebuilding. Age by whole
-    # directory or not at all.
+    # NOT AGED, and it must stay that way. A previous `30d` here deleted
+    # build-script OUT_DIR products of stable deps — nothing rewrites them after
+    # the first build, and a clippy-only job never reads them, so mtime/atime/
+    # ctime all aged out — while cargo's fingerprint DB still recorded them as
+    # fresh. Cargo then errors `couldn't read .../out/<file>` instead of
+    # rebuilding, and every runner broke on a different crate as its outputs
+    # crossed 30 days. Age a build cache by whole directory or not at all;
+    # per-file aging desynchronizes fingerprints from artifacts.
+    "d ${stocksCacheRoot}/target 0755 ${runnerUser} ${runnerGroup} -"
   ]
   ++ map (name: "d ${stocksWorkDir name} 0700 ${runnerUser} ${runnerGroup} -") stocksRunnerNames;
 
