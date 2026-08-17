@@ -12,6 +12,13 @@ let
 
   profileDir = "/var/lib/hermes/workspace/southplus_browser_profile";
 
+  # Same egress proxy flaresolverr.nix pins. Keep the two in step: this host
+  # gives bridged containers no direct route out.
+  egressProxy = "http://192.168.0.240:10809";
+
+  # Where the container hands the per-start VNC password back to the operator.
+  runtimeDir = "/var/lib/hermes/workspace/browser-agent-runtime";
+
   # Derived from this host's own running container spec rather than copied off
   # the internet, so every one of the 377 syscalls this Docker version grants
   # is preserved exactly; the only delta is the namespace flags Chromium's
@@ -88,9 +95,21 @@ let
       done
       xdpyinfo >/dev/null 2>&1 || { echo "Xvfb failed to become ready" >&2; exit 1; }
 
-      # No -rfbauth: the VNC port is never published, so the only reachable
-      # entry is websockify below, which is bound to the LAN address.
+      # The VNC port itself is not published, but websockify below bridges it
+      # to the LAN, so this session needs a password: without one, anyone on
+      # the network can drive a browser that is logged into these sites.
+      #
+      # VNC's classic auth truncates the secret to 8 characters, so a longer
+      # one buys nothing. It is regenerated on every container start and handed
+      # over through a 0600 file rather than the command line or the log.
+      vnc_password=$(head -c 6 /dev/urandom | base64 | cut -c1-8)
+      x11vnc -storepasswd "$vnc_password" /tmp/vncpasswd >/dev/null 2>&1
+      printf '%s\n' "$vnc_password" > ${runtimeDir}/vnc-password
+      chmod 600 ${runtimeDir}/vnc-password
+      unset vnc_password
+
       x11vnc -display "$DISPLAY" -forever -shared -rfbport ${toString vncPort} \
+        -rfbauth /tmp/vncpasswd \
         -listen localhost -no6 -noipv6 -noxdamage -quiet &
 
       websockify --web=${novncWebRoot} \
@@ -107,8 +126,14 @@ let
       # regardless, so asking for 0.0.0.0 only misleads the next reader.
       # CDP has no authentication — anything reaching the bridged port owns
       # this browser and every session in the profile.
+      # hermes-agent reaches the outside through host networking; a bridged
+      # container has no such path on this host — direct egress fails for every
+      # docker bridge, not just this one. The proxy is the only way out, and
+      # Chromium ignores http_proxy in the environment, so it has to be a flag.
       exec chromium \
         --user-data-dir=${profileDir} \
+        --proxy-server=${egressProxy} \
+        --proxy-bypass-list="127.0.0.1;localhost" \
         --remote-debugging-port=${toString cdpPort} \
         --disable-blink-features=AutomationControlled \
         --window-size=1280,900 \
@@ -138,6 +163,7 @@ in
     volumes = [
       "/nix/store:/nix/store:ro"
       "${profileDir}:${profileDir}"
+      "${runtimeDir}:${runtimeDir}"
     ];
 
     ports = [
@@ -167,6 +193,10 @@ in
       "--health-start-period=30s"
     ];
   };
+
+  systemd.tmpfiles.rules = [
+    "d ${runtimeDir} 0700 ${toString hermesUid} ${toString hermesUid} -"
+  ];
 
   systemd.services."docker-network-browser-agent" = {
     path = [ pkgs.docker ];
