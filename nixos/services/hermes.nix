@@ -224,6 +224,21 @@ let
     pythonPlaywright
   ];
 
+  # Sites that gate on a captcha need a headed browser, and the container has no
+  # display of its own. Xvfb plus x11vnc/websockify give one that a human can
+  # attach to over noVNC. websockify only ships the proxy; the page it serves
+  # comes from novncWebRoot below.
+  virtualDisplayPath = lib.makeBinPath [
+    pkgs.xvfb
+    pkgs.xdpyinfo
+    pkgs.x11vnc
+    pkgs.python3Packages.websockify
+  ];
+
+  # Debian's /usr/share/novnc has no equivalent under Nix, so consumers are told
+  # where the assets are rather than guessing a distro path.
+  novncWebRoot = "${pkgs.novnc}/share/webapps/novnc";
+
   # The upstream NixOS module currently renders settings only to the default
   # profile's config.yaml. Named Hermes profiles each have an independent
   # config.yaml under profiles/<name>/, so merge the Nix-owned leaves into
@@ -461,7 +476,9 @@ in
         "--env"
         "PYTHONPATH=${pythonPlaywrightPath}:${hermesLcm.pythonPath}"
         "--env"
-        "PATH=${pkgs.bubblewrap}/bin:${browserAutomationPath}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${codexPackage}/bin:${claudePackage}/bin"
+        "NOVNC_WEB_ROOT=${novncWebRoot}"
+        "--env"
+        "PATH=${pkgs.bubblewrap}/bin:${browserAutomationPath}:${virtualDisplayPath}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${codexPackage}/bin:${claudePackage}/bin"
       ]
       # LCM summarizer/behaviour env — see hermes-lcm.nix for the rationale.
       ++ hermesLcm.containerEnvOptions;
