@@ -206,10 +206,19 @@ in
     # ci.yml). GitHub artifacts (30d retention) are the rerun-safe fallback,
     # so age aggressively — these tarballs are large.
     "d ${stocksCacheRoot}/share 0755 ${runnerUser} ${runnerGroup} 3d"
-    # Persistent per-runner cargo target dirs (stocks ci.yml). Age tracks
-    # atime/mtime/ctime, so artifacts still being linked against stay put;
-    # only genuinely stale outputs are pruned (cargo rebuilds them on miss).
-    "d ${stocksCacheRoot}/target 0755 ${runnerUser} ${runnerGroup} 30d"
+    # No cargo target dir here any more (removed 2026-08-17). ci.yml builds into
+    # the checkout instead. Measured on this host, the persistent dir saved ~25s
+    # of pipeline wall-clock: it cut rust-native 128s->63s and backend 26s->3s,
+    # but both sit off the critical path (frontend -> e2e, ~7.4min), and on
+    # frontend it saved only 105s->80s because wasm-opt reruns whole-program on
+    # any workspace change regardless. Not worth 33G.
+    #
+    # If it is ever reinstated: do NOT give it a tmpfiles age. A 30d age deleted
+    # build-script OUT_DIR products of stable deps (never rewritten after the
+    # first build, and a clippy-only job never reads them) while cargo's
+    # fingerprint DB still recorded them as fresh — cargo then errors with
+    # `couldn't read .../out/<file>` instead of rebuilding. Age by whole
+    # directory or not at all.
   ]
   ++ map (name: "d ${stocksWorkDir name} 0700 ${runnerUser} ${runnerGroup} -") stocksRunnerNames;
 
