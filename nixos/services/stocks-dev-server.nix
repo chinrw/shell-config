@@ -163,8 +163,12 @@ let
         exit 1
       fi
 
-      if ! git fetch --quiet origin; then
-        echo "fetch failed (network / auth?) - retrying on the next timer tick"
+      # ssh-over-SOCKS can stall after connect with no error and no timeout of
+      # its own; unbounded that wedges the unit and silently stops the timer
+      # (2026-08-14: 3 days of dead auto-deploy). Bounded -> soft retry below.
+      export GIT_SSH_COMMAND='ssh -o ConnectTimeout=15 -o ServerAliveInterval=10 -o ServerAliveCountMax=3'
+      if ! timeout --kill-after=10s 120s git fetch --quiet origin; then
+        echo "fetch failed or timed out (network / auth?) - retrying on the next timer tick"
         exit 0
       fi
       if ! git rev-parse --verify --quiet origin/${devBranch} >/dev/null; then
@@ -273,6 +277,10 @@ in
         Type = "oneshot";
         ExecStartPre = lib.getExe bootstrapScript;
         ExecStart = lib.getExe updateScript;
+        # Type=oneshot defaults to infinity — the wedge above. Backstop for
+        # hangs outside the fetch; must clear a cold release build, so only the
+        # bound matters, not the value.
+        TimeoutStartSec = "60min";
       };
     };
   };
