@@ -44,6 +44,7 @@ in
     ../services/hermes.nix
     ../services/llama-loader-shim.nix
     ../services/flaresolverr.nix
+    ../services/browser-agent.nix
     ../services/tailscale-exit-proxy.nix
     ../services/stocks-server.nix
     ../services/stocks-dev-server.nix
