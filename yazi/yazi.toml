@@ -85,7 +85,6 @@ prepend_previewers = [
 	{ mime = "application/x-rar", run = "ouch" },
 	{ mime = "application/x-xz", run = "ouch" },
 ]
-append_previewers = [{ url = "*", run = "hexyl" }]
 
 # [[plugin.prepend_fetchers]]
 # id = "mime"
