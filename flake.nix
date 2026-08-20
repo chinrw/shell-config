@@ -287,6 +287,11 @@
           hostname = "vm-nix";
           GPU = "amd";
         };
+        "work-laptop" = helpers.mkNixos {
+          hostname = "work-laptop";
+          desktop = "niri";
+          extraModules = [ ./nixos/t14p-gen2 ];
+        };
       };
 
       # nix-darwin configuration entrypoint

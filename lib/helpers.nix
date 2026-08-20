@@ -77,6 +77,7 @@ in
       desktop ? null,
       GPU ? null,
       platform ? "x86_64-linux",
+      extraModules ? [ ],
       # Names of local binary caches (from lib/caches.nix) this host should use.
       localCaches ? [ ],
     }:
@@ -111,6 +112,7 @@ in
       modules = [
         ../nixos/configuration.nix
       ]
+      ++ extraModules
       ++ inputs.nixpkgs.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
     };
 
