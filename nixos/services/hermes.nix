@@ -115,6 +115,18 @@ let
     ];
   };
 
+  lcmSummaryRoutes = {
+    primary = (codexTarget codexLuna) // {
+      reasoning_effort = "xhigh";
+      timeout = 120;
+      fallback_chain = [ ];
+    };
+    fallbackModels = [
+      codexTerra
+      "deepseek/${deepseekPro}"
+    ];
+  };
+
   # Shared by the default config and every named profile; profiles are
   # standalone clones, so a key left out here diverges silently.
   compressionPolicy = {
@@ -265,9 +277,9 @@ let
       pkgs
       lib
       inputs
-      deepseekFlash
-      deepseekPro
       ;
+    summaryModel = lcmSummaryRoutes.primary.model;
+    summaryFallbackModels = lcmSummaryRoutes.fallbackModels;
     user = config.services.hermes-agent.user;
     group = config.services.hermes-agent.group;
   };
@@ -546,12 +558,6 @@ in
         child_timeout_seconds = 900;
       };
 
-      # Auxiliary side-task models — subscription-first for the text chores on
-      # Luna, each carrying a native-DeepSeek fallback_chain so a Codex outage
-      # degrades to DeepSeek instead of failing. Compression is the exception:
-      # it needs a window no smaller than the main model's trigger, so it runs
-      # on the Go plan (see compressionAux).
-      #
       # Chain trigger coverage (auxiliary_client.py:6925 should_fallback /
       # is_capacity_error): payment 402s, rate-limit 429s, connection and
       # timeout errors, allow-list 400s ("model incompatible with route"),
@@ -591,9 +597,7 @@ in
         # Video has no Codex route, so it stays on the Go plan's kimi.
         vision = goTarget kimiVision;
 
-        # Compression — Go-plan DeepSeek Pro so the 1M main models keep their
-        # full trigger; Codex Terra is the last chain entry, not the primary.
-        compression = compressionAux;
+        compression = lcmSummaryRoutes.primary;
       };
 
       compression = compressionPolicy;

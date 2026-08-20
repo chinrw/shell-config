@@ -15,21 +15,25 @@
 #    compacts gpt-5.6 server-side at 200K first. LCM keeps persisting raw
 #    messages regardless, which also covers the issuer-sealed-blob loss on
 #    a mid-session fallback to DeepSeek.
-#  - LCM summarizes on auxiliary.compression's route with the model swapped
-#    to flash (bare model ids override ONLY the model on that route —
-#    escalation.py task="compression" + apply_lcm_model_route — so both
-#    ride the Go gateway credential). auxiliary.compression itself stays on
-#    Pro: compressor profiles need Pro's 1M window because the aux window
-#    caps the compression trigger (conversation_compression.py:1597).
 {
   pkgs,
   lib,
   inputs,
   user,
   group,
-  deepseekFlash,
-  deepseekPro,
+  summaryModel,
+  summaryFallbackModels,
 }:
+let
+  lcmSource = pkgs.runCommand "hermes-lcm-patched" { } ''
+    cp -r ${inputs.hermes-lcm} "$out"
+    chmod -R u+w "$out"
+    substituteInPlace "$out/model_routing.py" \
+      --replace-fail \
+      '_PROVIDER_PREFIXES = frozenset({"cerebras"})' \
+      '_PROVIDER_PREFIXES = frozenset({"cerebras", "deepseek"})'
+  '';
+in
 {
   # ── Local FastEmbed runtime for LCM semantic retrieval ────────────
   # LCM imports fastembed IN-PROCESS (embedding_provider.py:_load_fastembed),
@@ -72,33 +76,16 @@
   # whitespace splits the arg mid-value and docker dies on the leftovers
   # ("invalid reference format").
   containerEnvOptions = [
-    # Flash primary: with dynamic chunking the summarizer sees bounded
-    # 20K→40K chunks (≤12K out), far below the window that forced Pro for
-    # the built-in compressor, and calls fire per leaf chunk + per
-    # condensation, so flash's latency/quota edge compounds. Pro is an
-    # AVAILABILITY fallback (error/circuit-breaker), not a quality one; the
-    # terminal fallback is deterministic truncation.
     "--env"
-    "LCM_SUMMARY_MODEL=${deepseekFlash}"
+    "LCM_SUMMARY_MODEL=${summaryModel}"
     "--env"
-    "LCM_SUMMARY_FALLBACK_MODELS=${deepseekPro}"
+    "LCM_SUMMARY_FALLBACK_MODELS=${lib.concatStringsSep "," summaryFallbackModels}"
 
-    # Without this, one compaction pass summarizes the WHOLE non-tail
-    # backlog in a single call (compaction.py: to_compact=candidate_raw) —
-    # on a 1M DeepSeek session that is a several-hundred-K single-shot the
-    # flash summarizer may not even fit, and failures only shrink 75%/50%
-    # across 3 rescue retries before degrading to deterministic truncation.
-    # Dynamic mode caps each leaf call at 20K→40K (base doubling to
-    # LCM_DYNAMIC_LEAF_CHUNK_MAX) and drains the backlog across turns. The
-    # flash-as-summarizer choice assumes these bounded calls.
+    # Without this, one call may receive the whole non-tail backlog.
     "--env"
     "LCM_DYNAMIC_LEAF_CHUNK_ENABLED=true"
 
-    # Without an explicit value LCM derives its summary deadline from
-    # config.yaml auxiliary.compression.timeout — a stale user key pins
-    # that at 30s, which flash cannot honour on a 40K chunk at high effort
-    # (timeouts burn the circuit breaker + spend guard, then degrade to
-    # 512-token deterministic truncation).
+    # Do not inherit stale timeout state from mutable Profile config.
     "--env"
     "LCM_SUMMARY_TIMEOUT_MS=120000"
 
@@ -162,9 +149,8 @@
   #
   # A store symlink is NOT possible here: the OCI image's stage2 boot hook
   # chowns /data/.hermes recursively, dereferences the link into the
-  # read-only store, and the container dies in a restart loop. Re-copy from
-  # the pinned input on every start instead — content still comes only from
-  # flake.lock, local edits are overwritten. lcm.db lives in .hermes/,
+  # read-only store, and the container dies in a restart loop. Re-copy the
+  # patched pinned input on every start instead. lcm.db lives in .hermes/,
   # outside this tree. v0.20.0 ships no skills/ dir (the recall-policy
   # skill is v0.21-rc); revisit on bump.
   installScript = ''
@@ -172,7 +158,7 @@
       -o ${user} -g ${group} \
       "$hermes_home/plugins"
     rm -rf "$hermes_home/plugins/hermes-lcm"
-    cp -r ${inputs.hermes-lcm} "$hermes_home/plugins/hermes-lcm"
+    cp -r ${lcmSource} "$hermes_home/plugins/hermes-lcm"
     chown -R ${user}:${group} "$hermes_home/plugins/hermes-lcm"
     chmod -R u+rwX,g+rwX,o-rwx "$hermes_home/plugins/hermes-lcm"
   '';
