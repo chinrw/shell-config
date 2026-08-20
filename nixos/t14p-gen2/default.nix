@@ -9,6 +9,7 @@
     inputs.hardware.nixosModules.common-pc-laptop
     inputs.hardware.nixosModules.common-pc-ssd
     ./desktop.nix
+    ./disko.nix
     ./storage.nix
   ];
 

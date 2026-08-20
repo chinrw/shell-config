@@ -37,6 +37,13 @@
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.11";
     hardware.url = "github:NixOS/nixos-hardware";
 
+    # Declarative disk layout for work-laptop (nixos/t14p-gen2/disko.nix).
+    # `latest` is a moving tag that tracks disko releases.
+    disko = {
+      url = "github:nix-community/disko/latest";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # use hermes own flake
     hermes-agent = {
       url = "github:NousResearch/hermes-agent";
