@@ -85,9 +85,10 @@ in
     "--env"
     "LCM_DYNAMIC_LEAF_CHUNK_ENABLED=true"
 
-    # Do not inherit stale timeout state from mutable Profile config.
+    # Do not inherit stale timeout state from mutable Profile config; tracks
+    # auxiliary.compression.timeout.
     "--env"
-    "LCM_SUMMARY_TIMEOUT_MS=120000"
+    "LCM_SUMMARY_TIMEOUT_MS=300000"
 
     # lcm.db is a long-lived plaintext store of every raw message; redact
     # credential-shaped content (api_key/bearer/password/private-key

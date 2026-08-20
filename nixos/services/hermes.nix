@@ -115,11 +115,14 @@ let
     ];
   };
 
+  # An empty fallback_chain leaves auxiliary_client only the main agent model,
+  # which is also openai-codex and gets skipped as the same failed backend.
+  # Keep LCM_SUMMARY_TIMEOUT_MS (hermes-lcm.nix) in step with the timeout.
   lcmSummaryRoutes = {
     primary = (codexTarget codexLuna) // {
-      reasoning_effort = "xhigh";
-      timeout = 120;
-      fallback_chain = [ ];
+      reasoning_effort = "high";
+      timeout = 300;
+      fallback_chain = [ ((deepseekApiTarget deepseekPro) // { timeout = 300; }) ];
     };
     fallbackModels = [
       codexTerra
