@@ -285,7 +285,7 @@ in
         mediainfo
         ffmpeg # yazi deps
         exiftool
-        yt-dlp # website video downloader
+        unstable.yt-dlp # website video downloader
         sampler # Tool for shell commands execution, visualization and alerting
         nmap # port scanner
         circumflex # 🌿 It's Hacker News in your terminal
