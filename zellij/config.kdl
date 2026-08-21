@@ -284,6 +284,12 @@ load_plugins {
 //
 on_force_close "detach"
 
+// 0.45.0 default is "ask", which pops a modal when a pane is running a nested
+// zellij. Its ascend keys (FocusHostSession/FocusGuestSession) only exist in
+// the default keybinds, and this config sets clear-defaults=true -- descending
+// would leave no bound way back out.
+nested_session_handling "never"
+
 //  Send a request for a simplified ui (without arrow fonts) to plugins
 //  Options:
 //    - true
@@ -302,6 +308,15 @@ simplified_ui false
 //   - false
 //
 pane_frames true
+
+// 0.45.0 changed the frame default to "titles" (a single title line instead of
+// a full border). "full" is the pre-0.45 look.
+pane_frame_style "full"
+
+// 0.45.0 stack UI: all pane titles listed on top, expanded pane pinned below,
+// both static while paging. false restores the pre-0.45 pager, where the
+// expanded block moves as focus travels through the stack.
+stacked_pane_list false
 
 // Toggle between having Zellij lay out panes according to a predefined set of layouts whenever possible
 // Options:
