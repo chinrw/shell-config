@@ -899,6 +899,27 @@ in
           # stateDir subdirectories.
           chown ${config.services.hermes-agent.user}:${config.services.hermes-agent.group} "$profile_dir"
           chmod 2770 "$profile_dir"
+
+          # Upstream copies skills into a Profile once, at `profile create
+          # --clone`, and never again: each Profile is documented as a fully
+          # independent HERMES_HOME. By 2026-08-22 the nine specialist copies
+          # had been frozen since 2026-07-24 and still carried the pre-CDP
+          # browser instructions — a delegated child would have been told to
+          # launch_persistent_context() against a profile the browser-agent
+          # container holds open. Stale skills here do not merely go missing;
+          # they contradict the live ones.
+          #
+          # Only the skill trees are mirrored. Everything dot-prefixed at the
+          # root (.usage.json, .hub, .curator_state, .bundled_manifest,
+          # .archive) is genuinely per-Profile state and must survive, which
+          # is also why this is a copy rather than a symlink to the shared
+          # tree.
+          #
+          # Sync happens at activation, so Profiles still drift between
+          # rebuilds while the agent edits its own skills. That is predictable
+          # and a month better than never; a timer would race in-flight edits.
+          ${pkgs.rsync}/bin/rsync -a --delete --exclude='/.*' \
+            "$hermes_home/skills/" "$profile_dir/skills/"
         '') specialistProfileAssets
       )}
     '';
