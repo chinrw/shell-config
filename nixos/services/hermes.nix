@@ -178,11 +178,9 @@ let
   codexPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
   claudePackage = inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
-  # ── Browser automation runtime ──────────────────────────────────
-  # The Ubuntu container only bind-mounts /nix/store; installing a browser
-  # package on the host does not make Ubuntu's dynamic loader discover its
-  # libraries. Point browser clients at Nix-patched executables instead, whose
-  # complete runtime closure is encoded in their RPATH/wrappers.
+  # ── Fonts ───────────────────────────────────────────────────────
+  # FONTCONFIG_FILE below is process-wide, so this also covers ImageMagick,
+  # matplotlib and anything else in the container that renders CJK text.
   browserFonts = with pkgs; [
     noto-fonts
     noto-fonts-cjk-sans
@@ -192,57 +190,62 @@ let
     fontDirectories = browserFonts;
   };
 
-  # Generic Chromium consumers (Hermes agent-browser, Puppeteer, Selenium,
-  # Lighthouse, etc.) share this executable. The flags are scoped to this
-  # wrapper and are required for an unprivileged browser inside Docker.
-  hermesChromium = pkgs.chromium.override {
-    commandLineArgs = "--no-sandbox --disable-dev-shm-usage";
+  # ── No browser runs in this container ───────────────────────────
+  # Every browser now lives in a browser-agent instance (browser-agent.nix) and
+  # is reached over CDP. Nothing Nix-provided launches one here any more; four
+  # things were dropped over 2026-08-22 after sweeping for actual callers:
+  #
+  #   - pkgs.agent-browser and pkgs.chromedriver: no skill invoked either.
+  #     agent-browser is an unrelated npm tool, not the browser-agent containers
+  #     in browser-agent.nix — the name is the same two words reversed. Selenium
+  #     only ever ran inside the flaresolverr container.
+  #   - playwright-driver.browsers plus the python312Packages.playwright override
+  #     that injected PLAYWRIGHT_BROWSERS_PATH into it: 638 MiB of Chromium for
+  #     Hermes' Google Meet plugin, which is bundled but absent from
+  #     config.yaml's plugins.enabled. Skill runners never saw it either — they
+  #     start as `python3 -E`, which drops PYTHONPATH.
+  #   - pkgs.chromium wrapped in --no-sandbox --disable-dev-shm-usage, plus the
+  #     CHROME_BIN/CHROME_PATH/CHROMIUM_*/PUPPETEER_* variables pointing at it.
+  #     Its last claimed consumers were gallery-downloader's gallery_download.py
+  #     and scrape_18comic.py, and neither is reachable: no SKILL.md links them,
+  #     cron runs only run_ranking_wrapper.py -> ranking_to_qb.py, and that path
+  #     is plain `requests` with the EH_COOKIE_* cookies. gallery_download.py's
+  #     ExHentai branch also demands EH_USER/EH_PASS, which this deployment does
+  #     not set at all.
+  #
+  # Removing it is also what makes "browsers live in browser-agent" enforceable
+  # rather than merely documented: the venv's own pip-downloaded Chromium under
+  # ~/.cache/ms-playwright cannot start here (no libglib-2.0.so.0 — the Ubuntu
+  # base image ships no browser libraries and only /nix/store is mounted). The
+  # wrapper above was the one working fallback.
+
+  # Some South Plus threads draw the Baidu share link as a QR image instead of
+  # posting it as text, so the regex/DOM extraction finds nothing and the
+  # preflight would report "no share info" on a thread that has one. zbarimg
+  # decodes the single captured img node locally.
+  #
+  # Local decode, not a vision model: the decoded string picks the transfer
+  # target, and one misread character points the job at a stranger's share.
+  #
+  # CLI rather than python312Packages.pyzbar because the skill runners start as
+  # `/home/hermes/.venv/bin/python3 -E`, and -E drops PYTHONPATH — Nix-injected
+  # Python packages are invisible to them.
+  #
+  # The default arguments pull in gtk3, Qt5 and v4l for zbarcam, which nothing
+  # here uses: 588 MiB closure versus 0.3 MiB once they are off and
+  # imagemagickBig is swapped for the imagemagick already in the system.
+  qrDecoder = pkgs.zbar.override {
+    withXorg = false;
+    enableVideo = false;
+    imagemagickBig = pkgs.imagemagick;
   };
-  hermesChromiumExecutable = lib.getExe hermesChromium;
-
-  # Playwright browser revisions are tied to the Playwright driver version.
-  # Keep its Nix-patched Chromium + headless-shell + ffmpeg set separate from
-  # pkgs.chromium instead of forcing Playwright onto an arbitrary system build.
-  playwrightChromiumBrowsers = pkgs.playwright-driver.browsers.override {
-    withFirefox = false;
-    withWebkit = false;
-    fontconfig_file = browserFontConfig;
-  };
-
-  # Both the Python CLI and in-process API spawn the Nix-pinned Node driver
-  # through get_driver_env(). Inject its revision-coupled browser cache at that
-  # boundary so unrelated Playwright consumers keep their own cache/revision.
-  pythonPlaywright = pkgs.python312Packages.playwright.overrideAttrs (oldAttrs: {
-    postPatch = (oldAttrs.postPatch or "") + ''
-      substituteInPlace playwright/_impl/_driver.py \
-        --replace-fail \
-          '    env = os.environ.copy()' \
-          '    env = os.environ.copy()
-          env["PLAYWRIGHT_BROWSERS_PATH"] = "${playwrightChromiumBrowsers}"
-          env["PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD"] = "1"'
-    '';
-  });
-  pythonPlaywrightPath = lib.makeSearchPath pkgs.python312.sitePackages [
-    pythonPlaywright
-    pkgs.python312Packages.greenlet
-    pkgs.python312Packages.pyee
-  ];
-
-  # PATH-based discovery pins agent-browser itself (avoiding its npx fallback)
-  # and covers chromedriver/Selenium plus the Playwright CLI. Python Playwright
-  # is also added to PYTHONPATH below because Hermes' Google Meet plugin imports
-  # it in-process from the sealed Python runtime.
-  browserAutomationPath = lib.makeBinPath [
-    pkgs.agent-browser
-    hermesChromium
-    pkgs.chromedriver
-    pythonPlaywright
-  ];
 
   # The Xvfb/x11vnc/websockify/noVNC stack that briefly lived here now belongs
-  # to browser-agent.nix, which runs the shared browser with its sandbox on.
-  # The Chromium and Playwright entries below stay: agent-browser, puppeteer
-  # and the not-yet-migrated skills still launch browsers in this container.
+  # to browser-agent.nix, which runs one sandboxed browser per profile — South
+  # Plus and Baidu both reach theirs over CDP. The Chromium and Playwright
+  # entries above stay for what still launches a browser in this container: the
+  # 18comic scrapers under gallery-downloader/scripts, and p5js/ascii-video,
+  # which render local files the browser-agent containers do not mount.
 
   # The upstream NixOS module currently renders settings only to the default
   # profile's config.yaml. Named Hermes profiles each have an independent
@@ -448,40 +451,23 @@ in
         "--env"
         "no_proxy=192.168.0.0/24,127.0.0.1,localhost,slack.com,.slack.com"
 
-        # Nix-managed browser automation. Export only version-agnostic browser
-        # discovery globally. Playwright's revision-coupled cache is scoped to
-        # the matching Python driver above.
-        "--env"
-        "AGENT_BROWSER_EXECUTABLE_PATH=${hermesChromiumExecutable}"
-        "--env"
-        "AGENT_BROWSER_ARGS=--no-sandbox,--disable-dev-shm-usage"
-        "--env"
-        "CHROME_BIN=${hermesChromiumExecutable}"
-        "--env"
-        "CHROME_PATH=${hermesChromiumExecutable}"
-        "--env"
-        "CHROMIUM_BIN=${hermesChromiumExecutable}"
-        "--env"
-        "CHROMIUM_PATH=${hermesChromiumExecutable}"
-        "--env"
-        "PUPPETEER_EXECUTABLE_PATH=${hermesChromiumExecutable}"
-        "--env"
-        "PUPPETEER_SKIP_DOWNLOAD=true"
-        "--env"
-        "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true"
+        # Process-wide fontconfig, so CJK renders for ImageMagick, matplotlib
+        # and anything else here that draws text. The browser-discovery
+        # variables that used to sit beside it (CHROME_BIN, CHROME_PATH,
+        # CHROMIUM_*, PUPPETEER_*) went with the Chromium they pointed at — see
+        # the note in the let block.
         "--env"
         "FONTCONFIG_FILE=${browserFontConfig}"
 
-        # Expose the Nix Python Playwright package to Hermes' sealed Python;
-        # its child driver gets the matching browser cache from the package
-        # override above. Keep host-provided bubblewrap on PATH for an
-        # explicit codex app-server switch. hermes-lcm's FastEmbed runtime
-        # rides the same variable (hand-filtered against venv collisions —
-        # see hermes-lcm.nix).
+        # Carries hermes-lcm's FastEmbed runtime into Hermes' sealed Python,
+        # hand-filtered against venv collisions — see hermes-lcm.nix. The Nix
+        # Python Playwright package used to lead this list; see the same note
+        # for why it left. Host-provided bubblewrap stays on PATH below for an
+        # explicit codex app-server switch.
         "--env"
-        "PYTHONPATH=${pythonPlaywrightPath}:${hermesLcm.pythonPath}"
+        "PYTHONPATH=${hermesLcm.pythonPath}"
         "--env"
-        "PATH=${pkgs.bubblewrap}/bin:${browserAutomationPath}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${codexPackage}/bin:${claudePackage}/bin"
+        "PATH=${pkgs.bubblewrap}/bin:${qrDecoder}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${codexPackage}/bin:${claudePackage}/bin"
       ]
       # LCM summarizer/behaviour env — see hermes-lcm.nix for the rationale.
       ++ hermesLcm.containerEnvOptions;
