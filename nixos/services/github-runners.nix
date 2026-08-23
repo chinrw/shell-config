@@ -52,6 +52,7 @@ let
   # default path below WOULD collide — hence a separate subtree).
   runnerWorkRoot = "/var/lib/github-runner-work";
   stocksWorkDir = name: "${runnerWorkRoot}/${name}";
+  selfhostWorkDir = "${runnerWorkRoot}/asterinas-selfhost";
 
   stocksRunnerNames = map (i: "stocks-${toString i}") (lib.range 1 6);
   isStocksRunner = attrName: builtins.elem attrName stocksRunnerNames;
@@ -85,6 +86,15 @@ let
           name = "Constantinople";
           url = "https://github.com/rex-rs/rex";
         };
+        asterinas-selfhost = {
+          name = "asterinas-selfhost";
+          tokenSecret = "asterinas-selfhost";
+          url = "https://github.com/chinrw/asterinas";
+          workDir = selfhostWorkDir;
+          extraLabels = [ "asterinas-selfhost" ];
+          privateDevices = false;
+          oomScoreAdjust = 500;
+        };
       }
       // lib.genAttrs stocksRunnerNames (name: {
         inherit name;
@@ -98,6 +108,11 @@ let
   thisHostCfg = runnersByHost.${hostname} or null;
   thisHostRunners = if thisHostCfg == null then { } else thisHostCfg.runners;
   hostProxy = if thisHostCfg == null then null else thisHostCfg.proxy or null;
+  explicitRunnerWorkDirs = lib.unique (
+    lib.filter (path: path != null) (
+      lib.mapAttrsToList (_: runnerCfg: runnerCfg.workDir or null) thisHostRunners
+    )
+  );
 
   # The workDir the module will actually use for a runner declared here
   # (mirrors mkRunner below: explicit workDir, else the cfg.name default).
@@ -115,7 +130,7 @@ let
       name = runnerCfg.name;
       tokenFile = config.sops.secrets."github-runners/${tokenSecret}".path;
       url = runnerCfg.url;
-      extraLabels = [ "nix" ];
+      extraLabels = [ "nix" ] ++ (runnerCfg.extraLabels or [ ]);
       user = runnerUser;
       replace = true;
       workDir = resolvedWorkDir runnerCfg;
@@ -129,6 +144,8 @@ let
       # Allow the service to create user namespaces
       serviceOverrides = {
         Slice = "github-runners.slice";
+        PrivateDevices = lib.mkForce (runnerCfg.privateDevices or true);
+        OOMScoreAdjust = runnerCfg.oomScoreAdjust or 0;
         # Only stocks runners may see and write the shared CI cache. Mask it
         # entirely from Rex and any future non-stocks runner using this module.
         ReadWritePaths = lib.optionals usesStocksCache [ stocksCacheUnitPath ];
@@ -222,7 +239,7 @@ in
     # per-file aging desynchronizes fingerprints from artifacts.
     "d ${stocksCacheRoot}/target 0755 ${runnerUser} ${runnerGroup} -"
   ]
-  ++ map (name: "d ${stocksWorkDir name} 0700 ${runnerUser} ${runnerGroup} -") stocksRunnerNames;
+  ++ map (path: "d ${path} 0700 ${runnerUser} ${runnerGroup} -") explicitRunnerWorkDirs;
 
   systemd.slices.github-runners = {
     description = "GitHub Actions runners resource pool";

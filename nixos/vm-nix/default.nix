@@ -185,6 +185,9 @@ in
       "ssh_pub_key" = { };
       "access-tokens" = { };
       "github-runners/Constantinople" = { };
+      "github-runners/asterinas-selfhost" = {
+        restartUnits = [ "github-runner-asterinas-selfhost.service" ];
+      };
       "github-runners/stocks" = {
         restartUnits = [
           "github-runner-stocks-1.service"
