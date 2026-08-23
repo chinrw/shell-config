@@ -143,6 +143,9 @@ let
     target_ratio = 0.20;
     protect_last_n = 20;
 
+    # increase the timeout from 600s to 900s since the LCM compression required multiple round
+    context_total_ceiling_seconds = 900;
+
     # Bulky tool output can fill the whole tail budget; keep the last 3
     # real user turns verbatim.
     min_tail_user_messages = 3;
