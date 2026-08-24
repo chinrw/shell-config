@@ -50,13 +50,6 @@ in
       "app.session.togglePath" = [ "alt+shift+p" ];
       "app.session.toggleNamedFilter" = [ "alt+n" ];
       "app.models.toggleProvider" = [ "alt+shift+t" ];
-      # thinking.cycle registers before thinking.toggle and first match wins, so
-      # it has to vacate shift+tab rather than just sharing it.
-      "app.thinking.cycle" = [ "alt+t" ];
-      "app.thinking.toggle" = [
-        "shift+tab"
-        "ctrl+t"
-      ];
     };
   };
 
@@ -67,5 +60,10 @@ in
   # app.session.togglePath binding; move the extension onto a free key.
   home.file.".pi/agent/interactive-shell.json".text = builtins.toJSON {
     spawn.shortcut = "alt+i";
+  };
+
+  # Pi reserves ctrl+shift+f for fullscreen transcript search.
+  home.file.".pi/agent/extensions/pi-autoresearch.json".text = builtins.toJSON {
+    shortcuts.fullscreenDashboard = "ctrl+shift+y";
   };
 }
