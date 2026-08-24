@@ -438,6 +438,10 @@ in
         "NO_PROXY=192.168.0.0/24,127.0.0.1,localhost,slack.com,.slack.com"
         "--env"
         "TELEGRAM_PROXY=http://192.168.0.240:10809"
+        "--env"
+        "HERMES_TELEGRAM_HTTP_POOL_TIMEOUT=30"
+        "--env"
+        "HERMES_TELEGRAM_HTTP_CONNECT_TIMEOUT=30"
 
         # Keep these lowercase copies. apt honours only the lowercase spelling
         # (verified: an unreachable http_proxy fails apt, an unreachable
