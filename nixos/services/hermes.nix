@@ -554,6 +554,14 @@ in
         child_timeout_seconds = 900;
       };
 
+      # Curator auto-prune
+      curator = {
+        interval_hours = 24;
+        stale_after_days = 14;
+        archive_after_days = 60;
+        archive_ttl_days = 90;
+      };
+
       # Chain trigger coverage (auxiliary_client.py:6925 should_fallback /
       # is_capacity_error): payment 402s, rate-limit 429s, connection and
       # timeout errors, allow-list 400s ("model incompatible with route"),
