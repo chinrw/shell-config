@@ -15,6 +15,21 @@ let
       ../../patches/xray/9d9eaf3-close-xhttp-body.patch
     ];
   });
+
+  # AdGuard upstream file: domestic names go to AliDNS directly, everything
+  # else keeps the encrypted path through dnscrypt-proxy
+  chinaDnsUpstreams =
+    let
+      aliDoh = "https://223.5.5.5/dns-query";
+    in
+    pkgs.runCommand "adguard-china-upstreams" { } ''
+      {
+        echo "127.0.0.1:5353"
+        echo "[/cn/]${aliDoh}"
+        sed -nE 's|^server=/([^/]+)/.*$|[/\1/]${aliDoh}|p' \
+          ${inputs.dnsmasq-china-list}/accelerated-domains.china.conf
+      } > $out
+    '';
 in
 {
   imports = [
@@ -291,19 +306,7 @@ in
         http_proxy = "http://127.0.0.1:10809";
 
         dns = {
-          # dnscrypt-proxy2, so queries leave this host encrypted and are
-          # resolved at the tunnel exit rather than by the hijacking chain.
-          #
-          # fallback_dns is plaintext on purpose: it keeps DNS answering if
-          # dnscrypt-proxy stops or its upstream breaks, at the cost of being
-          # silent when it takes over. AdGuard's query log records the
-          # answering upstream per query, so `127.0.0.1:5353` there means the
-          # encrypted path is live and `1.1.1.1:53` means it is not.
-          # `systemctl is-active dnscrypt-proxy2` catches the crashed case but
-          # not a running forwarder whose own upstream is failing.
-          upstream_dns = [
-            "127.0.0.1:5353"
-          ];
+          upstream_dns_file = "${chinaDnsUpstreams}";
           bootstrap_dns = [
             "1.1.1.1"
             "8.8.8.8"

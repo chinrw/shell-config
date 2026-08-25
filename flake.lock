@@ -254,6 +254,22 @@
         "type": "github"
       }
     },
+    "dnsmasq-china-list": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786047580,
+        "narHash": "sha256-9UbkCTmc1y5RrYf7w5D3s/7Bcb1vZYoc3rQsxPnL4mQ=",
+        "owner": "felixonmars",
+        "repo": "dnsmasq-china-list",
+        "rev": "cbba9124bb2dc5c55f90c07bbac6c44d2dc6f7cb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "felixonmars",
+        "repo": "dnsmasq-china-list",
+        "type": "github"
+      }
+    },
     "everything-claude-code": {
       "flake": false,
       "locked": {
@@ -1269,6 +1285,7 @@
         "codex-cli-nix": "codex-cli-nix",
         "deepseek-harness-nix": "deepseek-harness-nix",
         "disko": "disko_2",
+        "dnsmasq-china-list": "dnsmasq-china-list",
         "everything-claude-code": "everything-claude-code",
         "flake-utils": "flake-utils_3",
         "hardware": "hardware",

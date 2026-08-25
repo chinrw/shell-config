@@ -95,6 +95,13 @@
       flake = false;
     };
 
+    # China-domain list for AdGuard split DNS on vm-nix: domestic names resolve
+    # via AliDNS directly so DNS keeps working when the proxy tunnel is down.
+    dnsmasq-china-list = {
+      url = "github:felixonmars/dnsmasq-china-list";
+      flake = false;
+    };
+
     # support for wsl
     nixos-wsl = {
       url = "github:nix-community/NixOS-WSL/main";
