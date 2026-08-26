@@ -57,7 +57,6 @@ in
     ./zram.nix
     ./swap.nix
     ../services/hermes.nix
-    ../services/llama-loader-shim.nix
     ../services/flaresolverr.nix
     ../services/browser-agent.nix
     ../services/tailscale-exit-proxy.nix

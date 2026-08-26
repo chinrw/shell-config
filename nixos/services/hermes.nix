@@ -423,7 +423,12 @@ in
       # the proxy config.
       #
       # NO_PROXY exempts:
-      #   - 192.168.0.0/24 — local LAN (mirrors host config)
+      #   - 192.168.0.0/24 — local LAN (mirrors host config). Python proxy
+      #     handling (urllib/httpx/aiohttp) does NOT parse CIDR in no_proxy,
+      #     so this entry only helps non-Python tooling in the container —
+      #     LAN hosts Hermes itself must reach need an exact entry too.
+      #   - 192.168.0.101 — llama-server (llama provider below); without the
+      #     exact match its traffic would ride the xray hop and die with it
       #   - 127.0.0.1 / localhost — loopback
       #   - slack.com — directly reachable; routing it through the proxy
       #     caused duplicate posts (proxy drops the response after Slack
@@ -435,7 +440,7 @@ in
         "--env"
         "HTTPS_PROXY=http://192.168.0.240:10809"
         "--env"
-        "NO_PROXY=192.168.0.0/24,127.0.0.1,localhost,slack.com,.slack.com"
+        "NO_PROXY=192.168.0.0/24,192.168.0.101,127.0.0.1,localhost,slack.com,.slack.com"
         "--env"
         "TELEGRAM_PROXY=http://192.168.0.240:10809"
         "--env"
@@ -456,7 +461,7 @@ in
         "--env"
         "https_proxy=http://192.168.0.240:10809"
         "--env"
-        "no_proxy=192.168.0.0/24,127.0.0.1,localhost,slack.com,.slack.com"
+        "no_proxy=192.168.0.0/24,192.168.0.101,127.0.0.1,localhost,slack.com,.slack.com"
 
         # Process-wide fontconfig, so CJK renders for ImageMagick, matplotlib
         # and anything else here that draws text. The browser-discovery
@@ -636,9 +641,8 @@ in
         flash = goTarget deepseekFlash;
       };
 
-      # Named custom providers exposed to the `/model` picker. Only the Go
-      # gateway remains — the local llama provider was removed along with
-      # the rest of the local-llama wiring.
+      # Named custom providers exposed to the `/model` picker: the Go
+      # gateway and the local llama.cpp router on the Windows box.
       custom_providers = [
         # opencode Zen "Go" plan — discover_models hits /v1/models on the
         # gateway and enumerates every Go-plan model into the /model picker.
@@ -665,6 +669,27 @@ in
           name = "opencode-go";
           base_url = opencodeGoEndpoint;
           key_env = "OPENCODE_GO_API_KEY";
+          discover_models = true;
+        }
+
+        # llama.cpp router (b10488) on the Windows box, reached directly —
+        # the old loader-shim was retired: this build autoloads a cold model
+        # on demand. That only applies while the server runs WITHOUT
+        # --no-models-autoload; with the flag present a /model switch to an
+        # unloaded model 400s ("model is not loaded") until it is dropped
+        # from the Windows-side launch config.
+        # Switch syntax: /model <id> --provider llama (ids come from
+        # discovery, e.g. qwen3.8-27b-ud-q5-k-xl).
+        #
+        # api_key is a dummy: llama-server ignores auth, but discovery
+        # (fetch_api_models) skips entries with an empty key, and key_env
+        # would demand a real env var at /model time.
+        # 192.168.0.101 must stay an exact NO_PROXY entry (see extraOptions)
+        # or this traffic rides the xray hop.
+        {
+          name = "llama";
+          base_url = "http://192.168.0.101:8080/v1";
+          api_key = "sk-local";
           discover_models = true;
         }
       ];
@@ -940,9 +965,10 @@ in
     '';
   };
 
-  # Hermes no longer depends on llama-loader-shim: active roles now use Codex,
-  # the Go gateway, or native DeepSeek. The shim service itself still exists
-  # in services/llama-loader-shim.nix and can be disabled separately.
+  # llama-loader-shim is gone (removed 2026-08-25): the llama.cpp router now
+  # autoloads models on demand, so the custom `llama` provider above talks to
+  # 192.168.0.101:8080 directly. Auxiliary roles stay on Codex, the Go
+  # gateway, and native DeepSeek.
 
   # The upstream OCI image's HERMES_DASHBOARD=1 switch relies on s6, while
   # this module intentionally runs a plain Ubuntu container. Start the web UI
