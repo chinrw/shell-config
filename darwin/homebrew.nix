@@ -29,7 +29,6 @@ in
     taps = [
       "1password/tap"
       "apple/apple"
-      "fsouza/prettierd"
       "playcover/playcover"
     ];
 

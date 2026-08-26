@@ -12,6 +12,7 @@
     ./homebrew.nix
     ./system-packages.nix
     ./nix-daemon-proxy.nix
+    ./xray.nix
 
     inputs.sops-nix.darwinModules.sops
   ];
