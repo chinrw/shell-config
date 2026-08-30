@@ -50,7 +50,7 @@ keybinds clear-defaults=true {
 		bind "r" { SwitchToMode "RenamePane"; PaneNameInput 0;}
 	}
 	tab {
-		bind "Ctrl t" { SwitchToMode "Normal"; }
+		bind "Alt t" { SwitchToMode "Normal"; }
 		bind "r" { SwitchToMode "RenameTab"; TabNameInput 0; }
 		bind "h" "Left" "Up" "k" { GoToPreviousTab; SwitchToMode "Normal"; }
 		bind "l" "Right" "Down" "j" { GoToNextTab; SwitchToMode "Normal"; }
@@ -70,7 +70,6 @@ keybinds clear-defaults=true {
 		bind "8" { GoToTab 8; SwitchToMode "Normal"; }
 		bind "9" { GoToTab 9; SwitchToMode "Normal"; }
 		bind "Tab" { ToggleTab; }
-		bind "Ctrl t" { ToggleFloatingPanes; SwitchToMode "Normal"; }
 	}
 	scroll {
 		bind "Ctrl s" { SwitchToMode "Normal"; }
@@ -226,7 +225,7 @@ keybinds clear-defaults=true {
 	//		bind "Ctrl b" { SwitchToMode "Scroll"; }
 	// }
 	shared_except "tab" "locked" {
-		bind "Ctrl t" { SwitchToMode "Tab"; }
+		bind "Alt t" { SwitchToMode "Tab"; }
 	}
 	// shared_except "renametab" "locked" {
 	// 	bind "Alt r" { SwitchToMode "RenameTab"; }
