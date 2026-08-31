@@ -50,6 +50,7 @@ in
     })
     ../services/qbittorrent.nix
     ../services/cachix-deploy.nix
+    ../services/shell-config-updater.nix
     ../services/nix-serve.nix
     ../services/factorio.nix
     ./kernel.nix
