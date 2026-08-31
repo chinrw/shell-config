@@ -302,7 +302,7 @@ in
         codexZshCompletion
         # oh-my-pi
         rustscan # modern scanner
-        marksman
+        markdown-oxide
         pyrefly
         mypy # Optional static typing for Python
         gh-dash
