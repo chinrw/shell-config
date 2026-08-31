@@ -587,11 +587,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1788181132,
-        "narHash": "sha256-Kce5wUdY6s8RaHkX3XW5c7uXkUrljhLBjcp5YG9hECs=",
+        "lastModified": 1788191896,
+        "narHash": "sha256-4HlmWIgc3no5d2qtBpEpMiZISucwtLjIwraOAXBWjqM=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "89c28ccf7b7922620fd42b69a6001d7307d94a48",
+        "rev": "4c9f130bf9a6d0af196f3e94375d7834871f5ab8",
         "type": "github"
       },
       "original": {
@@ -966,11 +966,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1788180226,
-        "narHash": "sha256-Qp4FPArS1EYWKhoKYXYBgjq/UZnC1aYfII8t5bQc+ZM=",
+        "lastModified": 1788191668,
+        "narHash": "sha256-wWK9bm8q+GrCZDVcowBakiUmbqkbhK8T6Iqq3OWpdcA=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "2f1a474455d131c3cbed4b18879e13a69f628e27",
+        "rev": "01244f0f5d1973cb30d5ebb4818d6622acd5e9e1",
         "type": "github"
       },
       "original": {
@@ -1100,11 +1100,11 @@
     "oh-my-pi": {
       "flake": false,
       "locked": {
-        "lastModified": 1788177975,
-        "narHash": "sha256-olYC3T8cmUQaLb8K21ggsQ2yB9PxyZP8G+8y14R+0D8=",
+        "lastModified": 1788180607,
+        "narHash": "sha256-hxL0DoBq17cPjizCYZUdYfH2N/A94TtsPkzi9p41orA=",
         "owner": "can1357",
         "repo": "oh-my-pi",
-        "rev": "311b390bfa47efdf28c6ea8a608e445ba117cd59",
+        "rev": "65f79e76fcc89b96632fe86a598f314bd7cfc725",
         "type": "github"
       },
       "original": {
