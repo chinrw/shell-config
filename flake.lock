@@ -257,11 +257,11 @@
     "dnsmasq-china-list": {
       "flake": false,
       "locked": {
-        "lastModified": 1788179930,
-        "narHash": "sha256-OSOIJc4tR1Ev2+K0d1aDAIHQRYYoYNmObTrS7wr/yzA=",
+        "lastModified": 1788272012,
+        "narHash": "sha256-BNRdLL+qk0dqClg6W0+7ADQmUmPz/tMEHdM4ifCMaps=",
         "owner": "felixonmars",
         "repo": "dnsmasq-china-list",
-        "rev": "9e9304cb2498b0407b5ea874043c0287c3b8df46",
+        "rev": "8b1c4929fd66121553139fc4f2126aacb757c63b",
         "type": "github"
       },
       "original": {
@@ -587,11 +587,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1788260240,
-        "narHash": "sha256-t8YTC30GAe++Z6zL/FlsNHK3dtQ2mVzgsdTNCvcmZmA=",
+        "lastModified": 1788277355,
+        "narHash": "sha256-N0wmbmmxH/JZ62t0ekpCWrKtUDDwcJ6KxHP10Fn7rv8=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "18a76be124d7c16ed98b629a358b23fef76a7f46",
+        "rev": "58472d803a32edd19773bb2ed7426490981a636e",
         "type": "github"
       },
       "original": {
@@ -966,11 +966,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1788265974,
-        "narHash": "sha256-LDG4qrNrKqf3Lie92hNnVZ2m0SOSyt62aHHAPO4z3oM=",
+        "lastModified": 1788277042,
+        "narHash": "sha256-o4NB2Prfu+sgrHl4/sRgC9EuzJuVzihqj/0vrNC2SS8=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "28b191a91065d8f1fc0695f5067d9f8a2fc0efd1",
+        "rev": "653bba0ba5d53af037b0468f2d68ddf7e0f18d7c",
         "type": "github"
       },
       "original": {
@@ -1083,11 +1083,11 @@
     "oh-my-opencode-slim": {
       "flake": false,
       "locked": {
-        "lastModified": 1788266865,
-        "narHash": "sha256-gwmcIF1yGab0t2z93vG25+q4DiLcumKf3KJDyjrddiQ=",
+        "lastModified": 1788268279,
+        "narHash": "sha256-TzMuA9vCvTNrHMbTU2xZ89t90N1kgJHlCrsgK3RRVxM=",
         "owner": "alvinunreal",
         "repo": "oh-my-opencode-slim",
-        "rev": "26cf25247df88b85f04b78112fc92a27262e59d4",
+        "rev": "1da3f0d9cf5eef38a2a1fb98ba7af70fd9858a7a",
         "type": "github"
       },
       "original": {
@@ -1100,11 +1100,11 @@
     "oh-my-pi": {
       "flake": false,
       "locked": {
-        "lastModified": 1788265703,
-        "narHash": "sha256-xvHUYyluoJNY4SH1XljHQV0IPGbuZQCod80x9/AwwCM=",
+        "lastModified": 1788276631,
+        "narHash": "sha256-25gnPicnBv3FGPZZiMI5EUxMOcgnFd6BOlDYlIHbCH4=",
         "owner": "can1357",
         "repo": "oh-my-pi",
-        "rev": "fd6ee563c15413685ac43dfce350902a8d75d997",
+        "rev": "7523a2d7c64ca17cd9a7d9eae5dc9cf89e1419ff",
         "type": "github"
       },
       "original": {
