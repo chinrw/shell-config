@@ -85,6 +85,9 @@ let
         runner1 = {
           name = "Constantinople";
           url = "https://github.com/rex-rs/rex";
+          # QEMU opens /dev/kvm with O_RDWR; creating device nodes is not needed.
+          bindPaths = [ "/dev/kvm" ];
+          deviceAllow = [ "/dev/kvm rw" ];
         };
         asterinas-selfhost = {
           name = "asterinas-selfhost";
@@ -145,6 +148,8 @@ let
       serviceOverrides = {
         Slice = "github-runners.slice";
         PrivateDevices = lib.mkForce (runnerCfg.privateDevices or true);
+        BindPaths = runnerCfg.bindPaths or [ ];
+        DeviceAllow = runnerCfg.deviceAllow or [ ];
         OOMScoreAdjust = runnerCfg.oomScoreAdjust or 0;
         # Only stocks runners may see and write the shared CI cache. Mask it
         # entirely from Rex and any future non-stocks runner using this module.
@@ -156,8 +161,6 @@ let
         # Allow syscalls needed for namespace creation
         SystemCallFilter = [
           "@system-service"
-          # Capability syscalls for bubblewrap
-          "@capabilities"
           # Namespace syscalls for bubblewrap/FHS
           "unshare"
           "setns"
