@@ -94,7 +94,7 @@ in
   # the `brew bundle` process. Interactive brew already gets its proxy from the
   # zsh session (see home-manager/programs/zsh).
   security.sudo.extraConfig = ''
-    Defaults:root env_keep += "http_proxy https_proxy HOMEBREW_CURLRC"
+    Defaults>root env_keep += "http_proxy https_proxy HOMEBREW_CURLRC"
   '';
 
   system.activationScripts.homebrew.text = lib.mkBefore ''
