@@ -15,7 +15,7 @@
   # Baseline is ~800 tasks; nix builds run as nixbld outside the slice.
   systemd.slices."user-" = {
     overrideStrategy = "asDropin";
-    sliceConfig.TasksMax = 8192;
+    sliceConfig.TasksMax = 12288;
   };
 
   security.audit = {
