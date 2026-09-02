@@ -45,8 +45,11 @@
     };
 
     # use hermes own flake
+    # Pinned to a release tag, NOT main: main carries unreleased commits, and
+    # 0.21.0's added hermes_state_registry import shipped there without the
+    # matching pyproject py-modules entry, which crash-looped the gateway.
     hermes-agent = {
-      url = "github:NousResearch/hermes-agent";
+      url = "github:NousResearch/hermes-agent/v2026.8.31";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
