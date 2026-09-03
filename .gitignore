@@ -1,3 +1,4 @@
 /result
 /kernel-build
 .claude/
+wezterm/local.lua
