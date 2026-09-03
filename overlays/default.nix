@@ -1,6 +1,13 @@
 # This file defines overlays
 { inputs, ... }:
 {
+  # Single knob for the LLVM version. The kernel (nixos/vm-nix/kernel-package.nix)
+  # and optimizedClangStdenv below both read it, so they cannot drift apart.
+  # Must be applied before `modifications`, which consumes it through `prev`.
+  llvm-pin = _final: prev: {
+    llvmPinned = prev.llvmPackages_21;
+  };
+
   # This one brings our custom packages from the 'pkgs' directory
   additions =
     final: _prev:
@@ -23,8 +30,8 @@
         let
           # Use prev (not final) to avoid infinite recursion — packages built
           # with this stdenv must not pull in the overlay's own output.
-          base = prev.llvmPackages.stdenv;
-          llvmBins = prev.llvmPackages.llvm;
+          base = prev.llvmPinned.stdenv;
+          llvmBins = prev.llvmPinned.llvm;
           moldBintools = base.cc.bintools.override (old: {
             extraBuildCommands = (old.extraBuildCommands or "") + ''
               ln -sf ${prev.mold}/bin/ld.mold $out/bin/ld.mold

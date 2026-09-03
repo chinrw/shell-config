@@ -1,8 +1,7 @@
-{
-  pkgs,
-  lib,
-  inputs,
-  ...
+{ pkgs
+, lib
+, inputs
+, ...
 }:
 
 let
@@ -29,8 +28,13 @@ let
   extra = getMakeVar "EXTRAVERSION";
   fullVersion = if extra != "" then "${version}${extra}" else version;
 
+  llvmStdenv = import ./llvm-stdenv.nix { inherit pkgs; };
+
 in
-pkgs.linuxManualConfig {
+(pkgs.linuxManualConfig.override {
+  buildPackages = pkgs.buildPackages // { stdenv = llvmStdenv; };
+})
+{
   version = "${fullVersion}-rolling";
   modDirVersion = fullVersion;
 
@@ -40,7 +44,6 @@ pkgs.linuxManualConfig {
 
   features.efiBootStub = true;
 
-  # Enable LLVM build
-  stdenv = pkgs.clangStdenv;
+  stdenv = llvmStdenv;
   extraMakeFlags = [ "LLVM=1" ];
 }

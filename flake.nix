@@ -241,7 +241,10 @@
     flake-utils.lib.eachSystem systems (
       system:
       let
-        overlays = [ (import rust-overlay) ];
+        overlays = [
+          (import rust-overlay)
+          self.overlays.llvm-pin
+        ];
         pkgs = import nixpkgs {
           inherit system overlays;
         };
