@@ -199,11 +199,11 @@
         "systems": "systems_5"
       },
       "locked": {
-        "lastModified": 1787320064,
-        "narHash": "sha256-unY4w6RpOD/dDDpJw8Bi6gve10zZ92hBo6LgS+qWVFc=",
+        "lastModified": 1788499175,
+        "narHash": "sha256-3spzsJBI+KPm3Jk8NySFMDQWSG+jd0NWGf2ishweyU8=",
         "owner": "chinrw",
         "repo": "deepseek-harness-nix",
-        "rev": "fadf90bc64c875f46c2f7580cd4fd47b137c8b64",
+        "rev": "4b84d4bdfdd4a69c034ed7c41628e7adfe7ac8d6",
         "type": "github"
       },
       "original": {
@@ -967,11 +967,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1788493055,
-        "narHash": "sha256-gXRu8Knd58yw6gyB7j7jSjIt8QEZbjAsVkf7vC6yURo=",
+        "lastModified": 1788504374,
+        "narHash": "sha256-bLxm5pH652v1zAK1l1KbzhldOEwI51+v0KBUweVeDQ0=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "1f1a78601a41e0010d304618efaea242a7609452",
+        "rev": "c0493b8cfa84b9a252b21acffcda984aaebd1846",
         "type": "github"
       },
       "original": {
@@ -1101,11 +1101,11 @@
     "oh-my-pi": {
       "flake": false,
       "locked": {
-        "lastModified": 1788493801,
-        "narHash": "sha256-YcBU8uR6qt58HM4F3cEUj6gnV2OZBsGBLz2LBafe3SQ=",
+        "lastModified": 1788503542,
+        "narHash": "sha256-1+w7fgdvTCODhWUFxpuOiVtdm9jOr21IeJ00i4NjJpA=",
         "owner": "can1357",
         "repo": "oh-my-pi",
-        "rev": "fdfeef1f78ba75cd2c0a3b555be1d6043af4de57",
+        "rev": "3f8347bcd6d17bd985e1d97e4f07d2d765dde006",
         "type": "github"
       },
       "original": {
