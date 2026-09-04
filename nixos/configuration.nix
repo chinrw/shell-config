@@ -184,9 +184,16 @@
     };
   };
 
-  # clean the /tmp entries older than 3 days
   systemd.tmpfiles.rules = [
-    "d /tmp 1777 root root 3d"
+    # M: age dirs by mtime only. / is relatime, so any /tmp traversal resets
+    # dir atime and a plain age rule never fires. 21d spans a multi-day PR
+    # cycle of agent scratch.
+    "d /tmp 1777 root root acmM:21d"
+    # cargo only flock()s this file, so its timestamps never move and the
+    # cleaner would take it; the next cargo then locks a fresh inode and two
+    # builds share one target dir.
+    "x /tmp/*/*/.cargo-lock"
+    "x /tmp/*/*/*/.cargo-lock"
   ];
 
   # zramSwap = {
