@@ -458,6 +458,7 @@ in
           copyToClipboardCmd = "printf '%s' {{text}} | osc copy";
         };
         git = {
+          overrideGpg = true;
           diffRenderers = [
             {
               colorArg = "always";
