@@ -6,8 +6,8 @@ coming back to this code months later.
 
 ## Concise without losing information
 
-- Cut words, never facts. If shortening drops a constraint, a reason, or a
-  caveat, keep the longer form.
+- Cut words, never facts. A fact that does not fit moves to a bigger home
+  (commit body, then `docs/`); it does not stretch the text.
 - Say only what the code cannot: the why, the constraint, the surprise.
 - One idea per bullet or line. Paragraphs bury the point.
 - Prefer concrete facts to adjectives: "retries 3x, 200ms apart" beats
@@ -34,11 +34,14 @@ assistant. Avoid:
 
 ## Comments
 
-- Explain why, not what.
-- 1-3 lines is typical. If the rationale needs more, put it in `docs/` or the
-  commit message and have the comment point there.
-- Comment the surprise: the workaround, the ordering constraint, the API quirk,
-  the reason the obvious approach fails.
+- Explain why, not what. The reader has the man page: name the constraint a
+  flag enforces, not what the flag means.
+- 1-3 lines. A comment that needs a blank line inside it is a commit message;
+  keep the one line that stops the next reader from reverting the change.
+- One fact per comment: the workaround, the ordering constraint, the reason the
+  obvious approach fails. Not the investigation that found it.
+- History, measurements, rejected alternatives, and how the tool works go in
+  the commit message. `git blame` gets the reader there.
 - Delete comments that paraphrase the line below them.
 - A stale comment is worse than no comment. Update comments with the code.
 
