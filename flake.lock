@@ -257,11 +257,11 @@
     "dnsmasq-china-list": {
       "flake": false,
       "locked": {
-        "lastModified": 1788549751,
-        "narHash": "sha256-XNPa1hkmKAPUuMchZTuj8S8Y19+bEIgN8fajls9aXGU=",
+        "lastModified": 1788624647,
+        "narHash": "sha256-UeiZ+xOF0FlH9Ic1xn6Tvkr9BH7Jm5YVQL/s6zxi3FM=",
         "owner": "felixonmars",
         "repo": "dnsmasq-china-list",
-        "rev": "6e6006a700828ab2adf43bae0d15b039849444e1",
+        "rev": "c55bc322c2ebcb0e0d78614ef44951be629862ed",
         "type": "github"
       },
       "original": {
@@ -967,11 +967,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1788623588,
-        "narHash": "sha256-1mqNeGkWa8W/dFMDyGQEm0ZQwPk+hZhutd4MVsEXgM4=",
+        "lastModified": 1788634196,
+        "narHash": "sha256-uBNWjhokGTc4imMbF3grFiE7YBzhKqjY+IX2B0MsVSM=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "d9bc0cb02b18afd4bbeec0e2fa63d5507862638f",
+        "rev": "d594cc9145f24da0c53f0f6b33c4fa1de982e547",
         "type": "github"
       },
       "original": {
@@ -1101,11 +1101,11 @@
     "oh-my-pi": {
       "flake": false,
       "locked": {
-        "lastModified": 1788621223,
-        "narHash": "sha256-1E7D3kvQ4fT80br5KtqhQo3nemwc8nRgeyFrHKabcKg=",
+        "lastModified": 1788632020,
+        "narHash": "sha256-ajsB7b5jiQjgJUVKLg72YfFRtxD2fboEPeAN0shq1t8=",
         "owner": "can1357",
         "repo": "oh-my-pi",
-        "rev": "e3106be68f778635da3a17106835ce2e0e6992af",
+        "rev": "aabcf29b4659ebaad32c8c05d9001d545bd8fd95",
         "type": "github"
       },
       "original": {
