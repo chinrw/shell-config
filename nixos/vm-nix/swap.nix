@@ -1,6 +1,5 @@
-# Disk swap for the 2026-08-14 balloon/zram deadlock: balloon wanted 35.7 GiB
-# while zram's pool held 31.6 GiB of un-reclaimable RAM. zram compresses in
-# place; only a block device frees page frames the host can take back.
+# Swap on a block device, not a compressed-in-RAM tier: only block-backed swap
+# frees page frames the host can take back (balloon deadlock, 2026-08-14).
 { ... }:
 {
   swapDevices = [
@@ -8,7 +7,7 @@
       # NixOS only mkswaps swapfiles and encrypted devices. Initialise once:
       label = "vm-nix-swap-opt";
 
-      # Below zram (5), which is capped at 32 GiB, so this is an overflow tier.
+      # zswap caches pages in guest RAM and writes cold entries back here.
       priority = 0;
 
       # Per-page discard too: the zvol shares the Optane special vdev with the

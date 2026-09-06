@@ -56,7 +56,7 @@ in
     ./kernel.nix
     ./oom-guard.nix
     ./agents.nix
-    ./zram.nix
+    ./zswap.nix
     ./swap.nix
     ../services/hermes.nix
     ../services/flaresolverr.nix
