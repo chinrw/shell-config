@@ -46,19 +46,17 @@
     };
   };
 
-  # oomd only acts on cgroups carrying ManagedOOM* properties. The
-  # enable* options put ManagedOOMMemoryPressure=kill (limit 80%) on
-  # -.slice and the user slices.
+  # oomd only acts on cgroups carrying ManagedOOM* properties. Since
+  # 2026-09-06 only the swap trigger is wired: the 80%/30s pressure kill
+  # on -.slice and user.slice fired on plain compile load and took the
+  # whole login session; swap on the Optane zvol absorbs that load now.
   systemd.oomd = {
     enable = true;
-    enableRootSlice = true;
-    enableUserSlices = true;
-    # oomd.conf, spelled out (upstream defaults).
-    settings.OOM = {
-      SwapUsedLimit = "90%";
-      DefaultMemoryPressureLimit = "90%";
-      DefaultMemoryPressureDurationSec = "30s";
-    };
+    enableRootSlice = false;
+    enableUserSlices = false;
+    # Upstream default, kept visible: it is the one number that still
+    # decides a kill.
+    settings.OOM.SwapUsedLimit = "90%";
   };
   # Swap over SwapUsedLimit: kill the biggest swap consumers.
   systemd.slices."-".sliceConfig.ManagedOOMSwap = "kill";

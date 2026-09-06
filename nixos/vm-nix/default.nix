@@ -55,6 +55,7 @@ in
     ../services/factorio.nix
     ./kernel.nix
     ./oom-guard.nix
+    ./agents.nix
     ./zram.nix
     ./swap.nix
     ../services/hermes.nix
