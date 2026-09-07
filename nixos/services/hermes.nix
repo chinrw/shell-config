@@ -416,7 +416,9 @@ in
       # supplementary group: the entrypoint drops privileges with
       # `setpriv --init-groups` (nixosModules.nix:190), which rebuilds the
       # group list from the container's /etc/group and discards `--group-add`.
-      extraVolumes = mediaVolumes;
+      extraVolumes = mediaVolumes ++ [
+        "/var/lib/rclone-progress/view:/run/rclone-progress:ro"
+      ];
 
       # Proxy env passed via `docker create --env` so it lands in the
       # container's PID 1 environ from process startup — visible to

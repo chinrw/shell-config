@@ -58,6 +58,7 @@ in
     ./agents.nix
     ./zswap.nix
     ./swap.nix
+    ../services/rclone-progress.nix
     ../services/hermes.nix
     ../services/flaresolverr.nix
     ../services/browser-agent.nix

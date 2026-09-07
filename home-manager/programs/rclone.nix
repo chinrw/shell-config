@@ -2,10 +2,36 @@
   config,
   lib,
   pkgs,
+  progressEnabled ? false,
   ...
 }:
 
 let
+  progressDir = "/var/lib/rclone-progress/view/native";
+  nativeLogFlags = lib.optionalString progressEnabled (
+    "--use-json-log --stats 10s "
+    + "--log-file=${progressDir}/\${INVOCATION_ID}.jsonl "
+    + "--log-file-max-size 16M --log-file-max-backups 4 "
+  );
+  progressStart = pkgs.writeShellScript "rclone-progress-start" ''
+    set -eu
+    umask 027
+    prefix="${progressDir}/$INVOCATION_ID"
+    ${pkgs.coreutils}/bin/install -m 0640 /dev/null "$prefix.jsonl"
+    printf '{"schema":"rclone_execution_v1","invocation_id":"%s","boot_id":"%s","at":%s}\n' \
+      "$INVOCATION_ID" "$(${pkgs.coreutils}/bin/cat /proc/sys/kernel/random/boot_id)" \
+      "$(${pkgs.coreutils}/bin/date +%s)" > "$prefix.started.tmp"
+    ${pkgs.coreutils}/bin/mv "$prefix.started.tmp" "$prefix.started.json"
+  '';
+  progressStop = pkgs.writeShellScript "rclone-progress-stop" ''
+    set -eu
+    umask 027
+    prefix="${progressDir}/$INVOCATION_ID"
+    printf '{"schema":"rclone_execution_v1","invocation_id":"%s","result":"%s","code":"%s","status":"%s","at":%s}\n' \
+      "$INVOCATION_ID" "''${SERVICE_RESULT:-unknown}" "''${EXIT_CODE:-unknown}" \
+      "''${EXIT_STATUS:-unknown}" "$(${pkgs.coreutils}/bin/date +%s)" > "$prefix.finished.tmp"
+    ${pkgs.coreutils}/bin/mv "$prefix.finished.tmp" "$prefix.finished.json"
+  '';
   rcloneService =
     {
       name,
@@ -175,12 +201,14 @@ in
         };
         Service = {
           Type = "simple";
+          ExecStartPre = lib.optionals progressEnabled [ "-${progressStart}" ];
+          ExecStopPost = lib.optionals progressEnabled [ "-${progressStop}" ];
           ExecStart = ''
             ${pkgs.rclone}/bin/rclone move \
                         baidu:baidu/apps/Alist/ \
                         /mnt/data/baidu \
-                        --log-systemd \
-                        --stats-one-line \
+                        ${lib.optionalString (!progressEnabled) "--log-systemd"} \
+                        ${nativeLogFlags}--stats-one-line \
                         --log-level INFO \
                         --transfers 8 \
                         --multi-thread-streams 0 \

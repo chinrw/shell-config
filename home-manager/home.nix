@@ -88,7 +88,10 @@ in
     inputs.sops-nix.homeManagerModules.sops
   ]
   ++ lib.optionals (builtins.match "^(wsl-mini|vm-nix)$" hostname != null) [
-    (import ./programs/rclone.nix { inherit config lib pkgs; })
+    (import ./programs/rclone.nix {
+      inherit config lib pkgs;
+      progressEnabled = hostname == "vm-nix";
+    })
   ]
   ++ lib.optionals (hostname == "vm-nix") [
     (import ./programs/restic.nix { inherit config lib pkgs; })
