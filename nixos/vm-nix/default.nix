@@ -104,7 +104,7 @@ in
     hostName = hostname;
     networkmanager.enable = true;
     proxy.default = "http://192.168.0.240:10809";
-    proxy.noProxy = "10.0.0.0/24,192.168.0.0/24,127.0.0.1,localhost,.localdomain";
+    proxy.noProxy = "10.0.0.0/24,192.168.0.0/24,127.0.0.1,0.0.0.0,localhost,.localdomain";
     # Resolve through the local AdGuard instead of the router. 192.168.0.1,
     # AliDNS and AdGuard's previous upstreams all answer
     # wss-primary.slack.com and edgeapi.slack.com with 112.121.185.234, a
