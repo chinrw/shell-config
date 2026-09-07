@@ -17,7 +17,7 @@ in
     enable = true;
 
     onActivation = {
-      cleanup = "zap";
+      cleanup = "none";
       autoUpdate = true;
       upgrade = false;
     };
@@ -37,12 +37,9 @@ in
     brews = [
       "bpython"
       "carthage"
-      "latexindent"
-      "luacheck"
       # samba on nixpkgs aarch64-darwin fails its bundled tests; the brew
       # bottle is the path of least resistance.
       "samba"
-      "zsync"
     ];
 
     # GUI apps. Nerd Fonts + Lato come from nixpkgs `fonts.packages`
@@ -61,7 +58,6 @@ in
       "jellyfin-media-player"
       "jetbrains-toolbox"
       "keka"
-      "mactex"
       "miniconda"
       "obs"
       "obsidian"

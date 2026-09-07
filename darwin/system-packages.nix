@@ -1,9 +1,12 @@
 { pkgs, ... }:
+let
+  # Full TeX toolchains belong to project flakes; expose only the formatter.
+  latexindent = pkgs.writeShellScriptBin "latexindent" ''
+    exec ${pkgs.texlive.withPackages (ps: [ ps.latexindent ])}/bin/latexindent "$@"
+  '';
+in
 {
-  # System-wide CLI tools mirrored from the full Brewfile dump
-  # (brew bundle dump --file=-). One-to-one with the brew install except
-  # for the handful kept on Homebrew in ./homebrew.nix, namely:
-  #   bpython, carthage, latexindent, luacheck, zsync
+  # bpython, carthage and samba remain on Homebrew; see ./homebrew.nix.
   environment.systemPackages = with pkgs; [
     # Shells
     bashInteractive
@@ -43,9 +46,11 @@
     swiftlint
 
     # Linters / formatters
+    luaPackages.luacheck
     markdownlint-cli
     prettier
     prettierd
+    latexindent
     vale
 
     # Media / docs deps
@@ -67,6 +72,7 @@
     usbutils
     wget
     wireguard-tools
+    zsync
 
     # Virtualisation
     qemu
