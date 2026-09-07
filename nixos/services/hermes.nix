@@ -349,7 +349,12 @@ let
   dashboardCmd = "${pkgs.docker}/bin/docker exec --user hermes hermes-agent /data/current-package/bin/hermes dashboard";
 in
 {
-  imports = [ inputs.hermes-agent.nixosModules.default ];
+  imports = [
+    (import ./hermes-container-provisioning.nix {
+      inherit lib;
+      hermesInput = inputs.hermes-agent;
+    })
+  ];
 
   # ── Sops secret: hermes-env ─────────────────────────────────────
   # Encrypted dotenv file at secrets/hermes.env. sops-nix decrypts
