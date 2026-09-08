@@ -698,11 +698,11 @@
     "khazix-skills": {
       "flake": false,
       "locked": {
-        "lastModified": 1786870151,
-        "narHash": "sha256-bv66RxF7sGinrot/OJ9lpvHUbtSyr/vufCQzJKnoQzw=",
+        "lastModified": 1788872800,
+        "narHash": "sha256-5BaRYf/kNIVQO6zB3jub+wgQgOxGkZOVsnZ02c/tOvs=",
         "owner": "KKKKhazix",
         "repo": "khazix-skills",
-        "rev": "7a5c4934be4106ac740ffdb95280bb81b3f4b83c",
+        "rev": "3fa874169134f65b14e8a27164386510bc867037",
         "type": "github"
       },
       "original": {
@@ -967,11 +967,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1788871233,
-        "narHash": "sha256-g2f1m2o6NnxuBHKGAuX/TnTb1ED1WZK4KUjlg21PIq0=",
+        "lastModified": 1788881743,
+        "narHash": "sha256-2V9GZGvPfrNzxFozhI9dcqV+c3QdA8YZrvAAzqEB+dI=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "7974c6bb8c72f1d53c57c384ac27035c0dd364f4",
+        "rev": "d6524aaca2ff07876657ae2b323f24be4874944b",
         "type": "github"
       },
       "original": {
@@ -1101,11 +1101,11 @@
     "oh-my-pi": {
       "flake": false,
       "locked": {
-        "lastModified": 1788865908,
-        "narHash": "sha256-9uB8vga9YM3/FVct/5JfwJ9P5oZ6rO9n77A1DWbj1yc=",
+        "lastModified": 1788878981,
+        "narHash": "sha256-gG8fNxAFjjBQH9Nnj6ZruJu5BSuT0iCgYA650ttyV7c=",
         "owner": "can1357",
         "repo": "oh-my-pi",
-        "rev": "d720e81fb747132f0b6c6c0f44eafc887552ec7f",
+        "rev": "3d6c6d3d44f0d2ff2891d51ea79ba9dc49671bfb",
         "type": "github"
       },
       "original": {
