@@ -143,6 +143,12 @@ in
   # longer run `nix`. The cache itself stays in appending `extra-*` form on top.
   nix = lib.mkIf (localCacheSubstituters != [ ]) {
     package = pkgs.nix;
+
+    gc = lib.mkIf (hostname == "vm-nix") {
+      automatic = true;
+      dates = "daily";
+      options = "--delete-older-than 7d";
+    };
     settings = {
       # Base config preserved across the home-manager-managed nix.conf.
       experimental-features = [
