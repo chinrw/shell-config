@@ -23,7 +23,7 @@
       "xhci_pci"
     ];
     initrd.systemd.enable = true;
-    kernelPackages = pkgs.linuxPackages_7_1;
+    kernelPackages = pkgs.linuxPackages_latest;
     loader = {
       efi.canTouchEfiVariables = true;
       systemd-boot.enable = true;
