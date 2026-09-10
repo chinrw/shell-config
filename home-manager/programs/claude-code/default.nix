@@ -290,7 +290,7 @@ let
     "mattpocock-skills@mattpocock" = true;
     "superpowers@claude-plugins-official" = false;
     "github@claude-plugins-official" = true;
-    "codex@openai-codex" = true;
+    "codex@openai-codex" = false;
     "claude-hud@claude-hud" = true;
   };
 
