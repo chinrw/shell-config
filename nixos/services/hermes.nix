@@ -6,9 +6,10 @@
   ...
 }:
 let
-  # DeepSeek tiers — fallback chain + manual /model deepseek[-flash] only.
   deepseekPro = "deepseek-v4-pro";
-  deepseekFlash = "deepseek-v4-flash";
+
+  # Canonical V4.1 Flash ID for both DeepSeek and OpenCode Go.
+  deepseekFlash = "deepseek-flash";
 
   # Video-capable model for the auxiliary "vision" role (Go plan). The aux
   # path sends whole videos as video_url blocks, which the Codex route does
@@ -22,8 +23,7 @@ let
   codexTerra = "gpt-5.6-terra";
   codexSol = "gpt-5.6-sol";
 
-  # Empty base_url/api_key overwrite the stale Go-gateway keys the additive
-  # config merge would otherwise leave behind when a role moves onto Codex.
+  # Explicit empty values clear endpoint credentials during additive config merge.
   codexTarget = model: {
     provider = "openai-codex";
     inherit model;
@@ -31,53 +31,25 @@ let
     api_key = "";
   };
 
-  # ── opencode Zen "Go" plan gateway ──────────────────────────────
-  # Multi-model endpoint behind the `/model pro` and `/model flash` shortcuts
-  # and the switchable `opencode-go` provider. The first-class provider keeps
-  # Hermes' per-model Go routing and reasoning request shaping active.
   opencodeGoEndpoint = "https://opencode.ai/zen/go/v1";
 
-  # OPENCODE_GO_API_KEY, not OPENCODE_API_KEY: hermes' built-in opencode-go
-  # provider only reads the former (hermes_cli/auth.py PROVIDER_REGISTRY), and
-  # /model switches resolve credentials through that registry rather than
-  # through the api_key written here. With the old name, every `/model pro`
-  # died on "No usable credentials found for provider 'opencode-go'" even
-  # though the chat path worked — it expands this ${VAR} itself.
+  # The native Go provider requires OPENCODE_GO_API_KEY for model switches.
   goBase = {
     provider = "opencode-go";
     base_url = opencodeGoEndpoint;
     api_key = "\${OPENCODE_GO_API_KEY}";
   };
 
-  # A specific Go-plan model reached through the Go gateway.
   goTarget = model: goBase // { inherit model; };
 
-  # ── Native DeepSeek API (fallback + manual aliases) ──────────────
-  # Keep a route independent of the OpenCode Go plan and its credential.
-  # This backs the fallback chain on Hermes' default runtime plus the manual
-  # `/model deepseek` and `/model deepseek-flash` switches.
-  #
-  # provider = "deepseek" is Hermes' built-in native provider. It activates
-  # DeepSeekProfile for the direct API's thinking controls; Go traffic uses
-  # the separate opencode-go profile because that relay has its own request
-  # shaping and per-model protocol routing.
-  #
-  # base_url is pinned explicitly (not left to the provider default) ON
-  # PURPOSE: hermes derives the credential from the base_url HOST
-  # (runtime_provider.py:_host_derived_api_key — api.deepseek.com →
-  # DEEPSEEK_API_KEY), so an empty base_url at resolution time would yield
-  # no key and a "Missing API key" 401. Pinning it guarantees the
-  # DEEPSEEK_API_KEY env var is picked up. api_key is deliberately left to
-  # that host-derivation rather than an explicit "${DEEPSEEK_API_KEY}".
+  # The explicit API host lets Hermes resolve DEEPSEEK_API_KEY independently of Go.
   deepseekApiTarget = model: {
     provider = "deepseek";
     base_url = "https://api.deepseek.com/v1";
     inherit model;
   };
 
-  # Codex aux target with the DeepSeek backstop: when the explicit Codex
-  # provider fails or can't build a client, hermes walks the per-task
-  # auxiliary.<task>.fallback_chain (auxiliary_client.py:3950).
+  # Auxiliary calls use their own fallback chain when Codex fails.
   codexAuxTarget =
     model:
     (codexTarget model)
@@ -88,27 +60,11 @@ let
       ];
     };
 
-  # The aux model caps the session's compaction trigger, so compression must
-  # run on a model that resolves to a window no smaller than the largest main
-  # trigger (conversation_compression.py:1597). Go-route flash qualifies:
-  # the catalog pins deepseek-v4-flash at 1M (model_metadata.py:462), and
-  # opencode.ai is a known-provider host so the /models probe that could
-  # report a lower per-plan limit is skipped (:2745). Summarization is
-  # extraction, not reasoning — flash + high effort is enough; the chain is
-  # flash → Go Pro → native Pro, every entry 1M, so no fallback can cap a
-  # session either.
-  #
-  # The explicit top-level timeout OVERWRITES a stale `timeout: 30` user key
-  # the additive merge would otherwise preserve forever. It is harmless to
-  # the built-in compressor (deadlines are floored at 300s,
-  # auxiliary_client.py:7737) but leaks as the default deadline to anything
-  # deriving from the raw key — hermes-lcm's summary timeout did exactly
-  # that until LCM_SUMMARY_TIMEOUT_MS pinned it.
+  # All summary routes need 1M context to avoid lowering the main compaction trigger.
   compressionAux = (goTarget deepseekFlash) // {
     reasoning_effort = "high";
     timeout = 300;
-    # Per-entry 300s — otherwise a fallback runs on whatever is left of the
-    # primary's deadline (#62452).
+    # Each fallback needs its own timeout rather than the primary's remaining time.
     fallback_chain = [
       ((goTarget deepseekPro) // { timeout = 300; })
       ((deepseekApiTarget deepseekPro) // { timeout = 300; })
@@ -538,15 +494,18 @@ in
       agent = {
         reasoning_effort = "high";
 
-        # Main fallback activation resolves effort by model ID, not by the
-        # fallback entry. These overrides therefore also apply to manual
-        # switches to the same Terra and DeepSeek Pro/Flash model IDs.
+        # Model-level effort applies to both fallbacks and manual switches.
         reasoning_overrides = {
           ${codexLuna} = "xhigh";
           ${codexTerra} = "xhigh";
           ${deepseekFlash} = "max";
           ${deepseekPro} = "max";
         };
+      };
+
+      # Keep the Go context window independent of cached provider metadata.
+      model_overrides = {
+        opencode-go.deepseek-flash.context_window = 1000000;
       };
 
       # Subagent delegation — children run on Luna via the Codex OAuth
@@ -623,27 +582,16 @@ in
       # hermes-lcm.nix. Specialist profiles keep the built-in compressor.
       inherit (hermesLcm.settings) context plugins;
 
-      # Quick model switches. Luna/Terra/Sol use ChatGPT subscription auth;
-      # `deepseek`/`deepseek-flash` use the native API, `pro`/`flash` the Go
-      # plan.
-      #
-      # For the Go DeepSeek models the alias is the ONLY reliable route.
-      # model_switch.resolve_alias() also reverse-matches a typed model id
-      # against every alias' model, then overwrites base_url with that alias'
-      # (model_switch.py:976 + :1772) — so `/model deepseek-v4-flash
-      # --provider custom:opencode-go`, and picking it from the /model picker,
-      # both land on api.deepseek.com. Alias-name lookup wins before that.
+      # Use /model flash or /model pro for Go: exact aliases disambiguate
+      # model IDs shared with the native DeepSeek endpoint.
       model_aliases = {
         luna = codexTarget codexLuna;
         terra = codexTarget codexTerra;
         sol = codexTarget codexSol;
 
-        # Native DeepSeek routes remain available even while the main model
-        # uses the ChatGPT subscription-backed Codex runtime.
         deepseek = deepseekApiTarget deepseekPro;
         deepseek-flash = deepseekApiTarget deepseekFlash;
 
-        # Go-plan DeepSeek tiers.
         pro = goTarget deepseekPro;
         flash = goTarget deepseekFlash;
       };
