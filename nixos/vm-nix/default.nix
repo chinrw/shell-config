@@ -16,17 +16,16 @@ let
     ];
   });
 
-  # AdGuard upstream file: domestic names go to AliDNS directly, everything
-  # else keeps the encrypted path through dnscrypt-proxy
+  # Domestic names use AliDNS and DNSPod directly; other names use dnscrypt-proxy.
   chinaDnsUpstreams =
     let
-      aliDoh = "https://223.5.5.5/dns-query";
+      chinaDoh = "https://223.5.5.5/dns-query https://doh.pub/dns-query";
     in
     pkgs.runCommand "adguard-china-upstreams" { } ''
       {
         echo "127.0.0.1:5353"
-        echo "[/cn/]${aliDoh}"
-        sed -nE 's|^server=/([^/]+)/.*$|[/\1/]${aliDoh}|p' \
+        echo "[/cn/]${chinaDoh}"
+        sed -nE 's|^server=/([^/]+)/.*$|[/\1/]${chinaDoh}|p' \
           ${inputs.dnsmasq-china-list}/accelerated-domains.china.conf
       } > $out
     '';
@@ -282,9 +281,11 @@ in
 
         dns = {
           upstream_dns_file = "${chinaDnsUpstreams}";
+          upstream_mode = "parallel";
+          # DNSPod bootstrap must work independently of the overseas DNS path.
           bootstrap_dns = [
-            "1.1.1.1"
-            "8.8.8.8"
+            "223.5.5.5"
+            "119.29.29.29"
           ];
           fallback_dns = [
             "1.1.1.1"
