@@ -175,10 +175,10 @@ keybinds clear-defaults=true {
 		bind "7" { GoToTab 7; SwitchToMode "Normal"; }
 		bind "8" { GoToTab 8; SwitchToMode "Normal"; }
 		bind "9" { GoToTab 9; SwitchToMode "Normal"; }
-		bind "Alt h" "Alt Left" { MoveFocusOrTab "Left"; }
-		bind "Alt l" "Alt Right" { MoveFocusOrTab "Right"; }
-		bind "Alt j" "Alt Down" { MoveFocus "Down"; }
-		bind "Alt k" "Alt Up" { MoveFocus "Up"; }
+		bind "Alt h" { MoveFocusOrTab "Left"; }
+		bind "Alt l" { MoveFocusOrTab "Right"; }
+		bind "Alt j" { MoveFocus "Down"; }
+		bind "Alt k" { MoveFocus "Up"; }
 		bind "Alt i" { MoveTab "Left"; }
 		bind "Alt o" { MoveTab "Right"; }
 		bind "w" {
@@ -207,10 +207,10 @@ keybinds clear-defaults=true {
 		bind "Alt -" { Resize "Decrease"; }
 		bind "Alt [" { PreviousSwapLayout; }
 		bind "Alt ]" { NextSwapLayout; }
-		bind "Alt h" "Alt Left" { MoveFocusOrTab "Left"; }
-		bind "Alt l" "Alt Right" { MoveFocusOrTab "Right"; }
-		bind "Alt j" "Alt Down" { MoveFocus "Down"; }
-		bind "Alt k" "Alt Up" { MoveFocus "Up"; }
+		bind "Alt h" { MoveFocusOrTab "Left"; }
+		bind "Alt l" { MoveFocusOrTab "Right"; }
+		bind "Alt j" { MoveFocus "Down"; }
+		bind "Alt k" { MoveFocus "Up"; }
 	}
 	shared_except "normal" "locked" {
 		bind "Enter" "Esc" { SwitchToMode "Normal"; }
