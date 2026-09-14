@@ -51,7 +51,7 @@ in
     ../services/cachix-deploy.nix
     ../services/shell-config-updater.nix
     ../services/nix-serve.nix
-    ../services/factorio.nix
+    # ../services/factorio.nix
     ./kernel.nix
     ./oom-guard.nix
     ./agents.nix
