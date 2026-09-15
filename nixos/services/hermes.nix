@@ -6,15 +6,10 @@
   ...
 }:
 let
-  deepseekPro = "deepseek-v4-pro";
-
   # Canonical V4.1 Flash ID for both DeepSeek and OpenCode Go.
   deepseekFlash = "deepseek-flash";
 
-  # Video-capable model for the auxiliary "vision" role (Go plan). The aux
-  # path sends whole videos as video_url blocks, which the Codex route does
-  # not accept (input_image only) — so this one role stays off Codex.
-  kimiVision = "kimi-k2.6";
+  qwenVision = "qwen3.8-flash";
 
   # GPT-5.6 models reached through Codex CLI's ChatGPT subscription login.
   # Keep the model IDs bare: openai-codex resolves them through its Codex
@@ -49,40 +44,58 @@ let
     inherit model;
   };
 
+  commandcodeEndpoint = "https://api.commandcode.ai/provider/v1";
+  commandcodeFlash = "deepseek/deepseek-v4.1-flash";
+  commandcodeProvider = {
+    name = "CommandCode API";
+    base_url = commandcodeEndpoint;
+    key_env = "COMMAND_CODE_API";
+    transport = "chat_completions";
+    discover_models = true;
+    models.${commandcodeFlash} = {
+      context_length = 1000000;
+      supports_vision = true;
+    };
+  };
+  commandcodeFlashTarget = {
+    # Select the configured key_env rather than the built-in COMMANDCODE_API_KEY.
+    provider = "commandcode-api";
+    base_url = commandcodeEndpoint;
+    key_env = "COMMAND_CODE_API";
+    model = commandcodeFlash;
+  };
+
   # Auxiliary calls use their own fallback chain when Codex fails.
   codexAuxTarget =
     model:
     (codexTarget model)
     // {
       fallback_chain = [
-        (deepseekApiTarget deepseekPro)
         (deepseekApiTarget deepseekFlash)
       ];
     };
 
+  summaryTimeoutSeconds = 300;
+
   # All summary routes need 1M context to avoid lowering the main compaction trigger.
   compressionAux = (goTarget deepseekFlash) // {
     reasoning_effort = "high";
-    timeout = 300;
+    timeout = summaryTimeoutSeconds;
     # Each fallback needs its own timeout rather than the primary's remaining time.
     fallback_chain = [
-      ((goTarget deepseekPro) // { timeout = 300; })
-      ((deepseekApiTarget deepseekPro) // { timeout = 300; })
+      ((deepseekApiTarget deepseekFlash) // { timeout = summaryTimeoutSeconds; })
     ];
   };
 
-  # An empty fallback_chain leaves auxiliary_client only the main agent model,
-  # which is also openai-codex and gets skipped as the same failed backend.
-  # Keep LCM_SUMMARY_TIMEOUT_MS (hermes-lcm.nix) in step with the timeout.
+  # LCM owns summary escalation; auxiliary retries must not bypass its chain.
   lcmSummaryRoutes = {
     primary = (codexTarget codexLuna) // {
       reasoning_effort = "high";
-      timeout = 300;
-      fallback_chain = [ ((deepseekApiTarget deepseekPro) // { timeout = 300; }) ];
+      timeout = summaryTimeoutSeconds;
+      fallback_chain = [ ];
     };
     fallbackModels = [
-      codexTerra
-      "deepseek/${deepseekPro}"
+      "commandcode-api/${commandcodeFlash}"
     ];
   };
 
@@ -99,7 +112,7 @@ let
     target_ratio = 0.20;
     protect_last_n = 20;
 
-    # increase the timeout from 600s to 900s since the LCM compression required multiple round
+    # Budget for serial leaf-summary and condensation calls.
     context_total_ceiling_seconds = 900;
 
     # Bulky tool output can fill the whole tail budget; keep the last 3
@@ -117,10 +130,7 @@ let
     proactive_prune_min_result_chars = 12000;
     proactive_prune_min_reclaim_tokens = 8192;
 
-    # OpenAI server-side compaction on the Responses API. Gated in
-    # native_compaction.py to the gpt-5.6 family on api.openai.com or the
-    # Codex backend; other models stay on the local summarizer, which also
-    # remains the fallback owner.
+    # Native Codex compaction runs before the local compression fallback.
     codex_responses_native = true;
 
     # Clamped at request time to (local trigger - 8192), so the server
@@ -130,6 +140,33 @@ let
     # OpenAI evicts cached prefixes within an hour, so a resume after this
     # gap never has a warm cache — compact the stale history up front.
     idle_compact_after_seconds = 3600;
+  };
+
+  sharedSettings = {
+    agent.image_input_mode = "native";
+    compression = compressionPolicy;
+    auxiliary = {
+      title_generation = codexAuxTarget codexLuna;
+      session_search = codexAuxTarget codexLuna;
+      skills_hub = codexAuxTarget codexLuna;
+      mcp = codexAuxTarget codexLuna;
+      approval = codexAuxTarget codexLuna;
+      web_extract = codexAuxTarget codexLuna;
+      curator = codexAuxTarget codexLuna;
+      # Images go to the main model; video_analyze uses this auxiliary endpoint.
+      vision = goTarget qwenVision;
+      video.model = qwenVision;
+    };
+    providers.commandcode-api = commandcodeProvider;
+    model_aliases = {
+      luna = codexTarget codexLuna;
+      terra = codexTarget codexTerra;
+      sol = codexTarget codexSol;
+      deepseek = deepseekApiTarget deepseekFlash;
+      deepseek-flash = deepseekApiTarget deepseekFlash;
+      flash = goTarget deepseekFlash;
+      flash-cc = commandcodeFlashTarget;
+    };
   };
 
   # Same codex/claude builds home-manager installs — nix-provided so they
@@ -149,90 +186,37 @@ let
     fontDirectories = browserFonts;
   };
 
-  # ── No browser runs in this container ───────────────────────────
-  # Every browser now lives in a browser-agent instance (browser-agent.nix) and
-  # is reached over CDP. Nothing Nix-provided launches one here any more; four
-  # things were dropped over 2026-08-22 after sweeping for actual callers:
-  #
-  #   - pkgs.agent-browser and pkgs.chromedriver: no skill invoked either.
-  #     agent-browser is an unrelated npm tool, not the browser-agent containers
-  #     in browser-agent.nix — the name is the same two words reversed. Selenium
-  #     only ever ran inside the flaresolverr container.
-  #   - playwright-driver.browsers plus the python312Packages.playwright override
-  #     that injected PLAYWRIGHT_BROWSERS_PATH into it: 638 MiB of Chromium for
-  #     Hermes' Google Meet plugin, which is bundled but absent from
-  #     config.yaml's plugins.enabled. Skill runners never saw it either — they
-  #     start as `python3 -E`, which drops PYTHONPATH.
-  #   - pkgs.chromium wrapped in --no-sandbox --disable-dev-shm-usage, plus the
-  #     CHROME_BIN/CHROME_PATH/CHROMIUM_*/PUPPETEER_* variables pointing at it.
-  #     Its last claimed consumers were gallery-downloader's gallery_download.py
-  #     and scrape_18comic.py, and neither is reachable: no SKILL.md links them,
-  #     cron runs only run_ranking_wrapper.py -> ranking_to_qb.py, and that path
-  #     is plain `requests` with the EH_COOKIE_* cookies. gallery_download.py's
-  #     ExHentai branch also demands EH_USER/EH_PASS, which this deployment does
-  #     not set at all.
-  #
-  # Removing it is also what makes "browsers live in browser-agent" enforceable
-  # rather than merely documented: the venv's own pip-downloaded Chromium under
-  # ~/.cache/ms-playwright cannot start here (no libglib-2.0.so.0 — the Ubuntu
-  # base image ships no browser libraries and only /nix/store is mounted). The
-  # wrapper above was the one working fallback.
+  # Browsers run in browser-agent containers and are reached over CDP.
 
-  # Some South Plus threads draw the Baidu share link as a QR image instead of
-  # posting it as text, so the regex/DOM extraction finds nothing and the
-  # preflight would report "no share info" on a thread that has one. zbarimg
-  # decodes the single captured img node locally.
-  #
-  # Local decode, not a vision model: the decoded string picks the transfer
-  # target, and one misread character points the job at a stranger's share.
-  #
-  # CLI rather than python312Packages.pyzbar because the skill runners start as
-  # `/home/hermes/.venv/bin/python3 -E`, and -E drops PYTHONPATH — Nix-injected
-  # Python packages are invisible to them.
-  #
-  # The default arguments pull in gtk3, Qt5 and v4l for zbarcam, which nothing
-  # here uses: 588 MiB closure versus 0.3 MiB once they are off and
-  # imagemagickBig is swapped for the imagemagick already in the system.
+  # Decode share-link QR codes locally to avoid vision transcription errors.
+  # Skill runners use python -E, so provide the zbarimg CLI.
   qrDecoder = pkgs.zbar.override {
     withXorg = false;
     enableVideo = false;
     imagemagickBig = pkgs.imagemagick;
   };
 
-  # The Xvfb/x11vnc/websockify/noVNC stack that briefly lived here now belongs
-  # to browser-agent.nix, which runs one sandboxed browser per profile — South
-  # Plus and Baidu both reach theirs over CDP. The Chromium and Playwright
-  # entries above stay for what still launches a browser in this container: the
-  # 18comic scrapers under gallery-downloader/scripts, and p5js/ascii-video,
-  # which render local files the browser-agent containers do not mount.
+  # Named profiles are standalone configs; merge shared policy before role overrides.
+  profileConfig =
+    model: reasoningEffort: toolsets:
+    lib.recursiveUpdate sharedSettings {
+      model = {
+        default = model;
+        provider = "openai-codex";
+        base_url = "";
+        api_key = "";
+        openai_runtime = "auto";
+        api_mode = "codex_responses";
+      };
+      agent.reasoning_effort = reasoningEffort;
 
-  # The upstream NixOS module currently renders settings only to the default
-  # profile's config.yaml. Named Hermes profiles each have an independent
-  # config.yaml under profiles/<name>/, so merge the Nix-owned leaves into
-  # those existing files with the same helper upstream uses for the default
-  # profile. User-added settings remain intact.
-  #
-  # Only leaves that actually differ from the upstream default are set here:
-  # `agent.tool_use_enforcement` is already "auto" upstream
-  # (hermes_cli/config.py), so pinning it would add nine copies of a no-op.
-  profileConfig = model: reasoningEffort: toolsets: {
-    model = (codexTarget model) // {
-      openai_runtime = "auto";
-      api_mode = "codex_responses";
+      auxiliary.compression = compressionAux;
+      auxiliary.triage_specifier.fallback_chain = [ (deepseekApiTarget deepseekFlash) ];
+      fallback_providers = [ (deepseekApiTarget deepseekFlash) ];
+
+      # CLI sessions and Kanban workers use this toolset list.
+      platform_toolsets.cli = toolsets;
     };
-    agent.reasoning_effort = reasoningEffort;
-
-    # Profile config.yaml files are standalone clones, not overlays on the
-    # default profile, so the policy and the aux summarizer must be
-    # repeated here or Profile sessions silently diverge.
-    compression = compressionPolicy;
-    auxiliary.compression = compressionAux;
-
-    # `platform_toolsets.cli` is what direct CLI sessions and Kanban workers
-    # resolve. Every entry is a real 0.19.0 toolset; `gateway` is a process-
-    # level dispatcher, not an agent toolset in this Hermes release.
-    platform_toolsets.cli = toolsets;
-  };
 
   # Everything hermes-lcm (container env, config leaves, plugin install)
   # lives in a separate declarative file, same pattern as the profile
@@ -245,6 +229,7 @@ let
       ;
     summaryModel = lcmSummaryRoutes.primary.model;
     summaryFallbackModels = lcmSummaryRoutes.fallbackModels;
+    inherit summaryTimeoutSeconds;
     user = config.services.hermes-agent.user;
     group = config.services.hermes-agent.group;
   };
@@ -264,11 +249,7 @@ let
   specialistProfileDescriptions = specialistProfileData.specialistProfileDescriptions;
   specialistSouls = specialistProfileData.specialistSouls;
 
-  # Both asset files are JSON on purpose: configMergeScript reads its first
-  # argument with json.load and only its *target* is YAML. Writing the
-  # description side as .json keeps that contract visible -- an earlier
-  # revision used lib.generators.toYAML, which happens to emit JSON today and
-  # would have broken silently against a real YAML emitter.
+  # configMergeScript reads JSON overrides and writes YAML targets.
   specialistProfileAssets = lib.mapAttrs (name: settings: {
     settingsFile = pkgs.writeText "hermes-profile-${name}.json" (builtins.toJSON settings);
     descriptionFile = pkgs.writeText "hermes-profile-description-${name}.json" (
@@ -282,14 +263,8 @@ let
 
   hermesConfigMerge = pkgs.callPackage (inputs.hermes-agent + "/nix/configMergeScript.nix") { };
 
-  # ── Media bind mounts ───────────────────────────────────────────
-  # File work runs on the filesystem rather than through an MCP file server.
-  # Same path on both sides so nothing has to translate: qB reports absolute
-  # host paths, and the skills address these trees by their host path.
-  # Subtrees only — /mnt/data also holds Key, Documents and backup.
-  #
-  # rslave: /mnt/data is virtiofs from the Proxmox host, so a remount there has
-  # to propagate instead of pinning a dead mount (jellyfin.nix:51).
+  # Keep identical host/container paths for qB and skill interoperability.
+  # Mount only media subtrees; rslave propagates host virtiofs remounts.
   mediaRoot = "/mnt/data";
   hostPathVolume = path: "${path}:${path}:rw,rslave";
   mediaVolumes = map hostPathVolume [
@@ -312,11 +287,7 @@ in
     })
   ];
 
-  # ── Sops secret: hermes-env ─────────────────────────────────────
-  # Encrypted dotenv file at secrets/hermes.env. sops-nix decrypts
-  # at activation (running as root, reading chin39's user age key)
-  # and writes plaintext to /run/secrets/hermes-env owned by the
-  # hermes service user.
+  # SOPS decrypts credentials at activation; never embed their values in Nix.
   sops.secrets."hermes-env" = {
     sopsFile = ../../secrets/hermes.env;
     format = "dotenv";
@@ -355,48 +326,21 @@ in
     enable = true;
     addToSystemPackages = true;
 
-    # Run hermes inside an Ubuntu 24.04 container. With both
-    # container.enable and addToSystemPackages = true, the binary
-    # installed on chin39's PATH is the upstream CLI ROUTER, not
-    # the real hermes — every invocation docker-execs into this
-    # container and runs as the container's hermes user. That
-    # eliminates the user-mismatch collisions the previous
-    # native-mode setup suffered from.
+    # The upstream CLI router runs Hermes as the service user inside this container.
     container = {
       enable = true;
       backend = "docker";
       image = "ubuntu:24.04";
       hostUsers = [ "chin39" ];
 
-      # Write access comes from a named ACL for gid 985 on these trees, not a
-      # supplementary group: the entrypoint drops privileges with
-      # `setpriv --init-groups` (nixosModules.nix:190), which rebuilds the
-      # group list from the container's /etc/group and discards `--group-add`.
+      # Host ACLs grant gid 985 access; setpriv --init-groups discards --group-add.
       extraVolumes = mediaVolumes ++ [
         "/var/lib/rclone-progress/view:/run/rclone-progress:ro"
       ];
 
-      # Proxy env passed via `docker create --env` so it lands in the
-      # container's PID 1 environ from process startup — visible to
-      # any library (including python-telegram-bot's httpx layer) that
-      # captures proxy config at import time. Setting these via
-      # services.hermes-agent.environment was insufficient because
-      # those go through the merged .env file, which is only loaded
-      # after Python has already imported telegram/httpx and cached
-      # the proxy config.
-      #
-      # NO_PROXY exempts:
-      #   - 192.168.0.0/24 — local LAN (mirrors host config). Python proxy
-      #     handling (urllib/httpx/aiohttp) does NOT parse CIDR in no_proxy,
-      #     so this entry only helps non-Python tooling in the container —
-      #     LAN hosts Hermes itself must reach need an exact entry too.
-      #   - 192.168.0.101 — llama-server (llama provider below); without the
-      #     exact match its traffic would ride the xray hop and die with it
-      #   - 127.0.0.1 / localhost — loopback
-      #   - slack.com — directly reachable; routing it through the proxy
-      #     caused duplicate posts (proxy drops the response after Slack
-      #     accepts chat.postMessage → slack_sdk's default connection-error
-      #     retry re-sends the same message)
+      # docker create --env reaches provisioning, wrappers, and Python with -E.
+      # List LAN hosts explicitly: Python proxy handling does not support CIDR.
+      # Slack bypasses the proxy to avoid connection-loss retries duplicating posts.
       extraOptions = [
         "--env"
         "HTTP_PROXY=http://192.168.0.240:10809"
@@ -411,14 +355,7 @@ in
         "--env"
         "HERMES_TELEGRAM_HTTP_CONNECT_TIMEOUT=30"
 
-        # Keep these lowercase copies. apt honours only the lowercase spelling
-        # (verified: an unreachable http_proxy fails apt, an unreachable
-        # HTTP_PROXY does not), while curl accepts either. With the uppercase
-        # names alone, the container's first-boot provisioning split across two
-        # routes -- curl fetched the NodeSource key through the proxy while apt
-        # installed nodejs over a direct connection, which is unreliable from
-        # here. That half-finished provisioning is what left the service in a
-        # restart loop on 2026-07-25.
+        # apt requires lowercase proxy variables.
         "--env"
         "http_proxy=http://192.168.0.240:10809"
         "--env"
@@ -426,19 +363,11 @@ in
         "--env"
         "no_proxy=192.168.0.0/24,192.168.0.101,127.0.0.1,localhost,slack.com,.slack.com"
 
-        # Process-wide fontconfig, so CJK renders for ImageMagick, matplotlib
-        # and anything else here that draws text. The browser-discovery
-        # variables that used to sit beside it (CHROME_BIN, CHROME_PATH,
-        # CHROMIUM_*, PUPPETEER_*) went with the Chromium they pointed at — see
-        # the note in the let block.
+        # Share CJK fonts across ImageMagick, matplotlib, and other renderers.
         "--env"
         "FONTCONFIG_FILE=${browserFontConfig}"
 
-        # Carries hermes-lcm's FastEmbed runtime into Hermes' sealed Python,
-        # hand-filtered against venv collisions — see hermes-lcm.nix. The Nix
-        # Python Playwright package used to lead this list; see the same note
-        # for why it left. Host-provided bubblewrap stays on PATH below for an
-        # explicit codex app-server switch.
+        # Inject FastEmbed dependencies; keep bubblewrap available for Codex app-server.
         "--env"
         "PYTHONPATH=${hermesLcm.pythonPath}"
         "--env"
@@ -453,44 +382,22 @@ in
       config.sops.templates."hermes-dashboard.env".path
     ];
 
-    settings = {
-      # Primary chat model: Luna via Hermes' native agent loop and the Codex
-      # Responses OAuth route backed by the Codex CLI's ChatGPT login.
-      # Terra stays one `/model terra` away, remains the first main-chain
-      # fallback, and keeps the hard aux roles (triage_specifier,
-      # kanban_decomposer, goal_judge). Luna runs xhigh by deliberate
-      # reasoning_overrides choice below — quality over latency; the
-      # override applies to every main-loop resolution of the model id
-      # (default sessions, /model luna, fallback, delegation children) but
-      # not to auxiliary tasks, which carry their own reasoning_effort.
-      #
-      # Empty base_url/api_key values are deliberate. Hermes reconciles these
-      # managed settings into its stateful config.yaml with an additive merge:
-      # it overwrites keys we set but does not prune dropped keys. Explicitly
-      # clearing both removes the previous OpenCode Go endpoint and credential
-      # reference so openai-codex can resolve the Codex CLI OAuth session.
+    settings = lib.recursiveUpdate sharedSettings {
+      # Main-loop effort overrides follow model switches and delegation.
+      # Auxiliary tasks carry their own reasoning effort.
       model = {
         default = codexLuna;
         provider = "openai-codex";
         openai_runtime = "auto";
 
-        # Overwrites the stale `codex_app_server` the 2026-07-19 app-server
-        # experiment left behind — the additive merge cannot delete keys.
-        # Inert for openai-codex (all three resolution paths hard-set
-        # codex_responses: runtime_provider.py:465/1533/1958), but a later
-        # provider switch would honour the persisted value verbatim.
+        # Clear persisted app-server mode during additive config reconciliation.
         api_mode = "codex_responses";
 
         base_url = "";
         api_key = "";
       };
 
-      # Default reasoning level for the Hermes-managed Codex Responses client.
-      # Adjust live per session with `/reasoning <level>`.
-      #
-      # tool_use_enforcement is deliberately not pinned: "auto" is already the
-      # upstream default and it has never been set in the stateful config, so
-      # declaring it would only add a leaf that always matches the default.
+      # /reasoning can override the default for the current session.
       agent = {
         reasoning_effort = "high";
 
@@ -499,7 +406,7 @@ in
           ${codexLuna} = "xhigh";
           ${codexTerra} = "xhigh";
           ${deepseekFlash} = "max";
-          ${deepseekPro} = "max";
+          ${commandcodeFlash} = "max";
         };
       };
 
@@ -508,17 +415,7 @@ in
         opencode-go.deepseek-flash.context_window = 1000000;
       };
 
-      # Subagent delegation — children run on Luna via the Codex OAuth
-      # responses route (delegate_tool.py detects provider openai-codex; no
-      # app-server binary involved). They inherit fallback_providers, so a
-      # subscription outage walks the same Terra → Go Pro → native Pro
-      # chain as the parent, skipping an entry identical to the failed backend.
-      #
-      # Tuning (schema defaults live in hermes_cli/config.py:1388):
-      #   max_concurrent_children 4 — parallel children per batch (def 3).
-      #   max_spawn_depth 2 — depth-1 children may spawn their own workers
-      #     (def 1 = flat; clamped to [1,3]).
-      #   child_timeout_seconds 900 — roomier per-child cap (def 600).
+      # Unpinned delegates inherit the main fallback chain.
       delegation = (codexTarget codexLuna) // {
         max_concurrent_children = 4;
         max_spawn_depth = 2;
@@ -533,22 +430,7 @@ in
         archive_ttl_days = 90;
       };
 
-      # Chain trigger coverage (auxiliary_client.py:6925 should_fallback /
-      # is_capacity_error): payment 402s, rate-limit 429s, connection and
-      # timeout errors, allow-list 400s ("model incompatible with route"),
-      # invalid responses — plus OAuth credentials that can't build a client
-      # at all (_try_configured_fallback_for_unavailable_client). The one
-      # exemption upstream enforces for explicit providers is an in-flight
-      # 401: after any credential refresh fails the call aborts WITHOUT
-      # walking the chain, and keeps aborting while the cached token still
-      # builds a client. Recovery from a revoked login is manual: codex login.
       auxiliary = {
-        title_generation = codexAuxTarget codexLuna;
-        session_search = codexAuxTarget codexLuna;
-        skills_hub = codexAuxTarget codexLuna;
-        mcp = codexAuxTarget codexLuna;
-        approval = codexAuxTarget codexLuna;
-        web_extract = codexAuxTarget codexLuna;
         triage_specifier = (codexAuxTarget codexTerra) // {
           reasoning_effort = "high";
           timeout = 180;
@@ -564,62 +446,19 @@ in
         goal_judge = (codexAuxTarget codexTerra) // {
           reasoning_effort = "high";
         };
-        curator = codexAuxTarget codexLuna;
-
-        # Video understanding. Images rarely reach this role: with Luna as
-        # main model, the native fast path (vision_tools.py:749) feeds them
-        # straight into the Codex turn as input_image — subscription-billed.
-        # Video has no Codex route, so it stays on the Go plan's kimi.
-        vision = goTarget kimiVision;
-
         compression = lcmSummaryRoutes.primary;
       };
-
-      compression = compressionPolicy;
 
       # hermes-lcm context engine for default-profile/gateway sessions —
       # scope, interplay with native compaction, and all rationale live in
       # hermes-lcm.nix. Specialist profiles keep the built-in compressor.
       inherit (hermesLcm.settings) context plugins;
 
-      # Use /model flash or /model pro for Go: exact aliases disambiguate
-      # model IDs shared with the native DeepSeek endpoint.
-      model_aliases = {
-        luna = codexTarget codexLuna;
-        terra = codexTarget codexTerra;
-        sol = codexTarget codexSol;
-
-        deepseek = deepseekApiTarget deepseekPro;
-        deepseek-flash = deepseekApiTarget deepseekFlash;
-
-        pro = goTarget deepseekPro;
-        flash = goTarget deepseekFlash;
-      };
-
       # Named custom providers exposed to the `/model` picker: the Go
       # gateway and the local llama.cpp router on the Windows box.
       custom_providers = [
-        # opencode Zen "Go" plan — discover_models hits /v1/models on the
-        # gateway and enumerates every Go-plan model into the /model picker.
-        # Switch syntax: /model <model-name> --provider opencode-go
-        # (e.g. glm-5.2, qwen3.7-max, kimi-k2.7-code, minimax-m3), or the
-        # `pro`/`flash` aliases for DeepSeek. There is no
-        # `custom:<name>:<model>` form — that string is taken as a model id
-        # and rejected by the current provider.
-        #
-        # key_env (NOT api_key) is mandatory here: the discovery path
-        # (model_switch.py: fetch_api_models) reads the entry's api_key
-        # verbatim and does NOT interpolate a "${VAR}" — a literal
-        # "${OPENCODE_GO_API_KEY}" would be sent as the Bearer and 401, so the
-        # picker shows zero models. key_env defers to a live
-        # os.environ.get("OPENCODE_GO_API_KEY") at /model time instead. (The
-        # main chat path — model/auxiliary/fallback above — does expand
-        # "${VAR}", which is why those keep the ${OPENCODE_GO_API_KEY} form.)
-        #
-        # Same var as the built-in provider so both routes share one secret;
-        # with it set, the picker collapses this entry into the built-in
-        # "OpenCode Go" row, which derives api_mode per model — minimax/qwen
-        # need anthropic_messages and 404 on the generic custom: route.
+        # Discovery reads key_env; it does not expand ${VAR} in api_key.
+        # Keep the native provider name so mixed-protocol models select the right wire format.
         {
           name = "opencode-go";
           base_url = opencodeGoEndpoint;
@@ -627,20 +466,8 @@ in
           discover_models = true;
         }
 
-        # llama.cpp router (b10488) on the Windows box, reached directly —
-        # the old loader-shim was retired: this build autoloads a cold model
-        # on demand. That only applies while the server runs WITHOUT
-        # --no-models-autoload; with the flag present a /model switch to an
-        # unloaded model 400s ("model is not loaded") until it is dropped
-        # from the Windows-side launch config.
-        # Switch syntax: /model <id> --provider llama (ids come from
-        # discovery, e.g. qwen3.8-27b-ud-q5-k-xl).
-        #
-        # api_key is a dummy: llama-server ignores auth, but discovery
-        # (fetch_api_models) skips entries with an empty key, and key_env
-        # would demand a real env var at /model time.
-        # 192.168.0.101 must stay an exact NO_PROXY entry (see extraOptions)
-        # or this traffic rides the xray hop.
+        # The router must allow model autoloading for /model switches.
+        # Discovery requires a nonempty key; llama-server ignores the dummy value.
         {
           name = "llama";
           base_url = "http://192.168.0.101:8080/v1";
@@ -649,29 +476,10 @@ in
         }
       ];
 
-      # Fallback chain for Hermes' agent loop — now active for the primary
-      # Codex Responses route and walked on 5xx, timeout, rate-limit, auth, or
-      # connection errors.
-      # References: hermes_cli/fallback_cmd.py, gateway/run.py:712.
-      # This chain ALSO governs delegation subagents: delegate_tool.py
-      # inherits the parent's _fallback_chain into spawned children
-      # (see tools/delegate_tool.py:1078 / :1113).
-      #
-      # Order and credentials are deliberate: try Codex through Terra first,
-      # then use the OpenCode Go-plan Pro route, then the independently
-      # credentialled native DeepSeek Pro route. Hermes skips Terra when the
-      # failed backend was already openai-codex/Terra.
+      # Main chat and unpinned delegates share this fallback route.
       fallback_providers = [
-        (codexTarget codexTerra)
-        (goTarget deepseekPro)
-        (deepseekApiTarget deepseekPro)
+        commandcodeFlashTarget
       ];
-
-      terminal = {
-        backend = "local";
-        cwd = ".";
-        timeout = 180;
-      };
 
       security = {
         tirith_enabled = true;
@@ -698,21 +506,9 @@ in
         render_markdown = true;
       };
 
-      # ── Native stdio MCP servers (media-mcp) ─────────────────────────
-      # Single declarative source: services.hermes-agent.settings is merged
-      # into /data/.hermes/config.yaml at activation (additive merge — Nix
-      # keys win, user keys preserved). The portable agent plugin at
-      # /data/.hermes/plugins/media-mcp stays DISABLED: enabling it would
-      # double-register these servers/tools.
-      #
-      # Commands are in-container paths: the gateway runs inside the Ubuntu
-      # container where /data = /var/lib/hermes on the host, and the venv
-      # python resolves through /home/hermes/.local/share/uv. The ${VAR}
-      # placeholders are Hermes runtime expansions from /data/.hermes/.env
-      # (kept literal here — no secrets in Nix or the store).
-      #
-      # qB's allowlist excludes add, delete, setPreferences, recheck,
-      # forceStart, and watchdog.
+      # Keep the media-mcp agent plugin disabled to avoid duplicate tool registration.
+      # Commands run inside the container; Hermes expands credentials from .env.
+      # qB exposes only the bounded operations listed below.
       mcp_servers = {
         lrr_readonly = {
           command = "/data/workspace/media-mcp/.venv/bin/media-mcp-lrr";
@@ -766,12 +562,7 @@ in
     };
 
     extraPackages = with pkgs; [
-      # Parity with hermes' upstream dev shell.
-      # python312 deliberately omitted: the sealed uv2nix venv
-      # provides Python via $HERMES_PYTHON; adding python312 here
-      # would pull python3.12-3.12.13-doc.drv (via
-      # environment.extraOutputsToInstall = ["man" "info" "doc"])
-      # which fails on a sphinx/docutils-0.22.4 incompatibility.
+      # The sealed Hermes environment supplies Python; avoid a second interpreter closure.
       uv
       nodejs_22
       ripgrep
@@ -803,20 +594,10 @@ in
       gawk
     ];
 
-    # extraPythonPackages are for user-developed plugins only.
-    # requests, httpx, pydantic are already in hermes' sealed
-    # uv2nix venv; beautifulsoup4 pulls typing-extensions
-    # transitively which collides with the venv — as does fastembed
-    # (pillow), which is why LCM's embedding runtime goes through the
-    # hand-filtered PYTHONPATH in hermes-lcm.nix instead. Empty list.
-    extraPythonPackages = [ ];
-
     # Bake the `messaging` extra into the sealed uv2nix venv so the
     # Telegram adapter's `from telegram import …`
     extraDependencyGroups = [ "messaging" ];
 
-    restart = "always";
-    restartSec = 5;
   };
 
   # A bind taken before /mnt/data is up captures the empty mountpoint instead
@@ -824,24 +605,8 @@ in
   # mnt-data.mount (jellyfin.nix:101).
   systemd.services.hermes-agent.unitConfig.RequiresMountsFor = [ mediaRoot ];
 
-  # Upstream has no services.hermes-agent.profiles option yet. Keep Profile
-  # model/effort/toolsets, descriptions, and SOULs declarative without
-  # replacing the rest of each Profile's stateful config. Profiles are created
-  # with the official `hermes profile create --clone` path first; a missing one
-  # fails loudly instead of silently yielding a partial identity.
-  #
-  # This is a unit rather than a system.activationScripts entry on purpose.
-  # `exit 1` inside an activation snippet aborts the *whole* activation, and
-  # the snippets that carry no declared dependency (modprobe, stdio, udevd,
-  # usrbinenv, var) are ordered after this one -- so one missing Hermes
-  # directory would silently skip unrelated system setup and fail the switch.
-  # As a unit the blast radius is Hermes: hermes-agent.service requires this
-  # one, so Hermes refuses to start while the rest of the system activates
-  # normally. `hermes profile create` writes under stateDir, so ordering after
-  # the upstream setup unit is enough -- no activation-time hook needed.
-  #
-  # Note SOUL.md is Nix-owned from here on: edits made through the Hermes CLI
-  # or TUI are overwritten on the next start of this unit.
+  # Reconcile named profiles before Gateway startup.
+  # A separate unit keeps failures local to Hermes instead of aborting activation.
   systemd.services.hermes-agent-profile-settings = {
     description = "Nix-managed Hermes Profile settings, SOULs, and plugin links";
     wantedBy = [ "multi-user.target" ];
@@ -895,35 +660,14 @@ in
           chown ${config.services.hermes-agent.user}:${config.services.hermes-agent.group} "$profile_dir"
           chmod 2770 "$profile_dir"
 
-          # Upstream copies skills into a Profile once, at `profile create
-          # --clone`, and never again: each Profile is documented as a fully
-          # independent HERMES_HOME. By 2026-08-22 the nine specialist copies
-          # had been frozen since 2026-07-24 and still carried the pre-CDP
-          # browser instructions — a delegated child would have been told to
-          # launch_persistent_context() against a profile the browser-agent
-          # container holds open. Stale skills here do not merely go missing;
-          # they contradict the live ones.
-          #
-          # Only the skill trees are mirrored. Everything dot-prefixed at the
-          # root (.usage.json, .hub, .curator_state, .bundled_manifest,
-          # .archive) is genuinely per-Profile state and must survive, which
-          # is also why this is a copy rather than a symlink to the shared
-          # tree.
-          #
-          # Sync happens at activation, so Profiles still drift between
-          # rebuilds while the agent edits its own skills. That is predictable
-          # and a month better than never; a timer would race in-flight edits.
+          # Refresh shared skills while preserving each profile's dot-prefixed state.
           ${pkgs.rsync}/bin/rsync -a --delete --exclude='/.*' \
             "$hermes_home/skills/" "$profile_dir/skills/"
         '') specialistProfileAssets
       )}
+
     '';
   };
-
-  # llama-loader-shim is gone (removed 2026-08-25): the llama.cpp router now
-  # autoloads models on demand, so the custom `llama` provider above talks to
-  # 192.168.0.101:8080 directly. Auxiliary roles stay on Codex, the Go
-  # gateway, and native DeepSeek.
 
   # The upstream OCI image's HERMES_DASHBOARD=1 switch relies on s6, while
   # this module intentionally runs a plain Ubuntu container. Start the web UI
