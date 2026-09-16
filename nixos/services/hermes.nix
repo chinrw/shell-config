@@ -89,7 +89,7 @@ let
 
   # LCM owns summary escalation; auxiliary retries must not bypass its chain.
   lcmSummaryRoutes = {
-    primary = (codexTarget codexLuna) // {
+    primary = (goTarget deepseekFlash) // {
       reasoning_effort = "high";
       timeout = summaryTimeoutSeconds;
       fallback_chain = [ ];
