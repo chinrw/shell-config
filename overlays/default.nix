@@ -130,6 +130,10 @@ in
     // rustOptimized
     // {
 
+      # sops-nix still calls buildGo125Module; nixpkgs turned that alias into a
+      # hard error when Go 1.25 hit EOL (2026-09-15).
+      buildGo125Module = prev.buildGoModule;
+
       dstask = prev.dstask.overrideAttrs (old: {
         meta = old.meta // {
           platforms = final.lib.platforms.unix;
