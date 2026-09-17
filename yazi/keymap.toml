@@ -10,7 +10,7 @@ desc = "Open shell here"
 
 [[mgr.prepend_keymap]]
 on = ["R"]
-run = 'search rg'
+run = 'plugin rg'
 desc = "Search files by content using ripgrep"
 
 [[input.prepend_keymap]]
@@ -25,17 +25,17 @@ desc = "Close the current tab, or quit if it is last tab"
 
 [[mgr.prepend_keymap]]
 on = [",", "h"]
-run = "plugin time-travel --args=prev"
+run = "plugin time-travel prev"
 desc = "Go to previous snapshot"
 
 [[mgr.prepend_keymap]]
 on = [",", "l"]
-run = "plugin time-travel --args=next"
+run = "plugin time-travel next"
 desc = "Go to next snapshot"
 
 [[mgr.prepend_keymap]]
 on = [",", "t"]
-run = "plugin time-travel --args=exit"
+run = "plugin time-travel exit"
 desc = "Exit browsing snapshots"
 
 # [[manager.prepend_keymap]]
