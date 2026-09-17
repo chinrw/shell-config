@@ -158,6 +158,7 @@
     tcpdump
     trash-cli
     gnumake
+    pnpm_12
 
     btrfs-progs
     bpftools
