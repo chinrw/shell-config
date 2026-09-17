@@ -85,6 +85,20 @@
     yazi.url = "github:sxyazi/yazi";
     yazi.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
+    # `?ref=main` on purpose: the vm-nix updater bumps these with yazi itself.
+    yazi-plugin-git = {
+      url = "github:yazi-rs/plugins?ref=main";
+      flake = false;
+    };
+    yazi-plugin-augment-command = {
+      url = "github:hankertrix/augment-command.yazi?ref=main";
+      flake = false;
+    };
+    yazi-plugin-time-travel = {
+      url = "github:iynaix/time-travel.yazi?ref=main";
+      flake = false;
+    };
+
     nix-index-database = {
       url = "github:Mic92/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs-unstable";

@@ -1313,6 +1313,9 @@
         "rustowl-overlay": "rustowl-overlay",
         "sops-nix": "sops-nix",
         "yazi": "yazi",
+        "yazi-plugin-augment-command": "yazi-plugin-augment-command",
+        "yazi-plugin-git": "yazi-plugin-git",
+        "yazi-plugin-time-travel": "yazi-plugin-time-travel",
         "zj-sysinfo": "zj-sysinfo",
         "zjstatus": "zjstatus"
       }
@@ -1705,6 +1708,57 @@
       "original": {
         "owner": "sxyazi",
         "repo": "yazi",
+        "type": "github"
+      }
+    },
+    "yazi-plugin-augment-command": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789239826,
+        "narHash": "sha256-0APWmt9oCsW5TEAmki5LAfUD0l8EBGlRJN/m3BdEIzc=",
+        "owner": "hankertrix",
+        "repo": "augment-command.yazi",
+        "rev": "561f6ec120b916c75da4085fed7769c65184f46c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hankertrix",
+        "ref": "main",
+        "repo": "augment-command.yazi",
+        "type": "github"
+      }
+    },
+    "yazi-plugin-git": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1788955781,
+        "narHash": "sha256-kwf9+KXOL5JXGDoEGdtwq+JujP8GVoOwDgz76FBM3xk=",
+        "owner": "yazi-rs",
+        "repo": "plugins",
+        "rev": "58c4f4e2f4835cc9bf6751f39e3f7c574fc7f55a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "yazi-rs",
+        "ref": "main",
+        "repo": "plugins",
+        "type": "github"
+      }
+    },
+    "yazi-plugin-time-travel": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1768539953,
+        "narHash": "sha256-/+KiuGUox763dMQvHl1l3+Ci3vL8NwRuKNu9pi3gjyE=",
+        "owner": "iynaix",
+        "repo": "time-travel.yazi",
+        "rev": "aaec6e26e525bd146354a5137ec40f1f23257a4e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "iynaix",
+        "ref": "main",
+        "repo": "time-travel.yazi",
         "type": "github"
       }
     },

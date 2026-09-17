@@ -97,7 +97,7 @@ in
     (import ./programs/restic.nix { inherit config lib pkgs; })
   ]
   ++ lib.optionals (hostname != "vm-nix") [
-    (import ./programs/yazi.nix { inherit config; })
+    (import ./programs/yazi.nix { inherit inputs pkgs; })
   ]
   ++ lib.optionals (!smallNode) [
     ./programs/opencode.nix
