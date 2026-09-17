@@ -19,7 +19,7 @@ in
     gnumake
     llvm
     nodejs
-    pnpm
+    pnpm_12
     openjdk
     pkg-config
 
