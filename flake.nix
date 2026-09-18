@@ -181,6 +181,11 @@
       flake = false;
     };
 
+    chatgpt-linker = {
+      url = "github:chinrw/chatgpt-linker";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     mattpocock-skills = {
       url = "github:mattpocock/skills?ref=main";
       flake = false;

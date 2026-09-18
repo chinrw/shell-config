@@ -247,6 +247,7 @@ in
         unstable.zellij
         duf # better df
         inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
+        inputs.chatgpt-linker.packages.${pkgs.stdenv.hostPlatform.system}.default
 
         btop # system monitor
         htop

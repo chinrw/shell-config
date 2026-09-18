@@ -113,6 +113,26 @@
         "type": "github"
       }
     },
+    "chatgpt-linker": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1789719673,
+        "narHash": "sha256-YDsMYK//P/gSpWaSQ7UQp3jmB40uvQXtTVCvgU/932c=",
+        "owner": "chinrw",
+        "repo": "chatgpt-linker",
+        "rev": "edd1dd4e263460e9fb5938ab1b3851471bc5bdf4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "chinrw",
+        "repo": "chatgpt-linker",
+        "type": "github"
+      }
+    },
     "claude-code-nix": {
       "inputs": {
         "flake-utils": "flake-utils",
@@ -1281,6 +1301,7 @@
         "agent-skills": "agent-skills",
         "bun2nix": "bun2nix",
         "cachix-deploy-flake": "cachix-deploy-flake",
+        "chatgpt-linker": "chatgpt-linker",
         "claude-code-nix": "claude-code-nix",
         "codex-cli-nix": "codex-cli-nix",
         "deepseek-harness-nix": "deepseek-harness-nix",
