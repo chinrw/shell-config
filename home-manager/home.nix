@@ -226,6 +226,7 @@ in
 
     # useGlobalPkgs = true;
     # stateVersion = ${stateVersion};
+    sessionPath = [ "${config.home.homeDirectory}/.local/bin" ];
     sessionVariables = lib.mkMerge [
       {
         _ZO_FZF_OPTS = "--preview 'eza -G -a --color auto --sort=accessed --git --icons -s type {2}'";
