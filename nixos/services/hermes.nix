@@ -272,7 +272,7 @@ let
   mediaVolumes = map hostPathVolume [
     "${mediaRoot}/harmony"
     "${mediaRoot}/Downloads"
-    "${mediaRoot}/Video/jellyfin/新番"
+    "${mediaRoot}/Video"
     "${mediaRoot}/baidu"
   ];
 
