@@ -11,12 +11,13 @@ let
 
   qwenVision = "qwen3.8-flash";
 
-  # GPT-5.6 models reached through Codex CLI's ChatGPT subscription login.
+  # GPT models reached through Codex CLI's ChatGPT subscription login.
   # Keep the model IDs bare: openai-codex resolves them through its Codex
   # catalog and does not use the OpenCode `openai/` naming convention.
   codexLuna = "gpt-5.6-luna";
   codexTerra = "gpt-5.6-terra";
   codexSol = "gpt-5.6-sol";
+  codexAstra = "gpt-6-astra";
 
   # Explicit empty values clear endpoint credentials during additive config merge.
   codexTarget = model: {
@@ -162,6 +163,7 @@ let
       luna = codexTarget codexLuna;
       terra = codexTarget codexTerra;
       sol = codexTarget codexSol;
+      astra = codexTarget codexAstra;
       deepseek = deepseekApiTarget deepseekFlash;
       deepseek-flash = deepseekApiTarget deepseekFlash;
       flash = goTarget deepseekFlash;
