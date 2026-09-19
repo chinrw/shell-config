@@ -1,0 +1,29 @@
+Upstream: https://github.com/nodejs/node/pull/66104
+Commits: e41b328fd8ca69a0d4c037ed7e829c2960de27bf,
+         0fa81a4588834c4563997b0d0e9f29e878f67dd0
+
+Create test fixtures with their intended mode instead of chmodding SUID/SGID
+bits, which the Nix build sandbox rejects.
+
+diff --git a/test/parallel/test-fs-cp-async-file-modes.mjs b/test/parallel/test-fs-cp-async-file-modes.mjs
+--- a/test/parallel/test-fs-cp-async-file-modes.mjs
++++ b/test/parallel/test-fs-cp-async-file-modes.mjs
+@@ -3,7 +3,7 @@
+ import { isWindows, skip } from '../common/index.mjs';
+ import { nextdir } from '../common/fs.js';
+ import assert from 'node:assert';
+-import { chmodSync, cpSync, mkdirSync, statSync, writeFileSync, promises } from 'node:fs';
++import { cpSync, mkdirSync, statSync, writeFileSync, promises } from 'node:fs';
+ import { join } from 'node:path';
+ import tmpdir from '../common/tmpdir.js';
+ 
+@@ -15,8 +15,7 @@
+ const src = nextdir();
+ mkdirSync(src);
+ for (const [name, mode] of Object.entries(modes)) {
+-  writeFileSync(join(src, name), 'x');
+-  chmodSync(join(src, name), mode);
++  writeFileSync(join(src, name), 'x', { mode });
+ }
+ const modesIn = (dir) => Object.fromEntries(
+   Object.keys(modes).map((name) => [name, statSync(join(dir, name)).mode & 0o7777]));
