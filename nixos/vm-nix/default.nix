@@ -53,6 +53,7 @@ in
     ../services/nix-serve.nix
     # ../services/factorio.nix
     ./kernel.nix
+    ./kdump.nix
     ./oom-guard.nix
     ./agents.nix
     ./zswap.nix
