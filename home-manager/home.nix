@@ -87,6 +87,7 @@ in
     inputs.nix-index-database.homeModules.nix-index
     inputs._1password-shell-plugins.hmModules.default
     inputs.sops-nix.homeManagerModules.sops
+    inputs.chatgpt-linker.homeManagerModules.default
   ]
   ++ lib.optionals (builtins.match "^(wsl-mini|vm-nix)$" hostname != null) [
     (import ./programs/rclone.nix {
@@ -245,7 +246,6 @@ in
         unstable.zellij
         duf # better df
         inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
-        inputs.chatgpt-linker.packages.${pkgs.stdenv.hostPlatform.system}.default
 
         btop # system monitor
         htop
@@ -352,6 +352,7 @@ in
 
   # Enable home-manager and git
   programs.home-manager.enable = true;
+  programs.chatgpt-linker.enable = true;
 
   programs._1password-shell-plugins = {
     # enable 1Password shell plugins for bash, zsh, and fish shell

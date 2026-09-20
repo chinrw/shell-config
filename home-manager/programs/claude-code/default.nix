@@ -167,10 +167,6 @@ let
             name = "babysit-prs-codex";
             source = "${inputs.agent-skills}/codex-skills/babysit-prs-codex";
           }
-          {
-            name = "rethink-plan";
-            source = "${inputs.chatgpt-linker}/skills/rethink-plan";
-          }
         ]
         ++ mattSkillSources
       );
@@ -749,11 +745,6 @@ in
   # each into its own ~/.claude/skills/<name> location (same pattern as the mtg
   # skills above). link_children only sweeps symlinks into $REPO (the ECC
   # source), so these Nix-managed dirs coexist with the allowlisted ECC skills.
-  home.file.".claude/skills/rethink-plan" = {
-    source = "${inputs.chatgpt-linker}/skills/rethink-plan";
-    recursive = true;
-  };
-
   home.file.".claude/skills/aihot" = {
     source = "${inputs.khazix-skills}/aihot";
     recursive = true;
