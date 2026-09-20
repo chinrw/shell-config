@@ -83,6 +83,7 @@ in
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
+    (import ./programs/yazi.nix { inherit inputs pkgs; })
     inputs.nix-index-database.homeModules.nix-index
     inputs._1password-shell-plugins.hmModules.default
     inputs.sops-nix.homeManagerModules.sops
@@ -95,9 +96,6 @@ in
   ]
   ++ lib.optionals (hostname == "vm-nix") [
     (import ./programs/restic.nix { inherit config lib pkgs; })
-  ]
-  ++ lib.optionals (hostname != "vm-nix") [
-    (import ./programs/yazi.nix { inherit inputs pkgs; })
   ]
   ++ lib.optionals (!smallNode) [
     ./programs/opencode.nix
