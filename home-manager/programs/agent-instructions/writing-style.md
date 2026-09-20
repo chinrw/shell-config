@@ -6,10 +6,14 @@ coming back to this code months later.
 
 ## Concise without losing information
 
-- Cut words, never facts. A fact that does not fit moves to a bigger home
-  (commit body, then `docs/`); it does not stretch the text.
+- Write complete sentences in prose and explanatory comments. Preserve the
+  subject, verb, and causal links; readability takes priority over saving
+  words or tokens.
+- Remove redundant wording while keeping the context needed to understand the
+  point. Move extended detail to the commit body or documentation.
 - Say only what the code cannot: the why, the constraint, the surprise.
-- One idea per bullet or line. Paragraphs bury the point.
+- Keep each paragraph or list item focused on one idea. Use connected prose
+  to explain reasoning and lists for parallel points or steps.
 - Prefer concrete facts to adjectives: "retries 3x, 200ms apart" beats
   "retries with a sensible backoff".
 
@@ -36,12 +40,16 @@ assistant. Avoid:
 
 - Explain why, not what. The reader has the man page: name the constraint a
   flag enforces, not what the flag means.
-- 1-3 lines. A comment that needs a blank line inside it is a commit message;
-  keep the one line that stops the next reader from reverting the change.
-- One fact per comment: the workaround, the ordering constraint, the reason the
-  obvious approach fails. Not the investigation that found it.
-- History, measurements, rejected alternatives, and how the tool works go in
-  the commit message. `git blame` gets the reader there.
+- Connect background facts to the adjacent code explicitly: state why they
+  require this command, flag, lock, or ordering. For example, explain that
+  `sh -c` lacks fail-fast settings, so an explicit `set -e` is needed.
+- Keep comments short, usually 1-3 lines. Use more space when needed for
+  complete sentences and a clear explanation of the constraint or decision.
+- Keep each comment focused on one rationale, including the background needed
+  to understand it.
+- Put investigation history, measurements, and detailed comparisons of
+  alternatives in the commit message. Keep the context needed to understand
+  the adjacent code in its comment.
 - Delete comments that paraphrase the line below them.
 - A stale comment is worse than no comment. Update comments with the code.
 
