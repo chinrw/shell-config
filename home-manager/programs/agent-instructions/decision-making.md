@@ -8,7 +8,7 @@
   shape, file layout and naming, edge-case behavior, and scope (narrow fix vs
   wider refactor). Anything where guessing wrong means rework.
 - Do not ask what you can verify yourself. Read the code, grep, check the docs
-  first; questions are for the user's taste, not your own lookup.
+  first. Questions are for the user's taste, not your own lookup.
 - Ask before writing code, not after.
 - If the user already stated a preference this session, follow it without
   re-asking.
