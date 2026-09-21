@@ -120,11 +120,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789919121,
-        "narHash": "sha256-sy4TNNfNIFFPEV1+VYnbZgS1GvP5AWu12CySJF5rzx4=",
+        "lastModified": 1789954491,
+        "narHash": "sha256-fOXEcnuU1MKRtFOTT1j1ZUb4Y/tcHZQWeb2aRSdvzNU=",
         "owner": "chinrw",
         "repo": "chatgpt-linker",
-        "rev": "da3bd70485c2766fe3877145371dd3bca925ccc6",
+        "rev": "5abf3b0458c0253b3bca0ddfce251a6bed74f25b",
         "type": "github"
       },
       "original": {
