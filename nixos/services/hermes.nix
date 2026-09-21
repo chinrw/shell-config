@@ -615,9 +615,18 @@ in
       gawk
     ];
 
-    # Bake the `messaging` extra into the sealed uv2nix venv so the
-    # Telegram adapter's `from telegram import …`
-    extraDependencyGroups = [ "messaging" ];
+    # Sealed uv2nix venv — lazy-install cannot write to a NixOS-managed
+    # site-packages, so extras must be baked here. This list REPLACES the
+    # upstream `default` package's own list rather than extending it.
+    #
+    # messaging: Telegram adapter's `from telegram import …`.
+    # anthropic: the vision route (opencode-go/qwen3.8-flash) speaks Anthropic
+    # Messages; without the SDK it logs "Failed to build Anthropic client …
+    # falling back to OpenAI-wire".
+    extraDependencyGroups = [
+      "messaging"
+      "anthropic"
+    ];
 
   };
 
