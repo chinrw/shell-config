@@ -103,6 +103,7 @@ in
     ./programs/pi
     (import ./programs/codex {
       inherit
+        codexPackage
         lib
         pkgs
         config

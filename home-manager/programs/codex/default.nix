@@ -13,6 +13,7 @@
   lib,
   pkgs,
   hostname,
+  codexPackage,
 }:
 let
   sharedAgentInstructions = import ../agent-instructions { inherit lib pkgs; };
@@ -32,6 +33,7 @@ let
     runtimeInputs = [
       pkgs.git
       pkgs.python3
+      codexPackage
     ];
     text = ''
       exec python3 ${./rename-first-turn.py}
