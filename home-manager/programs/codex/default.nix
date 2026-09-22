@@ -6,8 +6,8 @@
 # the Nix base plus an untracked AGENTS.local.md, mirroring how CLAUDE.md is
 # built in ../claude-code/default.nix.
 #
-# The rest of ~/.codex (config.toml, rules/, the sqlite state) stays owned by
-# the Codex app, which rewrites those files at runtime.
+# config.toml, rules/, and the sqlite state stay owned by the Codex app,
+# which rewrites those files at runtime.
 {
   config,
   lib,
@@ -27,8 +27,35 @@ let
   baseFile = pkgs.writeText "codex-agents-base" (
     banner + "\n# User-scope Codex Configuration\n\n" + sharedAgentInstructions.text
   );
+  renameHook = pkgs.writeShellApplication {
+    name = "codex-rename-first-turn";
+    runtimeInputs = [
+      pkgs.git
+      pkgs.python3
+    ];
+    text = ''
+      exec python3 ${./rename-first-turn.py}
+    '';
+  };
+  renameCommand = {
+    type = "command";
+    command = "${renameHook}/bin/codex-rename-first-turn";
+    timeout = 10;
+  };
 in
 {
+  home.file.".codex/hooks.json".text = builtins.toJSON {
+    hooks = {
+      SessionStart = [
+        {
+          matcher = "^startup$";
+          hooks = [ renameCommand ];
+        }
+      ];
+      Stop = [ { hooks = [ renameCommand ]; } ];
+    };
+  };
+
   home.activation.codexAgentsMd = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     CODEX="${config.home.homeDirectory}/.codex"
     LOCAL_MD="$CODEX/AGENTS.local.md"
