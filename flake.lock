@@ -607,11 +607,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1790060185,
-        "narHash": "sha256-VLyQg0st+7MCz3iO7G1er7qDfss7Qj8KyQ+Lt59xLcQ=",
+        "lastModified": 1790066898,
+        "narHash": "sha256-wbhfSTMHWyf0T3ViECpOnyLeoh7TMrqMVaDjROLRFfY=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "35fdb4608aa8af455d2597664cff1754a3722cd1",
+        "rev": "836b5f8253d27fee79b4f833bc43624f06a890b3",
         "type": "github"
       },
       "original": {
@@ -734,10 +734,10 @@
     "linux-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1789386071,
-        "narHash": "sha256-vtRw/4zDfXTlC1ZW/AwglrLMzrYDLPf5vunXZDy55+s=",
+        "lastModified": 1789996140,
+        "narHash": "sha256-a4Y4aPYfe5KQCpZxLnUf0JLbMSQtPJJEZL50dmNUxQ0=",
         "ref": "linux-rolling-stable",
-        "rev": "d396b05e7e39b0ed6f6d5553fbaf174228e18bdf",
+        "rev": "e4d5aec66c8ec75066a59f6714d3965853e4320c",
         "shallow": true,
         "type": "git",
         "url": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
@@ -986,11 +986,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1790059059,
-        "narHash": "sha256-rRgDBmBX40OyusRisGLpgUbBwZTb4GVmC7d/3pw0dsg=",
+        "lastModified": 1790070332,
+        "narHash": "sha256-BCLcy+Hoa5joFzmgQAPMQ6WeCfvpHbOWOttAhJoBlwA=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "ecbc11cb9564e3d50dbcec336b6e4cf642a38acf",
+        "rev": "f7270eb074c4304f3b3dc263a4fb9bf5645db1b8",
         "type": "github"
       },
       "original": {
@@ -1103,11 +1103,11 @@
     "oh-my-opencode-slim": {
       "flake": false,
       "locked": {
-        "lastModified": 1790059966,
-        "narHash": "sha256-xur9/Z3/GNvlLi9UiikIKkK9Bhnx5vtvfhyeusAj8Y8=",
+        "lastModified": 1790063876,
+        "narHash": "sha256-SDwybiN8+kR8RTYFQOsokYkeBeAuUs7spDdr5MuYbZg=",
         "owner": "alvinunreal",
         "repo": "oh-my-opencode-slim",
-        "rev": "08285dc1fd2016f19eb335771cc7d57b2231ace1",
+        "rev": "d43fc47d0138818896cb4be7e57456e1a0243d9d",
         "type": "github"
       },
       "original": {
@@ -1348,11 +1348,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789977098,
-        "narHash": "sha256-fKY4BedarKx4aR0+UOHk65hhDW8pxFytFkaUi0VYDYk=",
+        "lastModified": 1790062494,
+        "narHash": "sha256-Mds1vuoczq1fRm1rf+Iar8IKDBHNjOMo2JqqPWJUlng=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "2776e42828203ec89511699c8dcdedec69ab98e1",
+        "rev": "b88764907c1b2de6c0e206d8d9d9634d91c81334",
         "type": "github"
       },
       "original": {
