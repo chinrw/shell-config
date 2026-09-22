@@ -6,23 +6,6 @@
   ...
 }:
 let
-  # Keep the Node test workaround inside Hermes's own nixpkgs scope.
-  hermesPkgs =
-    inputs.hermes-agent.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system}.extend
-      (
-        _final: prev: {
-          nodejs-slim_26 = prev.nodejs-slim_26.overrideAttrs (old: {
-            patches =
-              (old.patches or [ ])
-              ++ lib.optionals (old.version == "26.9.0") [
-                # Remove once pinned nixpkgs includes nodejs/node#66104 and
-                # Hermes builds successfully without this patch.
-                ./patches/node-26.9.0-fs-cp-file-modes.patch
-              ];
-          });
-        }
-      );
-
   # Canonical V4.1 Flash ID for both DeepSeek and OpenCode Go.
   deepseekFlash = "deepseek-flash";
 
@@ -343,9 +326,7 @@ in
   # ── Service ─────────────────────────────────────────────────────
   services.hermes-agent = {
     enable = true;
-    package = inputs.hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
-      callPackage = hermesPkgs.callPackage;
-    };
+    package = inputs.hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default;
     addToSystemPackages = true;
 
     # The upstream CLI router runs Hermes as the service user inside this container.
