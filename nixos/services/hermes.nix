@@ -437,8 +437,12 @@ in
         opencode-go.deepseek-flash.context_window = 1000000;
       };
 
-      # Unpinned delegates inherit the main fallback chain.
-      delegation = (codexTarget codexLuna) // {
+      # Empty values clear old pins during additive merge so delegates inherit the parent.
+      delegation = {
+        model = "";
+        provider = "";
+        base_url = "";
+        api_key = "";
         max_concurrent_children = 4;
         max_spawn_depth = 2;
         child_timeout_seconds = 900;
