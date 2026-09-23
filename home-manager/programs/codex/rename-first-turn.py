@@ -11,7 +11,12 @@ import sys
 import tempfile
 import time
 
-import psutil
+# Stay under the Stop hook's 90-second timeout so the hook records its own
+# failure instead of being killed with its record left `running`.
+WORKFLOW_SECONDS = 70
+GENERATION_SECONDS = 45
+# stop_process waits this long for each of the two children to exit.
+REAP_SECONDS = 2
 
 
 def remaining(deadline):
@@ -25,6 +30,8 @@ def stop_process(proc):
     # Inherit Codex's hook group so native cancellation reaches every child.
     # On an internal timeout, freeze the owned tree before killing it, without
     # killing the hook itself or letting a parent spawn replacements.
+    import psutil
+
     owned = []
     try:
         if proc.poll() is None:
@@ -45,12 +52,10 @@ def stop_process(proc):
                 pass
         if proc.poll() is None:
             proc.kill()
-        proc.wait(timeout=2)
+        proc.wait(timeout=REAP_SECONDS)
 
 
-def summarize(project, prompt, answer, deadline=None):
-    if deadline is None:
-        deadline = time.monotonic() + 45
+def summarize(project, prompt, answer, deadline):
     remaining(deadline)
     with tempfile.TemporaryDirectory(prefix="codex-task-title-") as directory:
         root = Path(directory)
@@ -95,7 +100,7 @@ def summarize(project, prompt, answer, deadline=None):
             "-c",
             "project_doc_max_bytes=0",
             "-c",
-            "skills.max_context_tokens=1",
+            "skills.include_instructions=false",
             "-c",
             'web_search="disabled"',
             "-c",
@@ -139,7 +144,7 @@ def summarize(project, prompt, answer, deadline=None):
                     },
                     ensure_ascii=False,
                 ),
-                timeout=min(45, remaining(deadline)),
+                timeout=min(GENERATION_SECONDS, remaining(deadline)),
             )
             if proc.returncode:
                 raise RuntimeError("Title generation failed")
@@ -175,8 +180,8 @@ def save_state(state, data):
 def name_task(session_id, project, prompt, answer):
     # A short-lived app-server can rename a persisted thread without starting
     # a turn. This also works when the CLI has no externally reachable socket.
-    # Reserve four seconds of the 70-second workflow budget for both children.
-    deadline = time.monotonic() + 66
+    # Leave room in the workflow budget to reap both children after a timeout.
+    deadline = time.monotonic() + WORKFLOW_SECONDS - 2 * REAP_SECONDS
     proc = subprocess.Popen(
         ["codex", "app-server", "--stdio"],
         stdin=subprocess.PIPE,
@@ -304,6 +309,10 @@ def handle(event):
         data["status"] = "running" if prompt and answer else "skipped"
         save_state(state, data)
     if data["status"] == "running":
+        # Import psutil only on this path. UserPromptSubmit runs synchronously
+        # before every prompt, and psutil adds about 20 ms to its startup.
+        import psutil
+
         try:
             data["status"] = name_task(session_id, data["project"], prompt, answer)
         except (

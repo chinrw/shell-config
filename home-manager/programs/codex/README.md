@@ -29,7 +29,11 @@ metadata API. It returns an empty result, so neither the naming prompt nor
 Luna's response enters the main conversation. Codex may still display hook
 execution status. A client that caches the old title may need to be reopened.
 
-Generation gets up to 45 seconds within a shared workflow budget. Missing
+Naming can take up to about 70 seconds after the answer, of which generation
+gets up to 45. Codex cancels the attempt if the session ends first, for
+example when you quit the CLI right after the first answer. A `codex exec`
+run exits as soon as it answers, so it usually ends without a title. A
+cancelled attempt may still have sent the Luna request. Missing
 text or failed generation does not update the title. Once claimed, an attempt
 is not retried automatically. A metadata error after writing the title may
 mean the update succeeded even though verification failed.
@@ -41,14 +45,13 @@ before the first read or between the final read and write can be replaced.
 
 For diagnostics, inspect `$CODEX_HOME/rename-first-turn/`, or
 `~/.codex/rename-first-turn/` when `CODEX_HOME` is unset. Records can be
-`pending`, `running`, `renamed`, `skipped`, or `failed`. Abrupt termination can
-leave a `running` record after its process exits. Do not reset it to retry an
-old task. The captured request is removed when Stop claims the attempt;
-pending records retain it. Resuming a pending task does not reset its first
-request, but a later completed answer can still trigger its naming attempt.
+`pending`, `running`, `renamed`, `skipped`, or `failed`. A cancelled attempt
+leaves its record `running` for good. Do not reset it to retry an old task.
+The captured request is removed when Stop claims the attempt; pending records
+retain it. Resuming a pending task does not reset its first request, but a
+later completed answer can still trigger its naming attempt.
 
-The hook definitions live in `~/.codex/hooks.json`. After changing the hook,
-apply Home Manager and review any new trust request. Codex's `config.toml`
-and session database remain managed by Codex.
+After changing the hook, apply Home Manager and review any new trust request.
+Codex's `config.toml` and session database remain managed by Codex.
 
 The event contract is documented in the [official Hooks guide](https://learn.chatgpt.com/docs/hooks).
