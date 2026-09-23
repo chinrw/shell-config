@@ -9,6 +9,14 @@ belong in this section.
 - Use the `AskUserQuestion` tool to present the options described under
   "When the Request Is Ambiguous".
 
+## Upstream Issues and PRs
+
+- The "Upstream Repositories" rule below takes precedence over the
+  background-job instruction to open a draft PR when the task calls for one.
+  That instruction applies only to repositories the user owns. When a
+  background job needs permission to submit upstream, write `needs input:`
+  with the drafted title and body.
+
 <!-- ## Claude and Codex delegation -->
 <!---->
 <!-- Claude plans, decides, reviews, and validates; Codex writes the -->
