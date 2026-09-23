@@ -1,16 +1,16 @@
 {
   profileConfig,
   codexLuna,
-  codexTerra,
   codexSol,
+  codexAstra,
 }:
 let
   specialistProfiles = {
-    orchestrator = profileConfig codexTerra "xhigh" [
+    orchestrator = profileConfig codexSol "xhigh" [
       "kanban"
       "memory"
     ];
-    oracle = profileConfig codexSol "xhigh" [
+    oracle = profileConfig codexAstra "xhigh" [
       "file"
       "terminal"
       "web"
@@ -29,7 +29,7 @@ let
       "terminal"
       "skills"
     ];
-    designer = profileConfig codexTerra "high" [
+    designer = profileConfig codexSol "high" [
       "file"
       "terminal"
       "code_execution"
@@ -50,7 +50,7 @@ let
       "code_execution"
       "skills"
     ];
-    reviewer = profileConfig codexSol "xhigh" [
+    reviewer = profileConfig codexAstra "xhigh" [
       "file"
       "terminal"
       "web"

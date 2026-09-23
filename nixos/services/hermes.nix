@@ -14,9 +14,8 @@ let
   # GPT models reached through Codex CLI's ChatGPT subscription login.
   # Keep the model IDs bare: openai-codex resolves them through its Codex
   # catalog and does not use the OpenCode `openai/` naming convention.
-  codexLuna = "gpt-5.6-luna";
-  codexTerra = "gpt-5.6-terra";
-  codexSol = "gpt-5.6-sol";
+  codexLuna = "gpt-6-luna";
+  codexSol = "gpt-6-sol";
   codexAstra = "gpt-6-astra";
 
   # Explicit empty values clear endpoint credentials during additive config merge.
@@ -105,9 +104,7 @@ let
   compressionPolicy = {
     enabled = true;
 
-    # Reaches the main model raised, not as written: context_compressor
-    # floors sub-512K windows at 0.75, and the Codex gpt-5.6 autoraise
-    # takes it to 0.85. Only >=512K fallback models see 0.50.
+    # The compressor may raise this threshold for smaller context windows.
     threshold = 0.50;
 
     target_ratio = 0.20;
@@ -124,8 +121,7 @@ let
     # summary call fails, losing history. Freeze instead; /compress resumes.
     abort_on_summary_failure = true;
 
-    # No-LLM prune of stale large tool results, which the 0.85 trigger
-    # otherwise re-sends every turn until ~231K. min_reclaim keeps the
+    # Prune stale large tool results before compression. min_reclaim keeps
     # prompt-cache breaks episodic rather than per-turn.
     proactive_prune_tokens = 96000;
     proactive_prune_min_result_chars = 12000;
@@ -135,7 +131,7 @@ let
     codex_responses_native = true;
 
     # Clamped at request time to (local trigger - 8192), so the server
-    # compacts first without assuming a fixed gpt-5.6 window.
+    # compacts first without assuming a fixed model context window.
     codex_responses_compact_threshold = 200000;
 
     # OpenAI evicts cached prefixes within an hour, so a resume after this
@@ -161,7 +157,6 @@ let
     providers.commandcode-api = commandcodeProvider;
     model_aliases = {
       luna = codexTarget codexLuna;
-      terra = codexTarget codexTerra;
       sol = codexTarget codexSol;
       astra = codexTarget codexAstra;
       deepseek = deepseekApiTarget deepseekFlash;
@@ -243,8 +238,8 @@ let
     inherit
       profileConfig
       codexLuna
-      codexTerra
       codexSol
+      codexAstra
       ;
   };
   specialistProfiles = specialistProfileData.specialistProfiles;
@@ -407,7 +402,7 @@ in
         # Model-level effort applies to both fallbacks and manual switches.
         reasoning_overrides = {
           ${codexLuna} = "xhigh";
-          ${codexTerra} = "xhigh";
+          ${codexSol} = "xhigh";
           ${deepseekFlash} = "max";
           ${commandcodeFlash} = "max";
         };
@@ -438,11 +433,11 @@ in
       };
 
       auxiliary = {
-        triage_specifier = (codexAuxTarget codexTerra) // {
+        triage_specifier = (codexAuxTarget codexSol) // {
           reasoning_effort = "high";
           timeout = 180;
         };
-        kanban_decomposer = (codexAuxTarget codexTerra) // {
+        kanban_decomposer = (codexAuxTarget codexSol) // {
           reasoning_effort = "xhigh";
           timeout = 300;
         };
@@ -450,7 +445,7 @@ in
           reasoning_effort = "high";
           timeout = 180;
         };
-        goal_judge = (codexAuxTarget codexTerra) // {
+        goal_judge = (codexAuxTarget codexSol) // {
           reasoning_effort = "high";
         };
         compression = lcmSummaryRoutes.primary;
@@ -680,6 +675,28 @@ in
             "$hermes_home/skills/" "$profile_dir/skills/"
         '') specialistProfileAssets
       )}
+
+      # Additive merges retain removed keys, so retire the old model entries
+      # in both the default config and the managed profiles.
+      ${pkgs.python3.withPackages (ps: [ ps.pyyaml ])}/bin/python3 - "$hermes_home" <<'PY'
+      import sys
+      from pathlib import Path
+      import yaml
+
+      home = Path(sys.argv[1])
+      for name in ["default", ${
+        lib.concatMapStringsSep ", " builtins.toJSON (builtins.attrNames specialistProfiles)
+      }]:
+          path = home / "config.yaml" if name == "default" else home / "profiles" / name / "config.yaml"
+          if not path.exists():
+              continue
+          config = yaml.safe_load(path.read_text())
+          config.get("model_aliases", {}).pop("terra", None)
+          overrides = config.get("agent", {}).get("reasoning_overrides", {})
+          for model in ("gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"):
+              overrides.pop(model, None)
+          path.write_text(yaml.safe_dump(config, sort_keys=False))
+      PY
 
     '';
   };
