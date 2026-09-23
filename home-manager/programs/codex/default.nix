@@ -32,7 +32,7 @@ let
     name = "codex-rename-first-turn";
     runtimeInputs = [
       pkgs.git
-      pkgs.python3
+      (pkgs.python3.withPackages (ps: [ ps.psutil ]))
       codexPackage
     ];
     text = ''
@@ -54,7 +54,20 @@ in
           hooks = [ renameCommand ];
         }
       ];
-      Stop = [ { hooks = [ renameCommand ]; } ];
+      UserPromptSubmit = [ { hooks = [ renameCommand ]; } ];
+      Stop = [
+        {
+          hooks = [
+            (
+              renameCommand
+              // {
+                async = true;
+                timeout = 90;
+              }
+            )
+          ];
+        }
+      ];
     };
   };
 
