@@ -16,22 +16,10 @@ let
     ];
   });
 
-  # Domestic names use AliDNS and DNSPod directly; other names use dnscrypt-proxy.
-  chinaDnsUpstreams =
-    let
-      chinaDoh = "https://223.5.5.5/dns-query https://doh.pub/dns-query";
-    in
-    pkgs.runCommand "adguard-china-upstreams" { } ''
-      {
-        echo "127.0.0.1:5353"
-        echo "[/cn/]${chinaDoh}"
-        sed -nE 's|^server=/([^/]+)/.*$|[/\1/]${chinaDoh}|p' \
-          ${inputs.dnsmasq-china-list}/accelerated-domains.china.conf
-      } > $out
-    '';
 in
 {
   imports = [
+    ../services/adguardhome.nix
     inputs.hardware.nixosModules.common-cpu-amd
     ./hardware.nix
     ./wireguard.nix
@@ -248,53 +236,6 @@ in
   services = {
     qemuGuest.enable = true;
 
-    # Encrypted upstream for AdGuard. AdGuard cannot do this itself: dnsproxy
-    # dials upstream_dns with no proxy support, and every encrypted transport
-    # is blocked on the direct path, so DoH has to terminate in a forwarder
-    # that can use xray. Over the SOCKS inbound it reaches Cloudflare and
-    # returns correct answers for the hijacked Slack names.
-    #
-    # The stamp is the official cloudflare entry from public-resolvers.md,
-    # inlined with sources cleared so startup does not depend on fetching the
-    # resolver list through the tunnel.
-    dnscrypt-proxy = {
-      enable = true;
-      settings = {
-        listen_addresses = [ "127.0.0.1:5353" ];
-        server_names = [ "cloudflare" ];
-        proxy = "socks5://127.0.0.1:10808";
-
-        cache = true;
-        cache_size = 4096;
-
-        sources = { };
-        static.cloudflare.stamp = "sdns://AgcAAAAAAAAABzEuMC4wLjEAEmRucy5jbG91ZGZsYXJlLmNvbQovZG5zLXF1ZXJ5";
-      };
-    };
-    adguardhome = {
-      enable = true;
-      openFirewall = true;
-      settings = {
-        # Covers AdGuard's own HTTP client (filter and version fetches) only.
-        # dnsproxy dials upstream_dns without it, so an https:// upstream would
-        # be attempted directly and time out.
-        http_proxy = "http://127.0.0.1:10809";
-
-        dns = {
-          upstream_dns_file = "${chinaDnsUpstreams}";
-          upstream_mode = "parallel";
-          # DNSPod bootstrap must work independently of the overseas DNS path.
-          bootstrap_dns = [
-            "223.5.5.5"
-            "119.29.29.29"
-          ];
-          fallback_dns = [
-            "1.1.1.1"
-            "8.8.8.8"
-          ];
-        };
-      };
-    };
     # open-webui = {
     #   enable = true;
     #   package = pkgs.stable.open-webui;

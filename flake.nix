@@ -250,8 +250,7 @@
       # This is a function that generates an attribute by calling a function you
       # pass to it, with each system as an argument
       forAllSystems = nixpkgs.lib.genAttrs systems;
-      stateVersion = "25.05";
-      helpers = import ./lib { inherit inputs outputs stateVersion; };
+      helpers = import ./lib { inherit inputs outputs; };
 
     in
     flake-utils.lib.eachSystem systems (
@@ -311,19 +310,38 @@
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
       nixosConfigurations = {
+        "nixos-lxc" = helpers.mkNixos {
+          hostname = "nixos-lxc";
+          stateVersion = "26.11";
+          localCaches = [ "home" ];
+          extraModules = [ ./nixos/nixos-lxc ];
+        };
         "wsl" = helpers.mkNixos {
+          stateVersion = "25.05";
           hostname = "wsl";
           GPU = "nvidia";
+          extraModules = [
+            ./nixos/wsl.nix
+            ./nixos/services/samba/wsl-server.nix
+            ./nixos/nvidia-wsl.nix
+            ./nixos/services/nvidia-container.nix
+            ./nixos/services/llm.nix
+          ];
         };
         "wsl-mini" = helpers.mkNixos {
+          stateVersion = "25.05";
           hostname = "wsl-mini";
           GPU = "amd";
+          extraModules = [ ./nixos/wsl-mini.nix ];
         };
         "vm-nix" = helpers.mkNixos {
+          stateVersion = "25.05";
           hostname = "vm-nix";
           GPU = "amd";
+          extraModules = [ ./nixos/vm-nix ];
         };
         "work-laptop" = helpers.mkNixos {
+          stateVersion = "25.05";
           hostname = "work-laptop";
           desktop = "niri";
           extraModules = [ ./nixos/t14p-gen2 ];
@@ -341,66 +359,85 @@
       # Available through 'home-manager --flake .#your-username@your-hostname'
       homeConfigurations = {
         "chin39@desktop" = helpers.mkHome {
+          stateVersion = "25.05";
           hostname = "desktop";
           noGUI = false;
         };
         "chin39@wsl-mini" = helpers.mkHome {
+          stateVersion = "25.05";
           username = "chin39";
           hostname = "wsl-mini";
           noGUI = false;
         };
         "chin39@wsl" = helpers.mkHome {
+          stateVersion = "25.05";
           username = "chin39";
           hostname = "wsl";
           noGUI = false;
           localCaches = [ "home" ];
         };
         "ruowen@ringo" = helpers.mkHome {
+          stateVersion = "25.05";
           username = "ruowen";
           hostname = "gentoo";
           noGUI = false;
           isServer = true;
         };
         "chin39@archlinux" = helpers.mkHome {
+          stateVersion = "25.05";
           hostname = "archlinux";
           isServer = true;
           isPublic = true;
           smallNode = true;
         };
         "chin39@arch-lxc" = helpers.mkHome {
+          stateVersion = "25.05";
           hostname = "arch-lxc";
           isServer = true;
           localCaches = [ "home" ];
         };
+        "chin39@nixos-lxc" = helpers.mkHome {
+          stateVersion = "25.05";
+          hostname = "nixos-lxc";
+          isServer = true;
+          localCaches = [ "home" ];
+        };
         "chin39@proxmox" = helpers.mkHome {
+          stateVersion = "25.05";
           hostname = "proxmox";
           isServer = true;
           localCaches = [ "home" ];
         };
         "chin39@arch-vm" = helpers.mkHome {
+          stateVersion = "25.05";
           hostname = "arch";
           isServer = false;
         };
         "chin39@vm-gentoo" = helpers.mkHome {
+          stateVersion = "25.05";
           hostname = "vm-gentoo";
           platform = "aarch64-linux";
         };
         "chin39@vm-work" = helpers.mkHome {
+          stateVersion = "25.05";
           hostname = "work";
           platform = "aarch64-linux";
         };
         "chin39@gentoo-server" = helpers.mkHome {
+          stateVersion = "25.05";
           hostname = "gentoo-server";
           isServer = true;
           localCaches = [ "home" ];
         };
         "chin39@vm-nix" = helpers.mkHome {
+          stateVersion = "25.05";
           hostname = "vm-nix";
           isServer = true;
           noGUI = true;
           localCaches = [ "home" ];
         };
         "chin39@jd-cloud" = helpers.mkHome {
+          stateVersion = "25.05";
           hostname = "jd-cloud";
           isServer = true;
           isPublic = true;
@@ -409,10 +446,12 @@
           smallNode = true;
         };
         "chin39@macos" = helpers.mkHome {
+          stateVersion = "25.05";
           hostname = "macos";
           platform = "aarch64-darwin";
         };
         "chin39@work" = helpers.mkHome {
+          stateVersion = "25.05";
           hostname = "work";
           localCaches = [ "home" ];
         };

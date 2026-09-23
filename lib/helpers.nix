@@ -1,7 +1,6 @@
 {
   inputs,
   outputs,
-  stateVersion,
   ...
 }:
 let
@@ -30,6 +29,7 @@ in
   mkHome =
     {
       hostname,
+      stateVersion,
       username ? "chin39",
       noGUI ? true,
       platform ? "x86_64-linux",
@@ -73,6 +73,7 @@ in
   mkNixos =
     {
       hostname,
+      stateVersion,
       username ? "chin39",
       desktop ? null,
       GPU ? null,
@@ -111,6 +112,7 @@ in
       };
       modules = [
         ../nixos/configuration.nix
+        { system.stateVersion = stateVersion; }
       ]
       ++ extraModules
       ++ inputs.nixpkgs.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
@@ -138,7 +140,6 @@ in
           hostname
           platform
           username
-          stateVersion
           isInstall
           isLima
           isISO

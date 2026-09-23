@@ -265,6 +265,7 @@ in
         cachix
         nix-search-cli
         lua51Packages.lua
+        tree-sitter
         uv # An extremely fast Python package and project manager, written in Rust.
         gh # github shell
         procs # A modern replacement for ps written in Rust
@@ -415,7 +416,7 @@ in
       }
       //
         lib.optionalAttrs
-          (builtins.match "^(wsl|wsl-mini|archlinux|macos|vm-nix|gentoo-server)$" hostname != null)
+          (builtins.match "^(wsl|wsl-mini|archlinux|macos|vm-nix|gentoo-server|nixos-lxc)$" hostname != null)
           {
             sync_address = "http://10.0.0.242:8881";
             key_path = config.sops.secrets.atuin_key.path;
