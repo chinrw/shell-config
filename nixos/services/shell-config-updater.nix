@@ -21,6 +21,9 @@ let
     ".#nixosConfigurations.vm-nix.config.system.build.toplevel"
     ".#homeConfigurations.\"chin39@work\".activationPackage"
     ".#nixosConfigurations.work-laptop.config.system.build.toplevel"
+    ".#nixosConfigurations.nixos-ci.config.system.build.toplevel"
+    ".#nixosConfigurations.nixos-lxc.config.system.build.toplevel"
+    ".#homeConfigurations.\"chin39@nixos-lxc\".activationPackage"
   ];
 
   gitAskPass = pkgs.writeShellScript "${serviceName}-askpass" ''

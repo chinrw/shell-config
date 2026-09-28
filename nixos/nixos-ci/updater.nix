@@ -7,7 +7,7 @@
     cachixConfigFile = "/var/lib/ci-secrets/shell-config-updater/cachix.dhall";
     maxJobs = 1;
     cores = 2;
-    publish = false;
+    publish = true;
   };
 
   systemd.timers.shell-config-updater.enable = false;
