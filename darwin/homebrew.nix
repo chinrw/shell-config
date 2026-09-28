@@ -2,6 +2,7 @@
 let
   # Same local proxy the nix-daemon uses (see ./nix-daemon-proxy.nix).
   proxyURL = "http://127.0.0.1:10809";
+  noProxy = (import ../lib/proxy.nix).noProxy;
   # The proxy occasionally terminates long HTTP/2 downloads with curl error
   # 92. Keep Homebrew downloads on HTTP/1.1 and retry transient transfer
   # failures; HOMEBREW_CURLRC makes Homebrew pass this file to curl explicitly.
@@ -90,12 +91,14 @@ in
   # the `brew bundle` process. Interactive brew already gets its proxy from the
   # zsh session (see home-manager/programs/zsh).
   security.sudo.extraConfig = ''
-    Defaults>root env_keep += "http_proxy https_proxy HOMEBREW_CURLRC"
+    Defaults>root env_keep += "http_proxy https_proxy no_proxy NO_PROXY HOMEBREW_CURLRC"
   '';
 
   system.activationScripts.homebrew.text = lib.mkBefore ''
     export http_proxy="${proxyURL}"
     export https_proxy="${proxyURL}"
+    export no_proxy="${noProxy}"
+    export NO_PROXY="${noProxy}"
     export HOMEBREW_CURLRC="${homebrewCurlrc}"
   '';
 }

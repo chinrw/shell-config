@@ -17,7 +17,7 @@ in
 
   networking.proxy = {
     default = "http://127.0.0.1:10809";
-    noProxy = "localhost,127.0.0.1,::1,192.168.0.240,192.168.0.0/24,10.0.0.0/8,172.16.0.0/12,100.64.0.0/10,.localdomain";
+    noProxy = (import ../../lib/proxy.nix).noProxy;
   };
 
   services.adguardhome = {

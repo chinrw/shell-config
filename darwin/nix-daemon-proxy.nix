@@ -1,7 +1,7 @@
 { ... }:
 let
   proxyURL = "http://127.0.0.1:10809";
-  noProxy = "127.0.0.1,localhost,192.168.0.0/24,10.0.0.0/24";
+  noProxy = (import ../lib/proxy.nix).noProxy;
 in
 {
   launchd.daemons.nix-daemon.serviceConfig.EnvironmentVariables = {
