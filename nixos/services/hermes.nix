@@ -372,10 +372,12 @@ in
         "FONTCONFIG_FILE=${browserFontConfig}"
 
         # Inject FastEmbed dependencies; keep bubblewrap available for Codex app-server.
+        # Hermes commits its own edits to the workspace and skill repos, so git must
+        # survive container rebuilds instead of living in the apt-provisioned layer.
         "--env"
         "PYTHONPATH=${hermesLcm.pythonPath}"
         "--env"
-        "PATH=${pkgs.bubblewrap}/bin:${qrDecoder}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${codexPackage}/bin:${claudePackage}/bin"
+        "PATH=${pkgs.bubblewrap}/bin:${qrDecoder}/bin:${pkgs.git}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${codexPackage}/bin:${claudePackage}/bin"
       ]
       # LCM summarizer/behaviour env — see hermes-lcm.nix for the rationale.
       ++ hermesLcm.containerEnvOptions;
