@@ -5,7 +5,7 @@
   ...
 }:
 let
-  waitForUpdater = pkgs.writeShellScript "wait-for-config-updater" ''
+  waitForUpdater = pkgs.writeShellScript "wait-for-config-updater.sh" ''
     set -eu
     while :; do
       state=$(${pkgs.systemd}/bin/systemctl show shell-config-updater.service -p ActiveState --value)
@@ -17,24 +17,42 @@ let
   '';
   runners = {
     rex = {
+      enable = true;
       name = "rex-nixos-ci";
       url = "https://github.com/rex-rs/rex";
+      cacheDir = "/cache/rex-runner";
+      labels = [ "nixos-ci-canary" ];
+    };
+    stocks = {
+      enable = false;
+      name = "stocks-nixos-ci-1";
+      url = "https://github.com/chinrw/stocks";
+      cacheDir = "/cache/stocks-ci";
+      labels = [ "nixos-ci-canary" ];
     };
   };
+  enabledRunners = lib.filterAttrs (_: runner: runner.enable) runners;
 in
 {
   imports = [ ../services/github-runner-private-token.nix ];
 
-  systemd.tmpfiles.rules = lib.concatLists (
-    lib.mapAttrsToList (name: _: [
-      "d /work/${name}-runner 0700 ci ci -"
-      "d /cache/${name}-runner 0700 ci ci -"
-    ]) runners
-  );
+  systemd.tmpfiles.rules =
+    lib.concatLists (
+      lib.mapAttrsToList (name: runner: [
+        "d /work/${name}-runner 0700 ci ci -"
+        "d ${runner.cacheDir} 0700 ci ci -"
+      ]) enabledRunners
+    )
+    ++ lib.optionals runners.stocks.enable [
+      "d /cache/stocks-ci/cargo 0700 ci ci -"
+      "d /cache/stocks-ci/uv 0700 ci ci -"
+      "d /cache/stocks-ci/xdg 0700 ci ci -"
+      "d /cache/stocks-ci/share 0700 ci ci 3d"
+      "d /cache/stocks-ci/target 0700 ci ci -"
+    ];
 
   services.github-runners = lib.mapAttrs (name: runner: {
-    enable = true;
-    inherit (runner) name url;
+    inherit (runner) enable name url;
     user = "ci";
     group = "ci";
     tokenFile = "/var/lib/ci-secrets/${name}-registration-token";
@@ -42,8 +60,7 @@ in
     replace = true;
     nodeRuntimes = [ "node24" ];
     workDir = "/work/${name}-runner";
-    extraLabels = [
-      "nixos-ci-canary"
+    extraLabels = runner.labels ++ [
       "nixos"
       "docker"
       "kvm"
@@ -59,14 +76,21 @@ in
       https_proxy = config.networking.proxy.default;
       no_proxy = config.networking.proxy.noProxy;
       NO_PROXY = config.networking.proxy.noProxy;
-      XDG_CACHE_HOME = "/cache/${name}-runner";
+      XDG_CACHE_HOME = runner.cacheDir;
       CARGO_BUILD_JOBS = "4";
       ACTIONS_RUNNER_HOOK_JOB_STARTED = "${waitForUpdater}";
+    }
+    // lib.optionalAttrs (name == "stocks") {
+      CARGO_HOME = "/var/cache/stocks-ci/cargo";
+      UV_CACHE_DIR = "/var/cache/stocks-ci/uv";
+      XDG_CACHE_HOME = "/var/cache/stocks-ci/xdg";
+      UV_LINK_MODE = "copy";
     };
     serviceOverrides = {
       BindPaths = [ "/dev/kvm" ];
       DeviceAllow = [ "/dev/kvm rw" ];
-      ReadWritePaths = [ "/cache/${name}-runner" ];
+      ReadWritePaths = [ runner.cacheDir ];
+      InaccessiblePaths = lib.optionals (name != "stocks") [ "-/cache/stocks-ci" ];
       PrivateUsers = false;
       RestrictNamespaces = "user mnt pid ipc net";
       SystemCallFilter = [
@@ -96,7 +120,7 @@ in
           "/work"
         ];
       }
-    ) runners)
+    ) enabledRunners)
     // {
 
       # The activating state is visible before this check. New workers wait in their start hook.
