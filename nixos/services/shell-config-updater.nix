@@ -5,11 +5,17 @@
   ...
 }:
 let
+  cfg = config.services.shell-config-updater;
   serviceName = "shell-config-updater";
   serviceUser = serviceName;
   stateRoot = "/var/lib/${serviceName}";
   repoUrl = "https://github.com/chinrw/shell-config.git";
-  cachixConfig = "/home/chin39/.config/cachix/cachix.dhall";
+  cachixConfig = cfg.cachixConfigFile;
+  githubTokenFile =
+    if cfg.githubTokenFile == null then
+      config.sops.secrets."shell-config-updater/github-token".path
+    else
+      cfg.githubTokenFile;
   linuxTargets = [
     ".#homeConfigurations.\"chin39@vm-nix\".activationPackage"
     ".#nixosConfigurations.vm-nix.config.system.build.toplevel"
@@ -107,13 +113,18 @@ let
           --print-build-logs \
           --print-out-paths \
           --out-link "$RUNTIME_DIRECTORY/result" \
-          --max-jobs 2 \
-          --cores 8 \
+          --max-jobs ${toString cfg.maxJobs} \
+          --cores ${toString cfg.cores} \
           ${lib.escapeShellArgs linuxTargets}
       ) >"$store_paths_file"
 
       mapfile -t store_paths <"$store_paths_file"
       (( ''${#store_paths[@]} > 0 )) || fail 'Nix returned no output paths'
+      if ${if cfg.publish then "false" else "true"}; then
+        printf 'shell-config updater: build validation passed; publishing is disabled\n'
+        exit 0
+      fi
+
       cachix --config "$CREDENTIALS_DIRECTORY/cachix-config" \
         push chinrw "''${store_paths[@]}"
 
@@ -134,71 +145,103 @@ let
   };
 in
 {
-  sops.secrets."shell-config-updater/github-token" = { };
-
-  users.groups.${serviceUser} = { };
-  users.users.${serviceUser} = {
-    isSystemUser = true;
-    description = "shell-config update service";
-    group = serviceUser;
-    home = stateRoot;
-    createHome = false;
-  };
-
-  systemd.services.${serviceName} = {
-    description = "Update and cache shell-config";
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    environment = config.networking.proxy.envVars;
-
-    serviceConfig = {
-      Type = "oneshot";
-      User = serviceUser;
-      Group = serviceUser;
-      ExecStart = lib.getExe updater;
-      StateDirectory = serviceName;
-      StateDirectoryMode = "0700";
-      RuntimeDirectory = serviceName;
-      RuntimeDirectoryMode = "0700";
-      UMask = "0077";
-      LoadCredential = [
-        "github-token:${config.sops.secrets."shell-config-updater/github-token".path}"
-        "cachix-config:${cachixConfig}"
-      ];
-
-      CapabilityBoundingSet = "";
-      NoNewPrivileges = true;
-      PrivateDevices = true;
-      PrivateTmp = true;
-      ProtectHome = true;
-      ProtectSystem = "strict";
-      ProtectClock = true;
-      ProtectControlGroups = true;
-      ProtectHostname = true;
-      ProtectKernelLogs = true;
-      ProtectKernelModules = true;
-      ProtectKernelTunables = true;
-      RestrictNamespaces = true;
-      RestrictRealtime = true;
-      RestrictSUIDSGID = true;
-      LockPersonality = true;
-      SystemCallArchitectures = "native";
-      RestrictAddressFamilies = [
-        "AF_INET"
-        "AF_INET6"
-        "AF_NETLINK"
-        "AF_UNIX"
-      ];
+  options.services.shell-config-updater = {
+    githubTokenFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Runtime GitHub token file. Null uses the existing sops secret.";
+    };
+    cachixConfigFile = lib.mkOption {
+      type = lib.types.str;
+      default = "/home/chin39/.config/cachix/cachix.dhall";
+      description = "Runtime Cachix configuration file loaded as a service credential.";
+    };
+    maxJobs = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 2;
+      description = "Maximum number of concurrent Nix build jobs.";
+    };
+    cores = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 8;
+      description = "Number of cores advertised to each Nix build.";
+    };
+    publish = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Upload successful builds and push the updated lock file.";
     };
   };
 
-  systemd.timers.${serviceName} = {
-    description = "Update shell-config every three hours";
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnCalendar = "*-*-* 00/3:00:00";
-      Persistent = true;
-      AccuracySec = "1min";
+  config = {
+    sops.secrets = lib.optionalAttrs (cfg.githubTokenFile == null) {
+      "shell-config-updater/github-token" = { };
+    };
+
+    users.groups.${serviceUser} = { };
+    users.users.${serviceUser} = {
+      isSystemUser = true;
+      description = "shell-config update service";
+      group = serviceUser;
+      home = stateRoot;
+      createHome = false;
+    };
+
+    systemd.services.${serviceName} = {
+      description = "Update and cache shell-config";
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      environment = config.networking.proxy.envVars;
+
+      serviceConfig = {
+        Type = "oneshot";
+        User = serviceUser;
+        Group = serviceUser;
+        ExecStart = lib.getExe updater;
+        StateDirectory = serviceName;
+        StateDirectoryMode = "0700";
+        RuntimeDirectory = serviceName;
+        RuntimeDirectoryMode = "0700";
+        UMask = "0077";
+        LoadCredential = [
+          "github-token:${githubTokenFile}"
+          "cachix-config:${cachixConfig}"
+        ];
+
+        CapabilityBoundingSet = "";
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        ProtectHome = true;
+        ProtectSystem = "strict";
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        LockPersonality = true;
+        SystemCallArchitectures = "native";
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+          "AF_NETLINK"
+          "AF_UNIX"
+        ];
+      };
+    };
+
+    systemd.timers.${serviceName} = {
+      description = "Update shell-config every three hours";
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnCalendar = "*-*-* 00/3:00:00";
+        Persistent = true;
+        AccuracySec = "1min";
+      };
     };
   };
 }

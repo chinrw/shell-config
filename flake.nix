@@ -310,6 +310,12 @@
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
       nixosConfigurations = {
+        "nixos-ci" = helpers.mkNixos {
+          hostname = "nixos-ci";
+          stateVersion = "26.11";
+          localCaches = [ "home" ];
+          extraModules = [ ./nixos/nixos-ci ];
+        };
         "nixos-lxc" = helpers.mkNixos {
           hostname = "nixos-lxc";
           stateVersion = "26.11";
