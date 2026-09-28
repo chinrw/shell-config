@@ -193,6 +193,26 @@ let
     imagemagickBig = pkgs.imagemagick;
   };
 
+  # ── Container PATH ──────────────────────────────────────────────
+  # Add tools here, not in the PATH string. Nix-provided tools survive container
+  # rebuilds; the apt-provisioned writable layer does not. Any change to these
+  # lists changes containerIdentity and rebuilds the container.
+  containerTools = [
+    pkgs.bubblewrap # sandbox for the Codex app-server
+    qrDecoder
+    pkgs.git # Hermes commits its own workspace and skill edits
+  ];
+  # The agent CLIs stay after the image's own directories.
+  containerAgentClis = [
+    codexPackage
+    claudePackage
+  ];
+  containerPath = lib.concatStringsSep ":" [
+    (lib.makeBinPath containerTools)
+    "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    (lib.makeBinPath containerAgentClis)
+  ];
+
   # Named profiles are standalone configs; merge shared policy before role overrides.
   profileConfig =
     model: reasoningEffort: toolsets:
@@ -371,13 +391,11 @@ in
         "--env"
         "FONTCONFIG_FILE=${browserFontConfig}"
 
-        # Inject FastEmbed dependencies; keep bubblewrap available for Codex app-server.
-        # Hermes commits its own edits to the workspace and skill repos, so git must
-        # survive container rebuilds instead of living in the apt-provisioned layer.
+        # Inject FastEmbed dependencies.
         "--env"
         "PYTHONPATH=${hermesLcm.pythonPath}"
         "--env"
-        "PATH=${pkgs.bubblewrap}/bin:${qrDecoder}/bin:${pkgs.git}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${codexPackage}/bin:${claudePackage}/bin"
+        "PATH=${containerPath}"
       ]
       # LCM summarizer/behaviour env — see hermes-lcm.nix for the rationale.
       ++ hermesLcm.containerEnvOptions;
