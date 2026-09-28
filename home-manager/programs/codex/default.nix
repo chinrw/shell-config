@@ -41,11 +41,17 @@ let
   };
   renameCommand = {
     type = "command";
-    command = "${renameHook}/bin/codex-rename-first-turn";
+    # Keep dependency upgrades out of the trust hash, but require review when
+    # the naming script changes. Codex hashes the command, not its target.
+    command =
+      "CODEX_RENAME_SCRIPT_SHA256=${builtins.hashFile "sha256" ./rename-first-turn.py} "
+      + lib.escapeShellArg "${config.home.homeDirectory}/.codex/bin/codex-rename-first-turn";
     timeout = 10;
   };
 in
 {
+  home.file.".codex/bin/codex-rename-first-turn".source = "${renameHook}/bin/codex-rename-first-turn";
+
   home.file.".codex/hooks.json".text = builtins.toJSON {
     hooks = {
       SessionStart = [

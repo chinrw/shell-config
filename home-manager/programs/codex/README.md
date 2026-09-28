@@ -51,7 +51,15 @@ The captured request is removed when Stop claims the attempt; pending records
 retain it. Resuming a pending task does not reset its first request, but a
 later completed answer can still trigger its naming attempt.
 
-After changing the hook, apply Home Manager and review any new trust request.
+Home Manager maintains a fixed entry point at
+`~/.codex/bin/codex-rename-first-turn`. The hook command includes the naming
+script's SHA-256 digest so script edits require review, while Codex or runtime
+dependency upgrades alone preserve trust. The digest is a trust fingerprint,
+not a runtime integrity check. Review dependency updates through your Nix
+configuration, since Codex does not reapprove those changes.
+
+After applying this entry-point migration, trust the hooks once more. Later,
+review any new trust request after changing the naming script or hook settings.
 Codex's `config.toml` and session database remain managed by Codex.
 
 The event contract is documented in the [official Hooks guide](https://learn.chatgpt.com/docs/hooks).
