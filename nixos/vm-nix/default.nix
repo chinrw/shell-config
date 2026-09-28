@@ -45,6 +45,7 @@ in
     ./oom-guard.nix
     ./agents.nix
     ./zswap.nix
+    ./damon-reclaim.nix
     ./swap.nix
     ./snapshots.nix
     ../services/rclone-progress.nix
