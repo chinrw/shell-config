@@ -10,5 +10,4 @@
     publish = true;
   };
 
-  systemd.timers.shell-config-updater.enable = false;
 }

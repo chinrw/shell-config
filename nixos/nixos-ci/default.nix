@@ -3,6 +3,7 @@
   imports = [
     ../proxmox-lxc.nix
     ./updater.nix
+    ./runners.nix
   ];
 
   services.tailscale.extraSetFlags = [ "--ssh=false" ];
