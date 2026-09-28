@@ -207,6 +207,11 @@ let
       };
       agent.reasoning_effort = reasoningEffort;
 
+      # Default owns the shared bots; Kanban dispatches tasks to specialists.
+      # The cloned gateway.slack block overrides platforms.slack.
+      gateway.slack.enabled = false;
+      platforms.telegram.enabled = false;
+
       auxiliary.compression = compressionAux;
       auxiliary.triage_specifier.fallback_chain = [ (deepseekApiTarget deepseekFlash) ];
       fallback_providers = [ (deepseekApiTarget deepseekFlash) ];
@@ -340,6 +345,7 @@ in
       # List LAN hosts explicitly: Python proxy handling does not support CIDR.
       # Slack bypasses the proxy to avoid connection-loss retries duplicating posts.
       extraOptions = [
+        "--init"
         "--env"
         "HTTP_PROXY=http://192.168.0.240:10809"
         "--env"
