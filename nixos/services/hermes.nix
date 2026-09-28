@@ -154,6 +154,18 @@ let
       vision = goTarget qwenVision;
       video.model = qwenVision;
     };
+    # The approval guardian sees only the flagged command, never the chat that
+    # authorized the task, so routine pipeline steps are described here instead.
+    approvals = {
+      mode = "smart";
+      smart_policy = builtins.readFile ./hermes-smart-policy.txt;
+    };
+    # openai-native is search-only; without this, profiles fall back to it and
+    # every web_extract fails.
+    web = {
+      search_backend = "firecrawl";
+      extract_backend = "firecrawl";
+    };
     providers.commandcode-api = commandcodeProvider;
     model_aliases = {
       luna = codexTarget codexLuna;
