@@ -42,10 +42,17 @@
   nix =
     let
       flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
+      # An invalid ID makes Nix reject the entire registry, including its nixpkgs pin.
+      registryInputs = lib.filterAttrs (
+        name: _: builtins.match "[a-zA-Z][a-zA-Z0-9_-]*" name != null
+      ) flakeInputs;
     in
     {
       settings = {
-        experimental-features = [ "nix-command" "flakes" ];
+        experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
         auto-optimise-store = true;
         # Opinionated: disable global registry
         # flake-registry = "";
@@ -87,9 +94,8 @@
       # nixPath still maps `nixpkgs` (a registry indirection) so `<nixpkgs>` stays
       # defined — our normal-priority list would otherwise suppress the module's
       # mkDefault nixPath entry.
-      registry =
-        lib.mapAttrs (_: flake: { inherit flake; }) (removeAttrs flakeInputs [ "nixpkgs" ]);
-      nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
+      registry = lib.mapAttrs (_: flake: { inherit flake; }) (removeAttrs registryInputs [ "nixpkgs" ]);
+      nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") registryInputs;
     };
 
   virtualisation.docker = {

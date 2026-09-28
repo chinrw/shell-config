@@ -343,7 +343,7 @@ in
       ++ lib.optionals (!smallNode && isDarwin) [
         inputs.pwndbg.packages.${pkgs.stdenv.hostPlatform.system}.pwndbg-lldb
       ]
-      ++ lib.optionals (isWsl || hostname == "vm-nix") [
+      ++ lib.optionals (isWsl || builtins.elem hostname [ "vm-nix" "nixos-lxc" ]) [
         iperf3
         # Clangd from clang-tools must come first.
         (lib.hiPrio clang-tools)
