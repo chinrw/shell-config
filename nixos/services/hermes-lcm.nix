@@ -10,6 +10,16 @@
   summaryFallbackModels,
   summaryTimeoutSeconds,
 }:
+let
+  # Local fix, not upstream: v0.20.0 could end a leaf chunk between an assistant's
+  # tool calls and their results, and the results were then dropped unsummarized.
+  # Re-check the patch when bumping the hermes-lcm input.
+  lcmSource = pkgs.applyPatches {
+    name = "hermes-lcm-patched";
+    src = inputs.hermes-lcm;
+    patches = [ ./hermes-lcm-tool-group-boundary.patch ];
+  };
+in
 {
   # Inject only dependencies missing from the sealed Hermes environment.
   # The full FastEmbed closure collides with bundled packages.
@@ -96,7 +106,7 @@
       -o ${user} -g ${group} \
       "$hermes_home/plugins"
     rm -rf "$hermes_home/plugins/hermes-lcm"
-    cp -r ${inputs.hermes-lcm} "$hermes_home/plugins/hermes-lcm"
+    cp -r ${lcmSource} "$hermes_home/plugins/hermes-lcm"
     chown -R ${user}:${group} "$hermes_home/plugins/hermes-lcm"
     chmod -R u+rwX,g+rwX,o-rwx "$hermes_home/plugins/hermes-lcm"
   '';

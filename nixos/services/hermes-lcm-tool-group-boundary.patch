@@ -1,0 +1,204 @@
+From fda21300dc4c32216b494cc0b6de35593a7f4e84 Mon Sep 17 00:00:00 2001
+From: Claude Code <claude@vm-nix>
+Date: Mon, 28 Sep 2026 22:53:01 +0800
+Subject: [PATCH] fix(compaction): never end a leaf chunk inside a tool-call
+ group
+
+- _select_oldest_leaf_chunk stopped purely on the token budget. When the budget
+  ran out right after an assistant message with tool calls, its results stayed
+  outside the chunk; once the assistant was summarized, _sanitize_tool_pairs
+  dropped them as orphans, so no summary ever saw them.
+- On 2026-09-28 this removed the only search result carrying a date, and the
+  model then stated a wrong year. lcm.db showed 221 of 695 leaf nodes ending on
+  such an assistant, with 391 tool results never summarized across 40 sessions.
+- A group that straddles the end now moves whole into the next chunk; a group
+  that opens the chunk is completed instead. The rescue fallback uses the same
+  rule and reports "no smaller chunk" rather than splitting a group.
+- Local patch for vm-nix on top of v0.20.0; not submitted upstream.
+
+Signed-off-by: Ruowen Qin <chinqrw@gmail.com>
+---
+ compaction.py                        |  20 +++++-
+ engine.py                            |   6 +-
+ tests/test_leaf_chunk_tool_groups.py | 101 +++++++++++++++++++++++++++
+ 3 files changed, 124 insertions(+), 3 deletions(-)
+ create mode 100644 tests/test_leaf_chunk_tool_groups.py
+
+diff --git a/compaction.py b/compaction.py
+index d43b4c8..92190f5 100644
+--- a/compaction.py
++++ b/compaction.py
+@@ -20,12 +20,30 @@ import time
+ from typing import Any, Dict, List, Optional
+ 
+ from .dag import SummaryNode
++from .fresh_tail import _assistant_group_start
+ from .message_content import text_content_for_pattern_matching
+ from .sanitize import _contains_sensitive_redaction
+ from .tokens import count_message_tokens, count_messages_tokens, count_tokens
+ 
+ logger = logging.getLogger(__name__)
+ 
++def close_tool_group(messages: List[Dict[str, Any]], end: int) -> List[Dict[str, Any]]:
++    """Return messages[:end], moved so the chunk never ends inside a tool-call group.
++
++    Tool results left outside a chunk lose their parent assistant once it is
++    summarized, and _sanitize_tool_pairs then drops them from context before any
++    summary has seen them. A group that straddles the end moves whole into the
++    next chunk; a group that starts the chunk is completed instead, because
++    moving it would leave the chunk empty.
++    """
++    start = _assistant_group_start(messages, end)
++    if 0 < start < end:
++        return list(messages[:start])
++    while end < len(messages) and messages[end].get("role") == "tool":
++        end += 1
++    return list(messages[:end])
++
++
+ _THRESHOLD_FULL_SWEEP_MAX_PASSES = 12
+ _THRESHOLD_FULL_SWEEP_MAX_SECONDS = 120.0
+ 
+@@ -345,7 +363,7 @@ class CompactionMixin:
+                 break
+             selected.append(msg)
+             used += msg_tokens
+-        return selected
++        return close_tool_group(candidate_raw, len(selected))
+ 
+     def compress(self, messages: List[Dict[str, Any]],
+                  current_tokens: int = None,
+diff --git a/engine.py b/engine.py
+index 1d807e0..dd5e7ea 100644
+--- a/engine.py
++++ b/engine.py
+@@ -113,7 +113,7 @@ from .message_patterns import compile_message_patterns, matches_message_pattern
+ from .aux_session import AuxiliarySessionMixin
+ from .placeholder_ledger import PlaceholderLedgerMixin
+ from .reconcile import ReconcileMixin, _PRESERVED_OBJECTIVE_CONTEXT_PREFIX
+-from .compaction import CompactionMixin
++from .compaction import CompactionMixin, close_tool_group
+ from .reset_state import ResetStateMixin
+ from .bypass import BypassMixin
+ from .lifecycle_state import LifecycleStateStore
+@@ -1280,7 +1280,9 @@ class LCMEngine(CompactionMixin, ResetStateMixin, ReconcileMixin, AuxiliarySessi
+             if smaller and len(smaller) < len(current_chunk):
+                 return smaller
+ 
+-        return current_chunk[:-1]
++        # Dropping only the last message could split a tool-call group; an
++        # unchanged length tells the caller that no smaller chunk exists.
++        return close_tool_group(current_chunk, len(current_chunk) - 1)
+ 
+     def _summarize_leaf_chunk_with_rescue(
+         self,
+diff --git a/tests/test_leaf_chunk_tool_groups.py b/tests/test_leaf_chunk_tool_groups.py
+new file mode 100644
+index 0000000..4837fde
+--- /dev/null
++++ b/tests/test_leaf_chunk_tool_groups.py
+@@ -0,0 +1,101 @@
++"""A leaf chunk must never end inside an assistant tool-call group.
++
++On 2026-09-28 a chunk ended on an assistant message that had issued three tool
++calls. The three results stayed outside the chunk, lost their parent once it was
++summarized, and _sanitize_tool_pairs dropped them from context. One of them held
++the only evidence of a date the model later misstated.
++"""
++import pytest
++
++from hermes_lcm.compaction import close_tool_group
++from hermes_lcm.config import LCMConfig
++from hermes_lcm.engine import LCMEngine
++from hermes_lcm.tokens import count_message_tokens, count_messages_tokens
++
++
++@pytest.fixture
++def engine(tmp_path):
++    config = LCMConfig(
++        database_path=str(tmp_path / "lcm.db"),
++        large_output_externalization_path=str(tmp_path / "externalized"),
++    )
++    instance = LCMEngine(config=config, hermes_home=str(tmp_path / "home"))
++    instance.on_session_start("s", platform="qqbot", context_length=200_000)
++    yield instance
++    instance.shutdown() if hasattr(instance, "shutdown") else None
++
++
++def call(call_id, name="web_search"):
++    return {"id": call_id, "type": "function", "function": {"name": name, "arguments": "{}"}}
++
++
++def text(role, words):
++    return {"role": role, "content": " ".join(["word"] * words)}
++
++
++def incident_messages():
++    """The shape of store ids 193344-193349: filler, a three-call assistant, its results, a reply."""
++    return [
++        text("user", 50),
++        text("assistant", 400),
++        {"role": "assistant", "content": "Let me identify this work.",
++         "tool_calls": [call("t1", "terminal"), call("w1"), call("w2")]},
++        {"role": "tool", "tool_call_id": "t1", "content": " ".join(["log"] * 3000)},
++        {"role": "tool", "tool_call_id": "w1", "content": "[2026/8/15] コミックマーケット108 雷神会"},
++        {"role": "tool", "tool_call_id": "w2", "content": "no results"},
++        {"role": "assistant", "content": "找到了"},
++    ]
++
++
++def budget_through(messages, last_index):
++    return count_messages_tokens(messages[: last_index + 1])
++
++
++def ends_inside_group(chunk, candidate):
++    """True when the message right after the chunk is a tool result."""
++    return len(chunk) < len(candidate) and candidate[len(chunk)].get("role") == "tool"
++
++
++def test_incident_chunk_moves_the_whole_group_to_the_next_chunk(engine):
++    messages = incident_messages()
++    # The old selector stopped right after the three-call assistant (index 2).
++    chunk = engine._select_oldest_leaf_chunk(messages, budget_through(messages, 2))
++    assert chunk == messages[:2]
++    assert not ends_inside_group(chunk, messages)
++
++    rest = messages[len(chunk):]
++    next_chunk = engine._select_oldest_leaf_chunk(rest, budget_through(rest, 0))
++    assert [m.get("tool_call_id") for m in next_chunk[1:]] == ["t1", "w1", "w2"]
++    assert any("2026/8/15" in m["content"] for m in next_chunk)
++
++
++def test_group_that_starts_the_chunk_is_completed_not_split(engine):
++    messages = incident_messages()[2:]
++    chunk = engine._select_oldest_leaf_chunk(messages, count_message_tokens(messages[0]))
++    assert chunk == messages[:4]
++
++
++def test_budget_ending_between_results_moves_the_group(engine):
++    messages = incident_messages()
++    chunk = engine._select_oldest_leaf_chunk(messages, budget_through(messages, 3))
++    assert chunk == messages[:2]
++
++
++def test_boundary_outside_any_group_is_unchanged(engine):
++    messages = incident_messages()
++    chunk = engine._select_oldest_leaf_chunk(messages, budget_through(messages, 1))
++    assert chunk == messages[:2]
++    full = engine._select_oldest_leaf_chunk(messages, budget_through(messages, 5))
++    assert full == messages[:6]
++
++
++def test_rescue_fallback_never_splits_a_group(engine):
++    messages = incident_messages()[:6]
++    smaller = engine._next_leaf_rescue_chunk(messages, count_messages_tokens(messages))
++    assert smaller and not ends_inside_group(smaller, messages)
++
++    group_only = incident_messages()[2:6]
++    fallback = close_tool_group(group_only, len(group_only) - 1)
++    # Nothing smaller exists; the caller reads an unchanged length as "no rescue".
++    assert fallback == group_only
++
+-- 
+2.55.0
+
