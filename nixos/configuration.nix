@@ -180,6 +180,9 @@
 
   users.users.${username} = {
     isNormalUser = lib.mkDefault true;
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMasqR2edNuMaTk0djcs46/s/OiIQo97qa6oyF/ybgih chin39@fedora"
+    ];
   };
 
   services.openssh = {
