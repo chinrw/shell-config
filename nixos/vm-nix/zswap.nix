@@ -16,9 +16,12 @@
     "vm.swappiness" = 180;
     # Optane has no seek cost; avoid reading neighbouring cold swap pages.
     "vm.page-cluster" = 0;
-    # Wider watermark steps (1.25% of zone): kswapd starts earlier,
-    # atomic allocations keep headroom.
-    "vm.watermark_scale_factor" = 125;
+    # A 20% watermark step: kswapd wakes below 12 GiB free and refills to
+    # 25 GiB. The host overcommits RAM and swaps this VM out during its
+    # nightly backup; pages the guest keeps free return to it through free
+    # page reporting, and kswapd evicts by MGLRU age, so the buffer costs
+    # the coldest pages only.
+    "vm.watermark_scale_factor" = 2000;
     # Boost reclaim may only evict file pages and raises the min
     # watermark (pegged at its +303 MiB cap on 2026-07-23); off.
     "vm.watermark_boost_factor" = 0;
