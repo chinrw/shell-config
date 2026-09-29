@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 {
   imports = [
     ../proxmox-lxc.nix
@@ -7,6 +7,15 @@
   ];
 
   services.tailscale.extraSetFlags = [ "--ssh=false" ];
+
+  services.nix-serve = {
+    enable = true;
+    package = pkgs.nix-serve-ng;
+    port = 5000;
+    secretKeyFile = "/var/lib/ci-secrets/nix-serve-secret-key";
+  };
+  nix.settings.secret-key-files = [ "/var/lib/ci-secrets/nix-serve-secret-key" ];
+  networking.firewall.allowedTCPPorts = [ 5000 ];
 
   networking.nameservers = [ "192.168.0.1" ];
   networking.proxy = {

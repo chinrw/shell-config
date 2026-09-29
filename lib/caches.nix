@@ -21,9 +21,9 @@
 #   - non-NixOS hosts: add `chin39` to `trusted-users` in /etc/nix/nix.conf once,
 #     otherwise the daemon ignores the substituter and falls back to public caches.
 {
-  # home LAN (192.168.0.0/24) — served by vm-nix's nix-serve
+  # home LAN (192.168.0.0/24) — served by nixos-ci's nix-serve
   home = {
-    url = "http://192.168.0.240:5000";
+    url = "http://192.168.0.230:5000";
     publicKey = "vm-nix:5SZMXyCcqGm5z/GJNdx+wRyyE8CKtcvSsaDY0uFp25s=";
   };
 

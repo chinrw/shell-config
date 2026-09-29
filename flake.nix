@@ -9,7 +9,7 @@
   # via home-manager's `extra-substituters`.
   nixConfig = {
     extra-substituters = [
-      # NOTE: per-host LAN caches (e.g. vm-nix nix-serve) are NOT listed here —
+      # NOTE: per-host LAN caches (e.g. nixos-ci nix-serve) are NOT listed here —
       # per host via `localCaches` in flake.nix -> lib/caches.nix
       "https://chinrw.cachix.org"
       # cache mirror located in China
@@ -313,7 +313,6 @@
         "nixos-ci" = helpers.mkNixos {
           hostname = "nixos-ci";
           stateVersion = "26.11";
-          localCaches = [ "home" ];
           extraModules = [ ./nixos/nixos-ci ];
         };
         "nixos-lxc" = helpers.mkNixos {
