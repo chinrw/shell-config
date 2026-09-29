@@ -46,6 +46,7 @@
       registryInputs = lib.filterAttrs (
         name: _: builtins.match "[a-zA-Z][a-zA-Z0-9_-]*" name != null
       ) flakeInputs;
+      nixPathEntries = lib.mapAttrsToList (n: _: "${n}=flake:${n}") registryInputs;
     in
     {
       settings = {
@@ -57,8 +58,9 @@
         # Opinionated: disable global registry
         # flake-registry = "";
         #
-        # Workaround for https://github.com/NixOS/nix/issues/9574
-        nix-path = config.nix.nixPath;
+        # Older nixpkgs needs this explicit setting. Newer versions alias nixPath
+        # to it, so reading config.nix.nixPath here would recurse.
+        nix-path = lib.mkDefault nixPathEntries;
 
         trusted-users = [ "chin39" ];
         keep-outputs = true;
@@ -95,7 +97,7 @@
       # defined — our normal-priority list would otherwise suppress the module's
       # mkDefault nixPath entry.
       registry = lib.mapAttrs (_: flake: { inherit flake; }) (removeAttrs registryInputs [ "nixpkgs" ]);
-      nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") registryInputs;
+      nixPath = nixPathEntries;
     };
 
   virtualisation.docker = {
