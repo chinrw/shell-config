@@ -342,6 +342,7 @@
         "vm-nix" = helpers.mkNixos {
           stateVersion = "25.05";
           hostname = "vm-nix";
+          localCaches = [ "home" ];
           GPU = "amd";
           extraModules = [ ./nixos/vm-nix ];
         };
