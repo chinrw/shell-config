@@ -4,7 +4,7 @@
     ./proxy.nix
     ./postgresql.nix
     ./applications.nix
-    ./lrr-image-update.nix
+    ./lanraragi.nix
     ./runner.nix
   ];
 
