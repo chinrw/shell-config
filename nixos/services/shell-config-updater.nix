@@ -108,18 +108,24 @@ let
       fi
 
       store_paths_file="$RUNTIME_DIRECTORY/store-paths"
-      (
-        cd "$repo_dir"
-        # Runtime out-links protect the outputs from GC through the Cachix
-        # upload, then disappear when systemd removes RuntimeDirectory.
-        NIX_CONFIG='accept-flake-config = false' nix build \
-          --print-build-logs \
-          --print-out-paths \
-          --out-link "$RUNTIME_DIRECTORY/result" \
-          --max-jobs ${toString cfg.maxJobs} \
-          --cores ${toString cfg.cores} \
-          ${lib.escapeShellArgs linuxTargets}
-      ) >"$store_paths_file"
+      : >"$store_paths_file"
+      targets=( ${lib.escapeShellArgs linuxTargets} )
+      index=0
+      for target in "''${targets[@]}"; do
+        index=$((index + 1))
+        (
+          cd "$repo_dir"
+          # Separate clients release evaluation state between targets. Keep every
+          # output rooted until all targets have built and the upload finishes.
+          NIX_CONFIG='accept-flake-config = false' nix build \
+            --print-build-logs \
+            --print-out-paths \
+            --out-link "$RUNTIME_DIRECTORY/result-$index" \
+            --max-jobs ${toString cfg.maxJobs} \
+            --cores ${toString cfg.cores} \
+            "$target"
+        ) >>"$store_paths_file"
+      done
 
       mapfile -t store_paths <"$store_paths_file"
       (( ''${#store_paths[@]} > 0 )) || fail 'Nix returned no output paths'

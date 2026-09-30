@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
   imports = [
     ../proxmox-lxc.nix
@@ -7,6 +7,17 @@
   ];
 
   services.tailscale.extraSetFlags = [ "--ssh=false" ];
+
+  systemd.services.docker.unitConfig.ConditionPathIsMountPoint = lib.mkForce [ ];
+
+  # Bound daemon builds and updater evaluation together, leaving room for node services.
+  systemd.slices.nix-build.sliceConfig = {
+    MemoryHigh = "5G";
+    MemoryMax = "6G";
+    MemorySwapMax = "24G";
+  };
+  systemd.services.nix-daemon.serviceConfig.Slice = "nix-build.slice";
+  systemd.services.shell-config-updater.serviceConfig.Slice = "nix-build.slice";
 
   services.nix-serve = {
     enable = true;

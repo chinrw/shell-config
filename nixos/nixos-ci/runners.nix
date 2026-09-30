@@ -87,6 +87,8 @@ in
       UV_LINK_MODE = "copy";
     };
     serviceOverrides = {
+      Restart = lib.mkForce "on-failure";
+      RestartSec = "30s";
       BindPaths = [ "/dev/kvm" ];
       DeviceAllow = [ "/dev/kvm rw" ];
       ReadWritePaths = [ runner.cacheDir ];
