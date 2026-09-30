@@ -76,7 +76,6 @@ in
       stateVersion,
       username ? "chin39",
       desktop ? null,
-      GPU ? null,
       platform ? "x86_64-linux",
       extraModules ? [ ],
       # Names of local binary caches (from lib/caches.nix) this host should use.
@@ -84,10 +83,6 @@ in
     }:
     let
       isWsl = builtins.substring 0 3 hostname == "wsl";
-      # isISO = builtins.substring 0 4 hostname == "iso-";
-      # isInstall = !isISO;
-      # isLima = builtins.substring 0 5 hostname == "lima-";
-      isWorkstation = builtins.isString desktop;
       cacheCfg = resolveCaches hostname localCaches;
       localCacheSubstituters = cacheCfg.substituters;
       localCacheTrustedKeys = cacheCfg.trustedKeys;
@@ -104,8 +99,6 @@ in
           username
           stateVersion
           isWsl
-          GPU
-          isWorkstation
           localCacheSubstituters
           localCacheTrustedKeys
           ;
@@ -125,12 +118,6 @@ in
       username ? "chin39",
       platform ? "aarch64-darwin",
     }:
-    let
-      isISO = false;
-      isInstall = true;
-      isLima = false;
-      isWorkstation = true;
-    in
     inputs.nix-darwin.lib.darwinSystem {
       specialArgs = {
         inherit
@@ -140,10 +127,6 @@ in
           hostname
           platform
           username
-          isInstall
-          isLima
-          isISO
-          isWorkstation
           ;
       };
       modules = [ ../darwin ];

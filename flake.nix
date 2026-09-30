@@ -70,8 +70,6 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    flake-utils.url = "github:numtide/flake-utils";
-
     neovim-nightly-overlay = {
       url = "github:chinrw/neovim-nightly-overlay";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
@@ -236,7 +234,6 @@
     { self
     , nixpkgs
     , home-manager
-    , flake-utils
     , rust-overlay
     , ...
     }@inputs:
@@ -252,33 +249,37 @@
       forAllSystems = nixpkgs.lib.genAttrs systems;
       helpers = import ./lib { inherit inputs outputs; };
 
+      # The dev shells need rust-bin and llvmPinned, which plain
+      # legacyPackages does not carry.
+      devPkgsFor = forAllSystems (
+        system:
+        import nixpkgs {
+          inherit system;
+          overlays = [
+            (import rust-overlay)
+            self.overlays.llvm-pin
+          ];
+        }
+      );
     in
-    flake-utils.lib.eachSystem systems (
-      system:
-      let
-        overlays = [
-          (import rust-overlay)
-          self.overlays.llvm-pin
-        ];
-        pkgs = import nixpkgs {
-          inherit system overlays;
-        };
-      in
-      {
-        devShells =
-          {
-            rust = import ./shell/rust.nix { inherit pkgs inputs; };
-            hm = import ./shell/home-manager.nix { inherit pkgs inputs; };
-          }
-          // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
-            kernel = import ./shell/kernel.nix { inherit pkgs inputs; };
-          };
+    {
+      devShells = forAllSystems (
+        system:
+        let
+          pkgs = devPkgsFor.${system};
+        in
+        {
+          rust = import ./shell/rust.nix { inherit pkgs inputs; };
+          hm = import ./shell/home-manager.nix { inherit pkgs inputs; };
+        }
+        // nixpkgs.lib.optionalAttrs (system == "x86_64-linux") {
+          kernel = import ./shell/kernel.nix { inherit pkgs inputs; };
+        }
+      );
 
-        # formatter used by `nix fmt`
-        formatter = pkgs.nixfmt-tree;
-      }
-    )
-    // {
+      # formatter used by `nix fmt`
+      formatter = forAllSystems (system: devPkgsFor.${system}.nixfmt-tree);
+
       # Your custom packages
       # Accessible through 'nix build', 'nix shell', etc
       packages = forAllSystems (
@@ -324,7 +325,6 @@
         "wsl" = helpers.mkNixos {
           stateVersion = "25.05";
           hostname = "wsl";
-          GPU = "nvidia";
           extraModules = [
             ./nixos/wsl.nix
             ./nixos/services/samba/wsl-server.nix
@@ -336,14 +336,12 @@
         "wsl-mini" = helpers.mkNixos {
           stateVersion = "25.05";
           hostname = "wsl-mini";
-          GPU = "amd";
           extraModules = [ ./nixos/wsl-mini.nix ];
         };
         "vm-nix" = helpers.mkNixos {
           stateVersion = "25.05";
           hostname = "vm-nix";
           localCaches = [ "home" ];
-          GPU = "amd";
           extraModules = [ ./nixos/vm-nix ];
         };
         "work-laptop" = helpers.mkNixos {
@@ -441,15 +439,6 @@
           isServer = true;
           noGUI = true;
           localCaches = [ "home" ];
-        };
-        "chin39@jd-cloud" = helpers.mkHome {
-          stateVersion = "25.05";
-          hostname = "jd-cloud";
-          isServer = true;
-          isPublic = true;
-          noGUI = true;
-
-          smallNode = true;
         };
         "chin39@macos" = helpers.mkHome {
           stateVersion = "25.05";

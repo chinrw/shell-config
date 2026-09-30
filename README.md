@@ -67,7 +67,7 @@ are selected by flags in `flake.nix` (`isServer`, `isPublic`, `noGUI`,
 
 `chin39@macos`, `chin39@desktop`, `chin39@vm-nix`, `chin39@wsl`,
 `chin39@wsl-mini`, `chin39@work`, `chin39@vm-work`, `chin39@archlinux`,
-`chin39@arch-lxc`, `chin39@arch-vm`, `chin39@proxmox`, `chin39@jd-cloud`,
+`chin39@arch-lxc`, `chin39@arch-vm`, `chin39@proxmox`,
 `chin39@gentoo-server`, `chin39@vm-gentoo`, `ruowen@ringo`
 
 The ThinkPad pairs `nixosConfigurations.work-laptop` with
