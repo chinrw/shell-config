@@ -13,8 +13,6 @@
   smallNode,
   hostname,
   noGUI,
-  isServer,
-  isPublic,
   platform,
   localCacheSubstituters,
   localCacheTrustedKeys,
@@ -48,42 +46,15 @@ in
   imports = [
     # If you want to use home-manager modules from other flakes (such as nix-colors):
     # inputs.nix-colors.homeManagerModule
-    (import ./programs/zsh {
-      inherit
-        lib
-        pkgs
-        isDesktop
-        noGUI
-        proxyUrl
-        config
-        ;
-    })
-    (import ./programs/git {
-      inherit
-        lib
-        pkgs
-        isDesktop
-        noGUI
-        isWork
-        hostname
-        proxyUrl
-        config
-        ;
-    })
-    (import ./programs/zellij { inherit lib pkgs config; })
-    (import ./programs/sops.nix {
-      inherit
-        lib
-        config
-        isServer
-        isPublic
-        ;
-    })
-    (import ./programs/syncthing.nix { inherit lib config hostname; })
+    ./programs/zsh
+    ./programs/git
+    ./programs/zellij
+    ./programs/sops.nix
+    ./programs/syncthing.nix
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
-    (import ./programs/yazi.nix { inherit inputs pkgs; })
+    ./programs/yazi.nix
     inputs.nix-index-database.homeModules.nix-index
     inputs._1password-shell-plugins.hmModules.default
     inputs.sops-nix.homeManagerModules.sops
@@ -96,7 +67,7 @@ in
     })
   ]
   ++ lib.optionals (hostname == "vm-nix") [
-    (import ./programs/restic.nix { inherit config lib pkgs; })
+    ./programs/restic.nix
   ]
   ++ lib.optionals (!smallNode) [
     ./programs/opencode.nix
@@ -127,8 +98,12 @@ in
     ./programs/darwin
   ]
   ++ [
-    (import ./programs/gitui { })
+    ./programs/gitui
   ];
+
+  # Values derived above from the host flags, handed to the program modules
+  # as module arguments. Only usable inside module bodies, not in `imports`.
+  _module.args = { inherit isDesktop proxyUrl; };
 
   # Local binary caches, selected per-host via `localCaches` in flake.nix and
   # resolved from lib/caches.nix. `extra-*` appends to the system caches.

@@ -1,10 +1,7 @@
 {
   lib,
   config,
-  # , pkgs
-  # , isDesktop
   hostname,
-  # , noGUI
   isWork,
   proxyUrl,
   ...
