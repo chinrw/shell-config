@@ -207,22 +207,19 @@ let
 
   # ── Container PATH ──────────────────────────────────────────────
   # Add tools here, not in the PATH string. Nix-provided tools survive container
-  # rebuilds; the apt-provisioned writable layer does not. Any change to these
-  # lists changes containerIdentity and rebuilds the container.
+  # rebuilds; the apt-provisioned writable layer does not, and they come before
+  # the image's own directories. Any change to this list changes
+  # containerIdentity and rebuilds the container.
   containerTools = [
     pkgs.bubblewrap # sandbox for the Codex app-server
     qrDecoder
     pkgs.git # Hermes commits its own workspace and skill edits
-  ];
-  # The agent CLIs stay after the image's own directories.
-  containerAgentClis = [
     codexPackage
     claudePackage
   ];
   containerPath = lib.concatStringsSep ":" [
     (lib.makeBinPath containerTools)
     "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-    (lib.makeBinPath containerAgentClis)
   ];
 
   # Named profiles are standalone configs; merge shared policy before role overrides.
