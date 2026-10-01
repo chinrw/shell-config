@@ -25,7 +25,7 @@ pkgs.mkShell.override { stdenv = llvmStdenv; } {
     # those exact names, while the stdenv's bintools wrapper only exposes them
     # as ld/ar/nm. lld is the unwrapped build because vmlinux wants the bare
     # linker, the same choice nixpkgs makes for the kernel's LD.
-    lld
+    llvmPinned.lld
     llvmPinned.llvm
     kmod
   ];

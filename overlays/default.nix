@@ -3,7 +3,12 @@
 let
   # Single knob for the LLVM version, shared by optimizedClangStdenv below and,
   # through the llvm-pin overlay
-  llvmFor = pkgs: pkgs.llvmPackages_21;
+  #
+  # LLVM 21 cannot link the vm-nix kernel. When GCC 16 builds lld older than
+  # 22.1.8, lld leaves Symbol fields uninitialized, `ld.lld -r` writes broken
+  # section symbols, and objtool rejects the LTO kernel modules. The fix is
+  # llvm/llvm-project#198129, backported for 21 in NixOS/nixpkgs#568680.
+  llvmFor = pkgs: pkgs.llvmPackages_23;
 in
 {
   llvm-pin = _final: prev: {
