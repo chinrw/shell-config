@@ -1,6 +1,6 @@
 # macOS-only home-manager modules.
 #
-# Imported as a unit from home.nix, gated on `hostname == "macos"`.
+# Imported as a unit from home.nix, gated on a darwin `platform`.
 # Add future macOS-specific home-manager modules to the list below.
 let
   noProxy = (import ../../../lib/proxy.nix).noProxy;

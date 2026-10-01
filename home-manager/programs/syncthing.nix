@@ -1,16 +1,13 @@
 {
   config,
   lib,
+  pkgs,
   hostname,
+  features,
   ...
 }:
 let
-  enabledHosts = [
-    "vm-nix"
-    "proxmox"
-    "macos"
-  ];
-  isEnabled = builtins.elem hostname enabledHosts;
+  isEnabled = builtins.elem "syncthing" features;
 in
 {
   sops.secrets = lib.mkIf isEnabled {
@@ -20,7 +17,7 @@ in
   services.syncthing = lib.mkIf isEnabled {
     enable = true;
     # Loopback-only on the laptop; servers stay on LAN.
-    guiAddress = if hostname == "macos" then "127.0.0.1:8384" else "0.0.0.0:8384";
+    guiAddress = if pkgs.stdenv.hostPlatform.isDarwin then "127.0.0.1:8384" else "0.0.0.0:8384";
     overrideFolders = false;
 
     guiCredentials = {

@@ -23,6 +23,28 @@ let
       substituters = map (c: c.url) resolved;
       trustedKeys = map (c: c.publicKey) resolved;
     };
+
+  # Opt-in home-manager features, named in a host's `features` list.
+  knownFeatures = {
+    atuin-sync = "sync shell history with the LAN atuin server";
+    dev-tools = "iperf3, clang-tools, par2cmdline and asciinema";
+    nix-gc = "daily nix GC from home-manager (needs localCaches, which owns nix.conf)";
+    rclone = "rclone mounts";
+    rclone-progress = "rclone progress logging instead of --log-systemd";
+    restic = "restic backups";
+    syncthing = "syncthing with the shared device list";
+  };
+  # Check the whole list up front: `builtins.elem` stops at the first match,
+  # so a typo after it would otherwise never be reported.
+  checkFeatures =
+    hostname: features:
+    let
+      unknown = builtins.filter (f: !(knownFeatures ? ${f})) features;
+    in
+    if unknown == [ ] then
+      features
+    else
+      throw "unknown feature '${toString unknown}' for host '${hostname}'; known features: ${toString (builtins.attrNames knownFeatures)}";
 in
 {
   # Helper function for generating home-manager configs
@@ -38,6 +60,13 @@ in
       smallNode ? false,
       # Names of local binary caches (from lib/caches.nix) this host should use.
       localCaches ? [ ],
+      # Names from knownFeatures above.
+      features ? [ ],
+      # Where the shell proxy URL comes from: { secret = "<sops key>"; } or
+      # { url = "..."; }. Empty means no proxy.
+      proxy ? { },
+      # http.proxy for git, when git needs a different route than the shell.
+      gitProxy ? null,
     }:
     let
       isWsl = builtins.substring 0 3 hostname == "wsl";
@@ -64,7 +93,10 @@ in
           isPublic
           localCacheSubstituters
           localCacheTrustedKeys
+          proxy
+          gitProxy
           ;
+        features = checkFeatures hostname features;
       };
       modules = [ ../home-manager/home.nix ];
     };

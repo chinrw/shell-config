@@ -16,11 +16,14 @@
   platform,
   localCacheSubstituters,
   localCacheTrustedKeys,
+  features,
+  proxy,
   ...
 }:
 let
   inherit (pkgs.stdenv.hostPlatform) isDarwin isLinux;
   isDesktop = hostname == "desktop";
+  hasFeature = f: builtins.elem f features;
 
   codexPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
   codexZshCompletion = pkgs.runCommand "codex-zsh-completion" { } ''
@@ -30,14 +33,10 @@ let
   '';
 
   proxyUrl =
-    if (hostname == "wsl" || isDesktop) then
-      config.sops.secrets."proxy/clash".path
-    else if isWork then
-      ""
-    else if (hostname == "wsl-mini") then
-      config.sops.secrets."proxy/clash_mini".path
-    else if (hostname == "macos") then
-      pkgs.writeText "proxy-url" "http://127.0.0.1:10809"
+    if proxy ? secret then
+      config.sops.secrets.${proxy.secret}.path
+    else if proxy ? url then
+      pkgs.writeText "proxy-url" proxy.url
     else
       "";
 in
@@ -60,13 +59,13 @@ in
     inputs.sops-nix.homeManagerModules.sops
     inputs.chatgpt-linker.homeManagerModules.default
   ]
-  ++ lib.optionals (builtins.match "^(wsl-mini|vm-nix)$" hostname != null) [
+  ++ lib.optionals (hasFeature "rclone") [
     (import ./programs/rclone.nix {
       inherit config lib pkgs;
-      progressEnabled = hostname == "vm-nix";
+      progressEnabled = hasFeature "rclone-progress";
     })
   ]
-  ++ lib.optionals (hostname == "vm-nix") [
+  ++ lib.optionals (hasFeature "restic") [
     ./programs/restic.nix
   ]
   ++ lib.optionals (!smallNode) [
@@ -94,7 +93,8 @@ in
       extraInstructions = "";
     })
   ]
-  ++ lib.optionals (hostname == "macos") [
+  # `imports` cannot read pkgs (that recurses), so test the platform string.
+  ++ lib.optionals (lib.hasSuffix "-darwin" platform) [
     ./programs/darwin
   ]
   ++ [
@@ -119,7 +119,7 @@ in
   nix = lib.mkIf (localCacheSubstituters != [ ]) {
     package = pkgs.nix;
 
-    gc = lib.mkIf (hostname == "vm-nix") {
+    gc = lib.mkIf (hasFeature "nix-gc") {
       automatic = true;
       dates = "daily";
       options = "--delete-older-than 7d";
@@ -212,7 +212,7 @@ in
       #   https_proxy = proxyUrl;
       # })
     ];
-    homeDirectory = if (hostname == "macos") then "/Users/${username}" else "/home/${username}";
+    homeDirectory = if isDarwin then "/Users/${username}" else "/home/${username}";
 
     packages =
       with pkgs;
@@ -317,7 +317,7 @@ in
       ++ lib.optionals (!smallNode && isDarwin) [
         inputs.pwndbg.packages.${pkgs.stdenv.hostPlatform.system}.pwndbg-lldb
       ]
-      ++ lib.optionals (isWsl || builtins.elem hostname [ "vm-nix" "nixos-lxc" ]) [
+      ++ lib.optionals (hasFeature "dev-tools") [
         iperf3
         # Clangd from clang-tools must come first.
         (lib.hiPrio clang-tools)
@@ -388,15 +388,12 @@ in
         };
 
       }
-      //
-        lib.optionalAttrs
-          (builtins.match "^(wsl|wsl-mini|archlinux|macos|vm-nix|gentoo-server|nixos-lxc)$" hostname != null)
-          {
-            sync_address = "http://10.0.0.242:8881";
-            key_path = config.sops.secrets.atuin_key.path;
-            auto_sync = true;
-            sync_frequency = "1h";
-          };
+      // lib.optionalAttrs (hasFeature "atuin-sync") {
+        sync_address = "http://10.0.0.242:8881";
+        key_path = config.sops.secrets.atuin_key.path;
+        auto_sync = true;
+        sync_frequency = "1h";
+      };
     };
 
     bat = {

@@ -3,7 +3,7 @@
   config,
   hostname,
   isWork,
-  proxyUrl,
+  gitProxy,
   ...
 }:
 {
@@ -103,11 +103,8 @@
       http = {
         postBuffer = 524288000;
       }
-      // lib.optionalAttrs (hostname == "vm-nix") {
-        proxy = "http://192.168.0.240:10809";
-      }
-      // lib.optionalAttrs (hostname == "wsl-mini") {
-        proxy = "http://10.0.0.201:7891";
+      // lib.optionalAttrs (gitProxy != null) {
+        proxy = gitProxy;
       };
     };
   };

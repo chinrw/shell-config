@@ -352,12 +352,20 @@
           stateVersion = "25.05";
           hostname = "desktop";
           noGUI = false;
+          proxy.secret = "proxy/clash";
         };
         "chin39@wsl-mini" = helpers.mkHome {
           stateVersion = "25.05";
           username = "chin39";
           hostname = "wsl-mini";
           noGUI = false;
+          proxy.secret = "proxy/clash_mini";
+          gitProxy = "http://10.0.0.201:7891";
+          features = [
+            "atuin-sync"
+            "dev-tools"
+            "rclone"
+          ];
         };
         "chin39@wsl" = helpers.mkHome {
           stateVersion = "25.05";
@@ -365,6 +373,11 @@
           hostname = "wsl";
           noGUI = false;
           localCaches = [ "home" ];
+          proxy.secret = "proxy/clash";
+          features = [
+            "atuin-sync"
+            "dev-tools"
+          ];
         };
         "ruowen@ringo" = helpers.mkHome {
           stateVersion = "25.05";
@@ -379,6 +392,7 @@
           isServer = true;
           isPublic = true;
           smallNode = true;
+          features = [ "atuin-sync" ];
         };
         "chin39@arch-lxc" = helpers.mkHome {
           stateVersion = "25.05";
@@ -391,12 +405,17 @@
           hostname = "nixos-lxc";
           isServer = true;
           localCaches = [ "home" ];
+          features = [
+            "atuin-sync"
+            "dev-tools"
+          ];
         };
         "chin39@proxmox" = helpers.mkHome {
           stateVersion = "25.05";
           hostname = "proxmox";
           isServer = true;
           localCaches = [ "home" ];
+          features = [ "syncthing" ];
         };
         "chin39@arch-vm" = helpers.mkHome {
           stateVersion = "25.05";
@@ -418,6 +437,7 @@
           hostname = "gentoo-server";
           isServer = true;
           localCaches = [ "home" ];
+          features = [ "atuin-sync" ];
         };
         "chin39@vm-nix" = helpers.mkHome {
           stateVersion = "25.05";
@@ -425,11 +445,26 @@
           isServer = true;
           noGUI = true;
           localCaches = [ "home" ];
+          gitProxy = "http://192.168.0.240:10809";
+          features = [
+            "atuin-sync"
+            "dev-tools"
+            "nix-gc"
+            "rclone"
+            "rclone-progress"
+            "restic"
+            "syncthing"
+          ];
         };
         "chin39@macos" = helpers.mkHome {
           stateVersion = "25.05";
           hostname = "macos";
           platform = "aarch64-darwin";
+          proxy.url = "http://127.0.0.1:10809";
+          features = [
+            "atuin-sync"
+            "syncthing"
+          ];
         };
         "chin39@work" = helpers.mkHome {
           stateVersion = "25.05";
