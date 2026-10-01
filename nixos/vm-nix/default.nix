@@ -36,7 +36,6 @@ in
         ;
     })
     ../services/qbittorrent.nix
-    ../services/cachix-deploy.nix
     ../services/nix-serve.nix
     # ../services/factorio.nix
     ./kernel.nix
