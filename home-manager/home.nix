@@ -287,7 +287,6 @@ in
         codexPackage
         codexZshCompletion
         abtop # Monitor local AI coding agent sessions
-        # oh-my-pi
         rustscan # modern scanner
         markdown-oxide
         pyrefly

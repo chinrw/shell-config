@@ -209,13 +209,6 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    # Upstream does not expose flake outputs. Package the locked source in
-    # pkgs/oh-my-pi instead.
-    oh-my-pi = {
-      url = "github:can1357/oh-my-pi?ref=main";
-      flake = false;
-    };
-
     # nixpkgs deliberately not followed: the fork's CI builds against pi.nix's
     # own pin to use the cache
     pi = {
