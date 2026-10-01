@@ -171,7 +171,7 @@ in
       outputs.overlays.additions
       outputs.overlays.modifications
       outputs.overlays.stable-packages
-      outputs.overlays.unstable-packages
+      outputs.overlays.master-packages
 
       # Or define it inline, for example:
       # (final: prev: {
@@ -219,7 +219,7 @@ in
       [
         fd
         fzf
-        unstable.zellij
+        master.zellij
         duf # better df
         inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
 
@@ -271,7 +271,7 @@ in
         mediainfo
         ffmpeg # yazi deps
         exiftool
-        unstable.yt-dlp # website video downloader
+        master.yt-dlp # website video downloader
         sampler # Tool for shell commands execution, visualization and alerting
         nmap # port scanner
         circumflex # 🌿 It's Hacker News in your terminal

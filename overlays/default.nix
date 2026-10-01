@@ -172,10 +172,10 @@ in
       # xray-pin-fields-end
     };
 
-  # When applied, the unstable nixpkgs set (declared in the flake inputs) will
-  # be accessible through 'pkgs.unstable'
-  unstable-packages = final: _prev: {
-    unstable = import inputs.nixpkgs-master {
+  # nixpkgs master as 'pkgs.master', for packages whose fixes have not reached
+  # the unstable channels yet. The channels wait on Hydra, master does not.
+  master-packages = final: _prev: {
+    master = import inputs.nixpkgs-master {
       system = final.stdenv.hostPlatform.system;
       config.allowUnfree = true;
       config.allowUnfreePredicate = _: true;

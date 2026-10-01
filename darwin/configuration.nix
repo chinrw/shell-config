@@ -13,7 +13,7 @@
       outputs.overlays.additions
       outputs.overlays.modifications
       outputs.overlays.stable-packages
-      outputs.overlays.unstable-packages
+      outputs.overlays.master-packages
     ];
     config = {
       allowUnfree = true;
