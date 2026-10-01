@@ -35,7 +35,12 @@
     nixpkgs-master.url = "github:nixos/nixpkgs";
     # NOTE: checking the repo for the latest stable release
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.11";
-    hardware.url = "github:NixOS/nixos-hardware";
+    # The modules are plain paths and never read this nixpkgs. Only the
+    # upstream checks do, so following ours just skips a channel tarball.
+    hardware = {
+      url = "github:NixOS/nixos-hardware";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Declarative disk layout for work-laptop (nixos/t14p-gen2/disko.nix).
     # `latest` is a moving tag that tracks disko releases.
