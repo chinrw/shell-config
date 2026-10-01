@@ -58,9 +58,10 @@
         # Opinionated: disable global registry
         # flake-registry = "";
         #
-        # Older nixpkgs needs this explicit setting. Newer versions alias nixPath
-        # to it, so reading config.nix.nixPath here would recurse.
-        nix-path = lib.mkDefault nixPathEntries;
+        # nix.nixPath is an alias of this option. Normal priority replaces the
+        # mkDefault entry from nixpkgs' misc/nixpkgs-flake.nix, so
+        # nixPathEntries must map `nixpkgs` to keep `<nixpkgs>` defined.
+        nix-path = nixPathEntries;
 
         trusted-users = [ "chin39" ];
         keep-outputs = true;
@@ -93,11 +94,7 @@
       # (same approach as darwin/configuration.nix). This avoids a conflicting
       # `nix.registry.nixpkgs` definition and stays correct regardless of how the
       # system's nixpkgs input is named or which channel a host builds from.
-      # nixPath still maps `nixpkgs` (a registry indirection) so `<nixpkgs>` stays
-      # defined — our normal-priority list would otherwise suppress the module's
-      # mkDefault nixPath entry.
       registry = lib.mapAttrs (_: flake: { inherit flake; }) (removeAttrs registryInputs [ "nixpkgs" ]);
-      nixPath = nixPathEntries;
     };
 
   virtualisation.docker = {
