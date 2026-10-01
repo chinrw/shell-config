@@ -87,7 +87,7 @@
   services.tailscale = {
     enable = true;
     openFirewall = true;
-    useRoutingFeatures = "client";
+    useRoutingFeatures = lib.mkDefault "client";
     extraSetFlags = [ "--accept-routes=true" ];
   };
 
