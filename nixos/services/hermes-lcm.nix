@@ -6,6 +6,10 @@
   inputs,
   user,
   group,
+  # The interpreter of the sealed Hermes environment. FastEmbed's compiled
+  # wheels must match its Python version and glibc, or the imports fail and
+  # LCM silently skips every embedding.
+  hermesPython,
   summaryModel,
   summaryFallbackModels,
   summaryTimeoutSeconds,
@@ -24,8 +28,8 @@ in
   # Inject only dependencies missing from the sealed Hermes environment.
   # The full FastEmbed closure collides with bundled packages.
   # Recheck this list when either dependency set changes.
-  pythonPath = lib.makeSearchPath pkgs.python312.sitePackages (
-    with pkgs.python312Packages;
+  pythonPath = lib.makeSearchPath hermesPython.sitePackages (
+    with hermesPython.pkgs;
     [
       fastembed
       onnxruntime
@@ -36,7 +40,7 @@ in
       mmh3
       py-rust-stemmers
       pystemmer
-      snowballstemmer
+      pyyaml
       filelock
       fsspec
       hf-xet

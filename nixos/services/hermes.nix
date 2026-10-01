@@ -263,6 +263,7 @@ let
     inherit summaryTimeoutSeconds;
     user = config.services.hermes-agent.user;
     group = config.services.hermes-agent.group;
+    hermesPython = config.services.hermes-agent.package.python;
   };
 
   # Profile-specific model/effort/toolsets, descriptions, and SOULs live in
