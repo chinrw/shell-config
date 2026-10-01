@@ -83,6 +83,7 @@
     rustowl-overlay = {
       url = "github:nix-community/rustowl-flake";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.rust-overlay.follows = "rust-overlay";
     };
 
     yazi.url = "github:sxyazi/yazi";
