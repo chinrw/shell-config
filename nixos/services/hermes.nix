@@ -6,10 +6,8 @@
   ...
 }:
 let
-  # Canonical V4.1 Flash ID for both DeepSeek and OpenCode Go.
+  # DeepSeek's own API ID for V4.1 Flash; Command Code namespaces it below.
   deepseekFlash = "deepseek-flash";
-
-  qwenVision = "qwen3.8-flash";
 
   # GPT models reached through Codex CLI's ChatGPT subscription login.
   # Keep the model IDs bare: openai-codex resolves them through its Codex
@@ -26,18 +24,7 @@ let
     api_key = "";
   };
 
-  opencodeGoEndpoint = "https://opencode.ai/zen/go/v1";
-
-  # The native Go provider requires OPENCODE_GO_API_KEY for model switches.
-  goBase = {
-    provider = "opencode-go";
-    base_url = opencodeGoEndpoint;
-    api_key = "\${OPENCODE_GO_API_KEY}";
-  };
-
-  goTarget = model: goBase // { inherit model; };
-
-  # The explicit API host lets Hermes resolve DEEPSEEK_API_KEY independently of Go.
+  # The explicit API host makes Hermes resolve DEEPSEEK_API_KEY for this route.
   deepseekApiTarget = model: {
     provider = "deepseek";
     base_url = "https://api.deepseek.com/v1";
@@ -46,6 +33,7 @@ let
 
   commandcodeEndpoint = "https://api.commandcode.ai/provider/v1";
   commandcodeFlash = "deepseek/deepseek-v4.1-flash";
+  commandcodeVision = "Qwen/Qwen3.8-Flash";
   commandcodeProvider = {
     name = "CommandCode API";
     base_url = commandcodeEndpoint;
@@ -56,14 +44,19 @@ let
       context_length = 1000000;
       supports_vision = true;
     };
+    models.${commandcodeVision}.supports_vision = true;
   };
-  commandcodeFlashTarget = {
+  commandcodeTarget = model: {
     # Select the configured key_env rather than the built-in COMMANDCODE_API_KEY.
     provider = "commandcode-api";
     base_url = commandcodeEndpoint;
     key_env = "COMMAND_CODE_API";
-    model = commandcodeFlash;
+    # An inline api_key wins over key_env, and the additive merge would keep
+    # the retired OpenCode Go key reference without this empty value.
+    api_key = "";
+    inherit model;
   };
+  commandcodeFlashTarget = commandcodeTarget commandcodeFlash;
 
   # Auxiliary calls use their own fallback chain when Codex fails.
   codexAuxTarget =
@@ -78,7 +71,7 @@ let
   summaryTimeoutSeconds = 300;
 
   # All summary routes need 1M context to avoid lowering the main compaction trigger.
-  compressionAux = (goTarget deepseekFlash) // {
+  compressionAux = commandcodeFlashTarget // {
     reasoning_effort = "high";
     timeout = summaryTimeoutSeconds;
     # Each fallback needs its own timeout rather than the primary's remaining time.
@@ -89,14 +82,16 @@ let
 
   # LCM owns summary escalation; auxiliary retries must not bypass its chain.
   lcmSummaryRoutes = {
-    primary = (goTarget deepseekFlash) // {
+    primary = commandcodeFlashTarget // {
       reasoning_effort = "high";
       timeout = summaryTimeoutSeconds;
       fallback_chain = [ ];
     };
-    fallbackModels = [
-      "commandcode-api/${commandcodeFlash}"
-    ];
+    # LCM's route parser only splits named custom providers, so a
+    # `deepseek/...` entry would stay on Command Code instead of reaching
+    # DeepSeek's API. No second 1M-context route exists until DeepSeek is
+    # registered as a custom provider.
+    fallbackModels = [ ];
   };
 
   # Shared by the default config and every named profile; profiles are
@@ -151,8 +146,8 @@ let
       web_extract = codexAuxTarget codexLuna;
       curator = codexAuxTarget codexLuna;
       # Images go to the main model; video_analyze uses this auxiliary endpoint.
-      vision = goTarget qwenVision;
-      video.model = qwenVision;
+      vision = commandcodeTarget commandcodeVision;
+      video.model = commandcodeVision;
     };
     # The approval guardian sees only the flagged command, never the chat that
     # authorized the task, so routine pipeline steps are described here instead.
@@ -173,7 +168,7 @@ let
       astra = codexTarget codexAstra;
       deepseek = deepseekApiTarget deepseekFlash;
       deepseek-flash = deepseekApiTarget deepseekFlash;
-      flash = goTarget deepseekFlash;
+      flash = commandcodeFlashTarget;
       flash-cc = commandcodeFlashTarget;
     };
   };
@@ -444,11 +439,6 @@ in
         };
       };
 
-      # Keep the Go context window independent of cached provider metadata.
-      model_overrides = {
-        opencode-go.deepseek-flash.context_window = 1000000;
-      };
-
       # Empty values clear old pins during additive merge so delegates inherit the parent.
       delegation = {
         model = "";
@@ -492,18 +482,9 @@ in
       # hermes-lcm.nix. Specialist profiles keep the built-in compressor.
       inherit (hermesLcm.settings) context plugins;
 
-      # Named custom providers exposed to the `/model` picker: the Go
-      # gateway and the local llama.cpp router on the Windows box.
+      # Named custom providers exposed to the `/model` picker: the local
+      # llama.cpp router on the Windows box.
       custom_providers = [
-        # Discovery reads key_env; it does not expand ${VAR} in api_key.
-        # Keep the native provider name so mixed-protocol models select the right wire format.
-        {
-          name = "opencode-go";
-          base_url = opencodeGoEndpoint;
-          key_env = "OPENCODE_GO_API_KEY";
-          discover_models = true;
-        }
-
         # The router must allow model autoloading for /model switches.
         # Discovery requires a nonempty key; llama-server ignores the dummy value.
         {
@@ -636,9 +617,8 @@ in
     # upstream `default` package's own list rather than extending it.
     #
     # messaging: Telegram adapter's `from telegram import …`.
-    # anthropic: the vision route (opencode-go/qwen3.8-flash) speaks Anthropic
-    # Messages; without the SDK it logs "Failed to build Anthropic client …
-    # falling back to OpenAI-wire".
+    # anthropic: Anthropic-wire providers need the SDK; without it Hermes logs
+    # "Failed to build Anthropic client … falling back to OpenAI-wire".
     extraDependencyGroups = [
       "messaging"
       "anthropic"
@@ -731,6 +711,13 @@ in
           overrides = config.get("agent", {}).get("reasoning_overrides", {})
           for model in ("gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"):
               overrides.pop(model, None)
+          # The OpenCode Go subscription ended on 2026-09-30. Profiles cloned
+          # the old provider list, which Nix does not manage for them.
+          (config.get("model_overrides") or {}).pop("opencode-go", None)
+          if "custom_providers" in config:
+              config["custom_providers"] = [
+                  p for p in config["custom_providers"] or [] if p.get("name") != "opencode-go"
+              ]
           path.write_text(yaml.safe_dump(config, sort_keys=False))
       PY
 
