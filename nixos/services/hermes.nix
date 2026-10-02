@@ -94,6 +94,35 @@ let
     fallbackModels = [ ];
   };
 
+  venvPython = "/home/hermes/.venv/bin/python3";
+  organizeCmd = "${venvPython} /data/workspace/media-organize/organize.py";
+  bangumiCmd = "${venvPython} /data/workspace/media-organize/bangumi.py";
+  rankingWrapper = "${venvPython} /data/.hermes/skills/gallery-downloader/scripts/run_ranking_wrapper.py";
+  downloadStatus = "/data/workspace/southplus/southplus_download_status.py";
+  routineCommandAllowlist =
+    map (sub: "${organizeCmd} ${sub}") [
+      "status"
+      "report"
+      "inspect *"
+      "queue show"
+      "queue defer *"
+      "block *"
+      "register --remote *"
+      "plan *"
+      "search *"
+      "seasons *"
+      "acgrip search *"
+      "acgrip thread *"
+    ]
+    ++ [
+      "${bangumiCmd} audit"
+      "${bangumiCmd} audit *"
+      "${bangumiCmd} files *"
+      "${rankingWrapper} *"
+      "python3 ${downloadStatus} *"
+      "/usr/bin/python3 ${downloadStatus} *"
+    ];
+
   # Shared by the default config and every named profile; profiles are
   # standalone clones, so a key left out here diverges silently.
   compressionPolicy = {
@@ -154,7 +183,23 @@ let
     approvals = {
       mode = "smart";
       smart_policy = builtins.readFile ./hermes-smart-policy.txt;
+      # Hard floors that hold even with /yolo: secrets, Hermes or host config
+      # changes, and recursive deletes of the media tree.
+      deny = [
+        "*/data/.hermes/.env*"
+        "*hermes config set*"
+        "*nixos-rebuild*"
+        "*rm -rf /mnt/data*"
+        "*rm -fr /mnt/data*"
+      ];
     };
+    # Cron and -q runs never reach the smart guardian; without an exact match
+    # here, tirith findings in routine arguments (Chinese notes, LAN IPs) block
+    # them. Compound commands never match, so `; rm` cannot ride on a glob.
+    # Destructive subcommands (stage, move, upload, publish, trash, drop) stay
+    # out. The list is replaced on every unit start, so "always" answers given
+    # in chat do not persist; add them here instead.
+    command_allowlist = routineCommandAllowlist;
     # openai-native is search-only; without this, profiles fall back to it and
     # every web_extract fails.
     web = {
