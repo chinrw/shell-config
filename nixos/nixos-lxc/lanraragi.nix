@@ -5,6 +5,15 @@
   ...
 }:
 {
+  sops.secrets.lanraragi-environment = {
+    sopsFile = ../../secrets/lanraragi.env;
+    format = "binary";
+    owner = "root";
+    group = "root";
+    mode = "0400";
+    restartUnits = [ "lanraragi.service" ];
+  };
+
   services.lanraragi = {
     enable = true;
     port = 3001;
@@ -37,7 +46,7 @@
       DynamicUser = lib.mkForce false;
       User = "lanraragi";
       Group = "lanraragi";
-      EnvironmentFile = "/var/lib/lanraragi-private/environment";
+      EnvironmentFile = config.sops.secrets.lanraragi-environment.path;
       UMask = "0002";
     };
     # The upload handler writes under ./lib, while Perl discovers plugins via PERL5LIB.
