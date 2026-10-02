@@ -40,6 +40,8 @@
   systemd.services.lanraragi = {
     unitConfig.RequiresMountsFor = [ "/mnt/data" ];
     environment = config.networking.proxy.envVars // {
+      # Mojolicious needs this flag to honor the inherited proxy variables.
+      MOJO_PROXY = "1";
       PERL5LIB = "/var/lib/lanraragi/plugins";
       LRR_THUMB_DIRECTORY = "/var/lib/lanraragi/thumb";
     };
