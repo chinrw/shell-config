@@ -7,7 +7,8 @@
 {
   sops.secrets.lanraragi-environment = {
     sopsFile = ../../secrets/lanraragi.env;
-    format = "binary";
+    format = "dotenv";
+    key = "";
     owner = "root";
     group = "root";
     mode = "0400";
