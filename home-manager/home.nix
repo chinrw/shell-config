@@ -50,6 +50,7 @@ in
     ./programs/zellij
     ./programs/sops.nix
     ./programs/syncthing.nix
+    ./programs/chatgpt-linker.nix
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix

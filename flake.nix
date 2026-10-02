@@ -441,6 +441,7 @@
           gitProxy = "http://192.168.0.240:10809";
           features = [
             "atuin-sync"
+            "chatgpt-linker-tunnel"
             "dev-tools"
             "nix-gc"
             "rclone"
