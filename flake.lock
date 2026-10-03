@@ -123,16 +123,22 @@
     },
     "chatgpt-linker": {
       "inputs": {
+        "home-manager": [
+          "home-manager"
+        ],
         "nixpkgs": [
           "nixpkgs-unstable"
+        ],
+        "tunnel-client-nix": [
+          "tunnel-client-nix"
         ]
       },
       "locked": {
-        "lastModified": 1789954491,
-        "narHash": "sha256-fOXEcnuU1MKRtFOTT1j1ZUb4Y/tcHZQWeb2aRSdvzNU=",
+        "lastModified": 1791010212,
+        "narHash": "sha256-x+HfvQvNGNRHHo6Yb/BvzvJ3U+d/hFsmE1CkiRMWFlI=",
         "owner": "chinrw",
         "repo": "chatgpt-linker",
-        "rev": "5abf3b0458c0253b3bca0ddfce251a6bed74f25b",
+        "rev": "eae2f80db5ebee847ace68b6bf1883b23d65d498",
         "type": "github"
       },
       "original": {
@@ -803,6 +809,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-darwin": {
+      "locked": {
+        "lastModified": 1788645589,
+        "narHash": "sha256-efzwl1LfOTAneLY06gmqeYS4vroDR1utvBqstsdvZyQ=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "8b6d0ac8759bbc2499386ef5bcd7f11ee7f7ff52",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-26.05-darwin",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-lib": {
       "locked": {
         "lastModified": 1788057806,
@@ -908,6 +930,22 @@
       "original": {
         "owner": "nixos",
         "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1788686502,
+        "narHash": "sha256-C5ETRqK0ji2SGGVpjdsAIv+Yd6m4vB6DOiGPQXP/M34=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "94a0f8d9ca5da101ec1cddbdfecfdc1ae1766d04",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -1148,6 +1186,7 @@
         "rust-overlay": "rust-overlay",
         "rustowl-overlay": "rustowl-overlay",
         "sops-nix": "sops-nix",
+        "tunnel-client-nix": "tunnel-client-nix",
         "yazi": "yazi",
         "yazi-plugin-augment-command": "yazi-plugin-augment-command",
         "yazi-plugin-git": "yazi-plugin-git",
@@ -1441,6 +1480,25 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "tunnel-client-nix": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_3",
+        "nixpkgs-darwin": "nixpkgs-darwin"
+      },
+      "locked": {
+        "lastModified": 1791010173,
+        "narHash": "sha256-kX+C7d+p29ChmV3ZCUszEb3xYjhbn1+Bwr9OMQfxAzI=",
+        "owner": "chinrw",
+        "repo": "tunnel-client-nix",
+        "rev": "1622dc885b8e4f37b53a99c04c50f399f07c268d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "chinrw",
+        "repo": "tunnel-client-nix",
         "type": "github"
       }
     },
