@@ -180,13 +180,10 @@
       flake = false;
     };
 
-    tunnel-client-nix.url = "github:chinrw/tunnel-client-nix";
-
     chatgpt-linker = {
       url = "github:chinrw/chatgpt-linker";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
       inputs.home-manager.follows = "home-manager";
-      inputs.tunnel-client-nix.follows = "tunnel-client-nix";
     };
 
     mattpocock-skills = {

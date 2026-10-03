@@ -75,7 +75,13 @@ let
       nix_config="$(printf 'accept-flake-config = false\naccess-tokens = github.com=%s\n' "$github_token")"
       (
         cd "$repo_dir"
-        NIX_CONFIG="$nix_config" nix flake update --commit-lock-file
+        NIX_CONFIG="$nix_config" nix flake update
+        # Linker owns this dependency, but its lock may lag the tested client release.
+        NIX_CONFIG="$nix_config" nix flake update chatgpt-linker/tunnel-client-nix
+        if ! git diff --quiet -- flake.lock; then
+          git add flake.lock
+          git commit --signoff -m "flake.lock: Update"
+        fi
       )
       unset github_token nix_config
 
@@ -83,8 +89,6 @@ let
       if [[ "$candidate_revision" != "$base_revision" ]]; then
         [[ "$(git -C "$repo_dir" diff --name-only "$base_revision..$candidate_revision")" == flake.lock ]] \
           || fail 'flake update committed paths other than flake.lock'
-        git -C "$repo_dir" commit --amend --no-edit --signoff
-        candidate_revision="$(git -C "$repo_dir" rev-parse HEAD)"
       fi
 
       [[ -z "$(git -C "$repo_dir" status --porcelain=v1)" ]] \

@@ -330,7 +330,6 @@ in
 
   # Enable home-manager and git
   programs.home-manager.enable = true;
-  programs.chatgpt-linker.enable = true;
 
   programs._1password-shell-plugins = {
     # enable 1Password shell plugins for bash, zsh, and fish shell
