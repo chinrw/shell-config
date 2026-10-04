@@ -41,6 +41,8 @@
     }
   );
 
+  # --accept-routes puts the LAN's subnet route in tailscale's table 52, which
+  # is looked up at priority 5270. This rule sends LAN traffic to main first.
   environment.etc."systemd/network/eth0.network.d/10-local-lan.conf".text = ''
     [RoutingPolicyRule]
     To=192.168.0.0/24
