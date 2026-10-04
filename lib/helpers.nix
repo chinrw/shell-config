@@ -28,23 +28,38 @@ let
     atuin-sync = "sync shell history with the LAN atuin server";
     chatgpt-linker-tunnel = "run the ChatGPT Linker tunnel with node-local credentials";
     dev-tools = "iperf3, clang-tools, par2cmdline and asciinema";
-    nix-gc = "daily nix GC from home-manager (needs localCaches, which owns nix.conf)";
+    nix-gc = "daily nix GC from home-manager";
     rclone = "rclone mounts";
     rclone-progress = "rclone progress logging instead of --log-systemd";
     restic = "restic backups";
     syncthing = "syncthing with the shared device list";
   };
-  # Check the whole list up front: `builtins.elem` stops at the first match,
-  # so a typo after it would otherwise never be reported.
+  # Features whose module is gated on something else as well. Without the
+  # gate the feature evaluates to nothing, so reject the host instead.
+  featureRequirements = {
+    nix-gc = {
+      met = host: host.localCaches != [ ];
+      reason = "needs localCaches, because home.nix only writes nix.conf for hosts with local caches";
+    };
+  };
+  # Home modules only ever ask whether a name is in the list, so a misspelled
+  # or unsatisfiable feature would silently do nothing.
   checkFeatures =
-    hostname: features:
+    host: features:
     let
       unknown = builtins.filter (f: !(knownFeatures ? ${f})) features;
+      unmet = builtins.filter (
+        f: featureRequirements ? ${f} && !(featureRequirements.${f}.met host)
+      ) features;
     in
-    if unknown == [ ] then
-      features
+    if unknown != [ ] then
+      throw "unknown features ${builtins.concatStringsSep ", " unknown} for host '${host.hostname}'; known features: ${toString (builtins.attrNames knownFeatures)}"
+    else if unmet != [ ] then
+      throw "host '${host.hostname}': ${
+        builtins.concatStringsSep "; " (map (f: "feature ${f} ${featureRequirements.${f}.reason}") unmet)
+      }"
     else
-      throw "unknown feature '${toString unknown}' for host '${hostname}'; known features: ${toString (builtins.attrNames knownFeatures)}";
+      features;
 in
 {
   # Helper function for generating home-manager configs
@@ -96,7 +111,7 @@ in
           proxy
           gitProxy
           ;
-        features = checkFeatures hostname features;
+        features = checkFeatures { inherit hostname platform localCaches; } features;
       };
       modules = [ ../home-manager/home.nix ];
     };
