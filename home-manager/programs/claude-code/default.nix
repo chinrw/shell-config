@@ -295,6 +295,13 @@ let
     "claude-hud@claude-hud" = true;
   };
 
+  # Plugins that ship inside Claude Code. They only need the enabledPlugins
+  # toggle, so they stay out of the bootstrap's install list.
+  builtinPlugins = {
+    "cc-plugin-you-should-know@builtin" = true;
+    "cc-plugin-agents-md@builtin" = true;
+  };
+
   # Third-party marketplaces backing the plugins above. Rendered into
   # settings.json as extraKnownMarketplaces AND used by
   # pluginBootstrapActivation — the settings key only declares a trusted name
@@ -336,7 +343,7 @@ let
       type = "command";
       command = "${claudeHudStatusline}";
     };
-    enabledPlugins = declaredPlugins;
+    enabledPlugins = declaredPlugins // builtinPlugins;
     extraKnownMarketplaces = declaredMarketplaces;
     skipAutoPermissionPrompt = true;
     # Stop Claude Code appending a `Co-Authored-By: Claude` trailer to commits.
