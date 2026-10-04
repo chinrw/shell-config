@@ -26,7 +26,7 @@ let
   # Opt-in home-manager features, named in a host's `features` list.
   knownFeatures = {
     atuin-sync = "sync shell history with the LAN atuin server";
-    chatgpt-linker-tunnel = "run the ChatGPT Linker tunnel with node-local credentials";
+    chatgpt-linker = "ChatGPT Linker CLI, ultraplan skill and the tunnel serving them";
     dev-tools = "iperf3, clang-tools, par2cmdline and asciinema";
     nix-gc = "daily nix GC from home-manager";
     rclone = "rclone mounts";

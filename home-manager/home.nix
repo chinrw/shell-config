@@ -50,7 +50,6 @@ in
     ./programs/zellij
     ./programs/sops.nix
     ./programs/syncthing.nix
-    ./programs/chatgpt-linker.nix
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
@@ -58,7 +57,6 @@ in
     inputs.nix-index-database.homeModules.nix-index
     inputs._1password-shell-plugins.hmModules.default
     inputs.sops-nix.homeManagerModules.sops
-    inputs.chatgpt-linker.homeManagerModules.default
   ]
   ++ lib.optionals (hasFeature "rclone") [
     (import ./programs/rclone.nix {
@@ -68,6 +66,10 @@ in
   ]
   ++ lib.optionals (hasFeature "restic") [
     ./programs/restic.nix
+  ]
+  ++ lib.optionals (hasFeature "chatgpt-linker") [
+    inputs.chatgpt-linker.homeManagerModules.default
+    ./programs/chatgpt-linker.nix
   ]
   ++ lib.optionals (!smallNode) [
     ./programs/opencode.nix
