@@ -206,10 +206,10 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    # nixpkgs deliberately not followed: the fork's CI builds against pi.nix's
-    # own pin to use the cache
+    # nixpkgs deliberately not followed, so pi builds against the pin upstream
+    # tests with.
     pi = {
-      url = "github:chinrw/pi.nix";
+      url = "github:lukasl-dev/pi.nix";
     };
 
     pwndbg = {

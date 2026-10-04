@@ -1013,15 +1013,15 @@
         "nixpkgs-x86_64-darwin": "nixpkgs-x86_64-darwin"
       },
       "locked": {
-        "lastModified": 1790852517,
-        "narHash": "sha256-gHM3O3YU7lvZN/MSlvPPPuUfYJL9wQMZaRPlftB2lRs=",
-        "owner": "chinrw",
+        "lastModified": 1790889354,
+        "narHash": "sha256-BgOyXSsWukjby09ZgV4g2umGoPNzBqAtHnmGuP+W7Yc=",
+        "owner": "lukasl-dev",
         "repo": "pi.nix",
-        "rev": "86d508c18d60ac71937e5c5ee52b8574ea4017eb",
+        "rev": "5dcf8ed775e341a1eff87590e9f2376c6c35bb05",
         "type": "github"
       },
       "original": {
-        "owner": "chinrw",
+        "owner": "lukasl-dev",
         "repo": "pi.nix",
         "type": "github"
       }
