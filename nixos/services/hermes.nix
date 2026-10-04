@@ -183,14 +183,18 @@ let
     approvals = {
       mode = "smart";
       smart_policy = builtins.readFile ./hermes-smart-policy.txt;
-      # Hard floors that hold even with /yolo: secrets, Hermes or host config
-      # changes, and recursive deletes of the media tree.
+      # Floors that hold even with /yolo: secrets, Hermes or host config
+      # changes, and recursive deletes of the media tree. These are globs over
+      # the command text, so a path the text does not spell out still passes,
+      # such as `cd /mnt/data && rm -r x` or `cat .env` inside ~/.hermes.
+      # Hermes also matches each segment from its executable, which lets the
+      # `rm` and `find` globs skip a leading `*` that would hit `--format -r`.
       deny = [
-        "*/data/.hermes/.env*"
+        "*.hermes/.env*"
         "*hermes config set*"
         "*nixos-rebuild*"
-        "*rm -rf /mnt/data*"
-        "*rm -fr /mnt/data*"
+        "rm *-*r*/mnt/data*"
+        "find */mnt/data*-delete*"
       ];
     };
     # Cron and -q runs never reach the smart guardian; without an exact match
