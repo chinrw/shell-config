@@ -226,11 +226,12 @@
   };
 
   outputs =
-    { self
-    , nixpkgs
-    , home-manager
-    , rust-overlay
-    , ...
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      rust-overlay,
+      ...
     }@inputs:
     let
       inherit (self) outputs;

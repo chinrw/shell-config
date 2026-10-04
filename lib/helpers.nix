@@ -14,9 +14,8 @@ let
       known = builtins.attrNames caches;
       lookup =
         name:
-        caches.${name} or (throw
-          "unknown localCache '${name}' for host '${hostname}'; known caches: ${toString known}"
-        );
+        caches.${name}
+          or (throw "unknown localCache '${name}' for host '${hostname}'; known caches: ${toString known}");
       resolved = map lookup names;
     in
     {
