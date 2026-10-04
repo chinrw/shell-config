@@ -188,7 +188,8 @@ let
          Edits here are lost on the next switch. Host-local rules go in
          ~/.claude/CLAUDE.local.md. -->
   '';
-  baseClaudeMd = claudeMdBanner + "\n" + builtins.readFile ./CLAUDE.md + "\n" + sharedAgentInstructions.text;
+  baseClaudeMd =
+    claudeMdBanner + "\n" + builtins.readFile ./CLAUDE.md + "\n" + sharedAgentInstructions.text;
   withHostExtra =
     if extraInstructions == "" then
       baseClaudeMd
