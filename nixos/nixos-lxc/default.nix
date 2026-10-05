@@ -3,6 +3,7 @@
   imports = [
     ../proxmox-lxc.nix
     ./proxy.nix
+    ./web.nix
     ./postgresql.nix
     ./applications.nix
     ./lanraragi.nix
