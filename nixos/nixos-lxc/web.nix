@@ -65,8 +65,6 @@ in
       ];
       allowedUDPPorts = [ 53 ];
     };
-    extraCommands = ''
-      iptables -A nixos-fw -i eth0 -s 192.168.0.0/24 -d ${lanAddress} -p tcp -m multiport --dports 80,443 -j nixos-fw-accept
-    '';
+    interfaces.eth0.allowedTCPPorts = [ 80 443 ];
   };
 }

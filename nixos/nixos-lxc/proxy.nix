@@ -25,10 +25,10 @@ in
     openFirewall = false;
     settings.dns.bind_hosts = [ "127.0.0.1" "192.168.0.241" ];
   };
-  networking.firewall.extraCommands = ''
-    iptables -A nixos-fw -i eth0 -s 192.168.0.0/24 -d 192.168.0.241 -p udp --dport 53 -j nixos-fw-accept
-    iptables -A nixos-fw -i eth0 -s 192.168.0.0/24 -d 192.168.0.241 -p tcp --dport 53 -j nixos-fw-accept
-  '';
+  networking.firewall.interfaces.eth0 = {
+    allowedTCPPorts = [ 53 ];
+    allowedUDPPorts = [ 53 ];
+  };
 
   services.resolved.settings.Resolve.MulticastDNS = false;
   systemd.services.adguardhome = {
