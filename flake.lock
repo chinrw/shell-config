@@ -247,11 +247,11 @@
     "dnsmasq-china-list": {
       "flake": false,
       "locked": {
-        "lastModified": 1790462887,
-        "narHash": "sha256-Sb+QyvrsdkSLoo/ybLPDjR6Vv381LG0LwnfDT2yC4Yg=",
+        "lastModified": 1791281194,
+        "narHash": "sha256-aaIPgP1f1YeJ5vV4P7imOPfrVMiNKpgpfbTqZE8xTbw=",
         "owner": "felixonmars",
         "repo": "dnsmasq-china-list",
-        "rev": "be08315b4ef080af9231045307799eb44f8f40f1",
+        "rev": "7184c9f1fe8817a04826e462dd695d08c5a68523",
         "type": "github"
       },
       "original": {
@@ -535,11 +535,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1791398892,
-        "narHash": "sha256-38qa6UMoQxJAueEf4S+ZIydd6DAffzdugrVuYFpY900=",
+        "lastModified": 1791408262,
+        "narHash": "sha256-vQ5sgj0lwazoXftSADqEZ4c6HjLheulCPGUJMP0DqaM=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "ad12263a5ed43109d3942a8af04d4cef210fa6ae",
+        "rev": "c538ec5f402e8078248becacd474e47a08c6e79a",
         "type": "github"
       },
       "original": {
@@ -855,11 +855,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1791399093,
-        "narHash": "sha256-cMTpuc7cu1UwVogKI4BZLV6HRENRPIWOtG5DHE05twY=",
+        "lastModified": 1791410047,
+        "narHash": "sha256-K4ToO2NHKZF5wCivLgyIiybF6earobgmEXnLH4XD/aw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "f106e2c6c6f6865c1fee5c55b5ce8de4b8fba8d3",
+        "rev": "d2c5d864c3dff198b1c9e432f58a8616f4ea2139",
         "type": "github"
       },
       "original": {
