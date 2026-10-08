@@ -1,10 +1,17 @@
-{ lib, pkgs, ... }:
+{
+  lib,
+  pkgs,
+  username,
+  ...
+}:
 {
   imports = [
     ../proxmox-lxc.nix
     ./updater.nix
     ./runners.nix
   ];
+
+  sops.age.keyFile = "/home/${username}/.config/sops/age/keys.txt";
 
   services.tailscale.extraSetFlags = [ "--ssh=false" ];
 

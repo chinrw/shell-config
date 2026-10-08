@@ -4,18 +4,10 @@
   pkgs,
   ...
 }:
-let
-  # Triggered by systemd's OnFailure when a restic unit fails.
-  # Argument $1 = name of the failed unit (passed via %i).
-  failureScript = pkgs.writeShellScript "restic-failure-log" ''
-    echo "restic unit $1 failed; inspect with: journalctl --user -u $1 -n 50 --no-pager" \
-      | ${pkgs.systemd}/bin/systemd-cat -p err -t restic-backup
-  '';
-in
 {
-  # Restic-specific secrets co-located with the module that uses them.
-  # Only hosts that import this module (currently vm-nix) declare them;
-  # other hosts never reference these keys.
+  imports = [ (import ../../lib/failure-email.nix).homeManager ];
+
+  # Keep these Home Manager secrets scoped to hosts that enable restic.
   sops.secrets.restic_password = { };
   sops.secrets.restic_rclone_conf = {
     sopsFile = ../../secrets/restic-rclone.conf;
@@ -138,16 +130,7 @@ in
   # versions check both).
   systemd.user.services.restic-backups-vm-nix.Service."X-RestartIfChanged" = lib.mkForce false;
 
-  # Log one error summary without broadcasting it to every console.
-  systemd.user.services.restic-backups-vm-nix.Unit.OnFailure = [ "restic-backup-failed@%p.service" ];
-
-  systemd.user.services."restic-backup-failed@" = {
-    Unit.Description = "Log restic backup failure for %i";
-    Service = {
-      Type = "oneshot";
-      ExecStart = "${failureScript} %i";
-    };
-  };
+  systemd.user.services.restic-backups-vm-nix.Unit.OnFailure = [ "email-failure@%n.service" ];
 
   assertions = [
     {

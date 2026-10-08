@@ -112,9 +112,9 @@ opt into LAN caches by naming them in `localCaches`; unknown names fail the
 build with the list of known ones (`lib/caches.nix`, resolved in
 `lib/helpers.nix`).
 
-`vm-nix` runs `nixos/services/shell-config-updater.nix` every three hours: it
-clones this repo, runs `nix flake update`, builds the `vm-nix` and `work-laptop`
-system + home outputs, pushes them to Cachix, and only then pushes `main`. So
+`nixos-ci` runs `nixos/services/shell-config-updater.nix` every three hours: it
+clones this repo, runs `nix flake update`, builds the configured Linux system
+and home outputs, pushes them to Cachix, and only then pushes `main`. So
 other machines normally pull prebuilt closures instead of building.
 
 ## Everyday commands
