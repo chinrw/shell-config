@@ -132,11 +132,11 @@
         "tunnel-client-nix": "tunnel-client-nix"
       },
       "locked": {
-        "lastModified": 1791017493,
-        "narHash": "sha256-yD3zrAl1fOBVxG01YVmw6TVe/MsgI6kSOEKMhE2pWic=",
+        "lastModified": 1791443264,
+        "narHash": "sha256-DDnFE3Iznno1owQnwN8A6zrznTIZJbTi1voZIWpTZhs=",
         "owner": "chinrw",
         "repo": "chatgpt-linker",
-        "rev": "b2524d1d8006218710f3284289db15c2c0d7fb83",
+        "rev": "20743479718aca57c7c7c8594c034cf71f55be2f",
         "type": "github"
       },
       "original": {
