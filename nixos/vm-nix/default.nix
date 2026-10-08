@@ -45,6 +45,7 @@ in
     ./zswap.nix
     ./swap.nix
     ./snapshots.nix
+    ../services/reclaim-cargo-targets.nix
     ../services/rclone-progress.nix
     ../services/hermes.nix
     ../services/flaresolverr.nix
