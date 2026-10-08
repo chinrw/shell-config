@@ -180,6 +180,11 @@
       flake = false;
     };
 
+    humanizer = {
+      url = "github:blader/humanizer";
+      flake = false;
+    };
+
     chatgpt-linker = {
       url = "github:chinrw/chatgpt-linker";
       inputs.nixpkgs.follows = "nixpkgs-unstable";

@@ -157,6 +157,10 @@ let
       sources = lib.filter (skill: !(lib.elem skill.name agentSkillDenylist)) (
         [
           {
+            name = "humanizer";
+            source = inputs.humanizer;
+          }
+          {
             name = "aihot";
             source = "${inputs.khazix-skills}/aihot";
           }
@@ -729,6 +733,8 @@ in
     source = ./skills/fable-writing;
     recursive = true;
   };
+
+  home.file.".claude/skills/humanizer".source = inputs.humanizer;
 
   # User-authored slash command kept in this repo. Maps to user scope so `/ship`
   # is available in every repo. link_children only sweeps symlinks into $REPO
