@@ -167,6 +167,7 @@ let
     agent.image_input_mode = "native";
     compression = compressionPolicy;
     auxiliary = {
+      background_review.enabled = false;
       title_generation = codexAuxTarget codexLuna;
       session_search = codexAuxTarget codexLuna;
       skills_hub = codexAuxTarget codexLuna;
