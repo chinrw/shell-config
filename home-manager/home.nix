@@ -292,6 +292,9 @@ in
         abtop # Monitor local AI coding agent sessions
         rustscan # modern scanner
         markdown-oxide
+        nixd
+        nixfmt
+        statix
         pyrefly
         mypy # Optional static typing for Python
         gh-dash
