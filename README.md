@@ -98,8 +98,7 @@ the deploy-rs wrapper. After using either native command for recovery, establish
 a matching deploy-rs baseline before relying on automatic rollback again.
 
 SSH confirmation checks connectivity. Verify the target's services after each
-deployment. The [validation record](docs/research/deploy-rs-validation.md) describes
-the tested recovery paths and their limits.
+deployment.
 
 ### Getting the `home-manager` CLI
 

@@ -51,9 +51,11 @@ in
       enabled = true;
     }) backends;
   };
+  # tailscaled counts as started before tailscale0 holds its address, and AdGuard
+  # exits fatally when a bind_hosts entry cannot be bound. The target waits for the IP.
   systemd.services.adguardhome = {
-    wants = [ "tailscaled.service" ];
-    after = [ "tailscaled.service" ];
+    wants = [ "tailscale-online.target" ];
+    after = [ "tailscale-online.target" ];
   };
 
   networking.firewall = {
