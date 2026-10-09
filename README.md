@@ -21,7 +21,8 @@ User config is standalone home-manager on **every** host — `nixos-rebuild` and
 `darwin-rebuild` manage the system side only (`darwin/default.nix` deliberately
 does not import the home-manager darwin module, or the same dotfiles and launchd
 agents would be managed twice). System hosts therefore take two commands; plain
-Linux hosts take only the second one.
+Linux hosts take only the second one. The deploy-rs targets below also keep
+system and user configuration separate.
 
 ### NixOS hosts
 
@@ -43,6 +44,63 @@ home-manager   switch --flake .#chin39@macos
 home-manager switch --flake .#chin39@archlinux
 ```
 
+### Remote deployment with deploy-rs
+
+deploy-rs deploys the NixOS configuration on `nixos-ci` and `nixos-lxc`, and
+standalone Home Manager on `vm-nix`. Run it from an x86_64 Linux checkout, such
+as vm-nix. You need SSH key access as `chin39`, trusted host keys, and passwordless
+sudo on the two NixOS targets.
+
+The `nix run .#deploy-rs-ci` entry point sends builds for all three targets, including
+its automatic checks, to `nixos-ci` (`192.168.0.230`). Cached outputs can still be
+downloaded directly. It allows one remote build at a time with two cores and
+disables local builds for those commands. If an uncached build needs CI while it
+is unavailable, deployment fails before activation.
+
+The local Nix daemon must be able to read your unencrypted
+`$HOME/.ssh/id_ed25519`, and that key must authenticate as `chin39` on CI. The
+builder's public host key is pinned in [pkgs/default.nix](pkgs/default.nix).
+Keep deploy-rs's `--remote-build` option unset because it selects the deployment
+target as the builder. Other Nix commands retain their existing build settings.
+This policy takes effect after `nix run` has prepared the CLI and its launcher.
+
+| Target | Configuration |
+| --- | --- |
+| `nixos-ci.system` | `nixosConfigurations.nixos-ci` |
+| `nixos-lxc.system` | `nixosConfigurations.nixos-lxc` |
+| `vm-nix.home` | `homeConfigurations."chin39@vm-nix"` |
+
+Before the first activation, record the current generation and keep a console
+recovery path available. The previous native generation lacks deploy-rs's
+rollback script, so the first deployment may require manual recovery. Once a
+known working deploy-rs generation is installed, later deployments can recover
+to it automatically.
+
+Check the configuration and preview the changes for the chosen target:
+
+```sh
+nix run .#deploy-rs-ci -- --dry-activate .#nixos-ci.system
+```
+
+Activate the chosen target with its explicit profile:
+
+```sh
+nix run .#deploy-rs-ci -- .#nixos-ci.system
+nix run .#deploy-rs-ci -- .#nixos-lxc.system
+nix run .#deploy-rs-ci -- .#vm-nix.home
+```
+
+Run one activation per target at a time and coordinate with other users or chats
+working on that target. After adopting these profiles, use deploy-rs for subsequent
+NixOS and HM activations. `nixos-rebuild switch` replaces the NixOS rollback wrapper,
+while `home-manager switch` advances the native HM generation without updating
+the deploy-rs wrapper. After using either native command for recovery, establish
+a matching deploy-rs baseline before relying on automatic rollback again.
+
+SSH confirmation checks connectivity. Verify the target's services after each
+deployment. The [validation record](docs/research/deploy-rs-validation.md) describes
+the tested recovery paths and their limits.
+
 ### Getting the `home-manager` CLI
 
 `shell/home-manager.nix` provides a dev shell with the matching version:
@@ -55,7 +113,9 @@ nix develop .#hm
 
 | System configuration | Machine |
 | --- | --- |
-| `nixosConfigurations.vm-nix` | x86_64-linux server; also the host that refreshes `flake.lock` and prebuilds the cache (see below) |
+| `nixosConfigurations.nixos-ci` | Proxmox LXC that refreshes `flake.lock` and prebuilds the cache (see below) |
+| `nixosConfigurations.nixos-lxc` | Proxmox LXC that runs the home services |
+| `nixosConfigurations.vm-nix` | x86_64-linux server |
 | `nixosConfigurations.wsl` | WSL2 with NVIDIA GPU |
 | `nixosConfigurations.wsl-mini` | WSL2 with AMD GPU |
 | `nixosConfigurations.work-laptop` | ThinkPad T14p Gen 2 — niri desktop, disk layout from `nixos/t14p-gen2/disko.nix` |

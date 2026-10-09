@@ -70,6 +70,9 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    # Keep the CLI and activators on the revision validated on the target hosts.
+    deploy-rs.url = "github:serokell/deploy-rs/45ba3f8c5cb28396fff71671806e2550b464ac86";
+
     _1password-shell-plugins = {
       url = "github:1Password/shell-plugins";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
@@ -249,6 +252,7 @@
       # pass to it, with each system as an argument
       forAllSystems = nixpkgs.lib.genAttrs systems;
       helpers = import ./lib { inherit inputs outputs; };
+      deployLib = inputs.deploy-rs.lib.x86_64-linux;
 
       # The dev shells need rust-bin and llvmPinned, which plain
       # legacyPackages does not carry.
@@ -293,6 +297,48 @@
 
       # Your custom packages and modifications, exported as overlays
       overlays = import ./overlays { inherit inputs; };
+
+      checks.x86_64-linux = deployLib.deployChecks self.deploy;
+
+      deploy = {
+        # The CLI's Nix builder sends all three profiles to nixos-ci.
+        # deploy-rs remoteBuild would instead build on each deployment target.
+        remoteBuild = false;
+        sshUser = "chin39";
+        sshOpts = [
+          "-o"
+          "BatchMode=yes"
+          "-o"
+          "StrictHostKeyChecking=yes"
+          "-o"
+          "ConnectTimeout=10"
+        ];
+        nodes = {
+          nixos-ci = {
+            hostname = "192.168.0.230";
+            profiles.system = {
+              user = "root";
+              path = deployLib.activate.nixos self.nixosConfigurations.nixos-ci;
+            };
+          };
+          nixos-lxc = {
+            hostname = "192.168.0.241";
+            profiles.system = {
+              user = "root";
+              path = deployLib.activate.nixos self.nixosConfigurations.nixos-lxc;
+            };
+          };
+          vm-nix = {
+            hostname = "192.168.0.240";
+            profiles.home = {
+              user = "chin39";
+              # HM updates its own profile during activation, so keep the wrapper separate.
+              profilePath = "/home/chin39/.local/state/nix/profiles/deploy-rs-home";
+              path = deployLib.activate.home-manager self.homeConfigurations."chin39@vm-nix";
+            };
+          };
+        };
+      };
 
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
