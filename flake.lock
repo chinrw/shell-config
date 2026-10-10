@@ -908,11 +908,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1791601583,
-        "narHash": "sha256-si1awisF7WH10tV9SdqPdG+u8ZXBPciQBg2FWxgoF3A=",
+        "lastModified": 1791613422,
+        "narHash": "sha256-KhI7Sqou2jhh8H7hrfipNfpGmviuj6Pg/56u+Sci1Is=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "78f093ad1f0ebe78844452a0e97139eb8f31a857",
+        "rev": "f4ef5195c5a91f7866890fe52aa10516781c07f7",
         "type": "github"
       },
       "original": {
@@ -1058,11 +1058,11 @@
     "opencode-goal-plugin": {
       "flake": false,
       "locked": {
-        "lastModified": 1791462885,
-        "narHash": "sha256-Ro6am5zACTzLQfydVi2nePxE40AVd5ZROtyWBL4cRy0=",
+        "lastModified": 1791612044,
+        "narHash": "sha256-B2C7bnnmFDdJWJYUpI+1X0egrJa4WJbe5Faj8VSEwrM=",
         "owner": "prevalentWare",
         "repo": "opencode-goal-plugin",
-        "rev": "3eba0626a826bde71e3bc0e5f5d39cf9e7aa1604",
+        "rev": "cf22feaaa7ab3367053a9a99913cbc40e5c3224e",
         "type": "github"
       },
       "original": {
@@ -1662,11 +1662,11 @@
         "rust-overlay": "rust-overlay_2"
       },
       "locked": {
-        "lastModified": 1791533868,
-        "narHash": "sha256-KcNMm4C+07B4ukgs23tQYUi8DDGljSdQBZl3+Ibt0Pk=",
+        "lastModified": 1791608923,
+        "narHash": "sha256-GuMZsOfSawzbOQgmTaSvvbxXw4LWmW6nnVYdfD7meMY=",
         "owner": "sxyazi",
         "repo": "yazi",
-        "rev": "1091972581e0d23ed575be967e9a6ef75a17474b",
+        "rev": "f220cb6fb1018c7c656077e30b1aefbac136f719",
         "type": "github"
       },
       "original": {
