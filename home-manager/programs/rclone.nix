@@ -205,7 +205,7 @@ in
           ExecStopPost = lib.optionals progressEnabled [ "-${progressStop}" ];
           ExecStart = ''
             ${pkgs.rclone}/bin/rclone move \
-                        baidu:baidu/apps/Alist/ \
+                        alist:baidu/apps/Alist/ \
                         /mnt/data/baidu \
                         ${lib.optionalString (!progressEnabled) "--log-systemd"} \
                         ${nativeLogFlags}--stats-one-line \

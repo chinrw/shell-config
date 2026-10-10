@@ -114,10 +114,6 @@ in
   networking.firewall = {
     enable = true;
     allowedTCPPorts = [
-
-      # Alist firewall port
-      5244
-      5246
       5432
 
       5000 # local binary cache
