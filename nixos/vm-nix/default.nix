@@ -189,7 +189,6 @@ in
       "wg-vm-nix/privatekey" = { };
       "ssh_pub_key" = { };
       "access-tokens" = { };
-      "github-runners/Constantinople" = { };
       "github-runners/asterinas-selfhost" = {
         restartUnits = [ "github-runner-asterinas-selfhost.service" ];
       };

@@ -79,16 +79,6 @@ let
     "vm-nix" = {
       proxy = "http://192.168.0.240:10809";
       runners = {
-        # Keep runner1 stable so the existing rex runner retains its state
-        # directory (state lives under the attr name, work under cfg.name —
-        # /var/lib/github-runner/{runner1,Constantinople} respectively).
-        runner1 = {
-          name = "Constantinople";
-          url = "https://github.com/rex-rs/rex";
-          # QEMU opens /dev/kvm with O_RDWR; creating device nodes is not needed.
-          bindPaths = [ "/dev/kvm" ];
-          deviceAllow = [ "/dev/kvm rw" ];
-        };
         asterinas-selfhost = {
           name = "asterinas-selfhost";
           tokenSecret = "asterinas-selfhost";
