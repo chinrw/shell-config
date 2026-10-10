@@ -284,11 +284,11 @@
     "everything-claude-code": {
       "flake": false,
       "locked": {
-        "lastModified": 1791577824,
-        "narHash": "sha256-t80lkpcY97xSYcXFG2dCJYh+l2rr7kdIxX9QPuY785g=",
+        "lastModified": 1791590833,
+        "narHash": "sha256-uGTH0FpEQTGQQmmMArlHZbfT1KrsKdsikIWMGNoRpzg=",
         "owner": "affaan-m",
         "repo": "everything-claude-code",
-        "rev": "5cc14d7c3155c7dcd4059c94b89df4b6303b7cd6",
+        "rev": "8384d609a0e6dc071503f669cb6a581420e23469",
         "type": "github"
       },
       "original": {
@@ -908,11 +908,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1791582175,
-        "narHash": "sha256-DiphG0Q4PSTPCSoGpFQBC7gMsHj+4xLYu0y2TH0n+8I=",
+        "lastModified": 1791591895,
+        "narHash": "sha256-BjMtPiDVeTjz0icUhVuLikfMUuQbrEbi9a2ctc0QrWY=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "430782330a8d063d423a866d76ccebbe410be5df",
+        "rev": "19c766f93edc5352f6f3587929c1c8051ee97647",
         "type": "github"
       },
       "original": {
