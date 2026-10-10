@@ -26,7 +26,12 @@ in
     settings.dns.bind_hosts = [ "127.0.0.1" "192.168.0.241" ];
   };
   networking.firewall.interfaces.eth0 = {
-    allowedTCPPorts = [ 53 ];
+    # 10809 serves the xray HTTP proxy to LAN hosts, so their egress keeps
+    # working while vm-nix, which runs the other proxy, is down.
+    allowedTCPPorts = [
+      53
+      10809
+    ];
     allowedUDPPorts = [ 53 ];
   };
 

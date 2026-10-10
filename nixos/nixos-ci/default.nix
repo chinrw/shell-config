@@ -37,7 +37,7 @@
 
   networking.nameservers = [ "192.168.0.1" ];
   networking.proxy = {
-    default = "http://192.168.0.240:10809";
+    default = "http://192.168.0.241:10809";
     noProxy = (import ../../lib/proxy.nix).noProxy;
   };
 

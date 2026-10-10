@@ -107,7 +107,7 @@ let
             --config <(printf 'user = "%s:%s"\n' ${lib.escapeShellArg address} "$password") \
             --url smtp://smtp.gmail.com:587 --ssl-reqd \
             --cacert ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt \
-            --proxy http://192.168.0.240:10809 --proxytunnel \
+            --proxy http://192.168.0.241:10809 --proxytunnel \
             --mail-from ${lib.escapeShellArg address} --mail-rcpt ${lib.escapeShellArg address} \
             --upload-file "$message" \
             --connect-timeout 15 --max-time 60 \
