@@ -1,0 +1,7 @@
+{
+  "auto-bangumi": {
+    "repository": "ghcr.io/estrellaxd/auto_bangumi",
+    "tag": "latest",
+    "digest": "sha256:2f78516ff5ac59e4bb21a0685db18dc14b72fa9ff8da7260ad6d2ef4cd1e6716"
+  }
+}

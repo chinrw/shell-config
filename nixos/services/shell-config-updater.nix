@@ -45,7 +45,9 @@ let
     runtimeInputs = [
       pkgs.cachix
       pkgs.coreutils
+      pkgs.crane
       pkgs.git
+      pkgs.jq
       pkgs.nix
     ];
     text = ''
@@ -86,6 +88,24 @@ let
         git -C "$repo_dir" commit --amend --no-edit --signoff
         candidate_revision="$(git -C "$repo_dir" rev-parse HEAD)"
       fi
+      ${lib.optionalString cfg.ociRefresh ''
+        # A failed lookup skips the whole run, so main never mixes a new lock
+        # with a stale image.
+        lock="$repo_dir/lib/oci-images.json"
+        # set -e ignores a failure inside a for-loop word list, so a malformed
+        # lock would otherwise end the loop early and still publish.
+        names="$(jq -r 'keys[]' "$lock")" || fail 'cannot read OCI image lock'
+        for name in $names; do
+          ref="$(jq -r --arg n "$name" '.[$n] | "\(.repository):\(.tag)"' "$lock")"
+          digest="$(crane digest "$ref")" || fail "cannot resolve $ref"
+          jq --arg n "$name" --arg d "$digest" '.[$n].digest = $d' "$lock" >"$lock.new"
+          mv "$lock.new" "$lock"
+        done
+        if ! git -C "$repo_dir" diff --quiet; then
+          git -C "$repo_dir" commit --quiet --signoff -m 'chore: Update OCI image digests' -- lib/oci-images.json
+          candidate_revision="$(git -C "$repo_dir" rev-parse HEAD)"
+        fi
+      ''}
 
       [[ -z "$(git -C "$repo_dir" status --porcelain=v1)" ]] \
         || fail 'flake update left a dirty checkout'
@@ -174,6 +194,11 @@ in
       type = lib.types.ints.positive;
       default = 8;
       description = "Number of cores advertised to each Nix build.";
+    };
+    ociRefresh = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Refresh the digests in lib/oci-images.json from their tags and publish them with the lock update.";
     };
     publish = lib.mkOption {
       type = lib.types.bool;
