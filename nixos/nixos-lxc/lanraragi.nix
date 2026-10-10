@@ -18,6 +18,7 @@
   services.lanraragi = {
     enable = true;
     port = 3001;
+    openFirewall = true;
     redis.port = 6381;
   };
 

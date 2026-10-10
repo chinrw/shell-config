@@ -5,7 +5,7 @@
     ./proxy.nix
     ./web.nix
     ./postgresql.nix
-    ./applications.nix
+    ./openlist.nix
     ./lanraragi.nix
     ./runner.nix
   ];
