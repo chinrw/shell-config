@@ -119,6 +119,8 @@ in
 
   # Networks
   systemd.services."docker-network-jellyfin_default" = {
+    requires = [ "docker.service" ];
+    after = [ "docker.service" ];
     path = [ pkgs.docker ];
     serviceConfig = {
       Type = "oneshot";
