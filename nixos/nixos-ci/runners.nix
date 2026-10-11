@@ -15,6 +15,16 @@ let
       esac
     done
   '';
+  # Each runner takes one job at a time, so parallel kikoeru-neo jobs need
+  # one runner each. They keep separate caches so concurrent jobs do not share
+  # a working tree.
+  kikoeruNeoRunner = suffix: {
+    enable = true;
+    name = "kikoeru-neo-nixos-ci${suffix}";
+    url = "https://github.com/chinrw/kikoeru-neo";
+    cacheDir = "/cache/kikoeru-neo-runner${suffix}";
+    labels = [ "kikoeru-neo" ];
+  };
   runners = {
     rex = {
       enable = true;
@@ -23,13 +33,9 @@ let
       cacheDir = "/cache/rex-runner";
       labels = [ "nixos-ci-canary" ];
     };
-    kikoeru-neo = {
-      enable = true;
-      name = "kikoeru-neo-nixos-ci";
-      url = "https://github.com/chinrw/kikoeru-neo";
-      cacheDir = "/cache/kikoeru-neo-runner";
-      labels = [ "kikoeru-neo" ];
-    };
+    kikoeru-neo = kikoeruNeoRunner "";
+    kikoeru-neo-2 = kikoeruNeoRunner "-2";
+    kikoeru-neo-3 = kikoeruNeoRunner "-3";
     stocks = {
       enable = false;
       name = "stocks-nixos-ci-1";
