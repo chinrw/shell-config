@@ -1,6 +1,28 @@
-{ lib, username, ... }:
 {
-  imports = [ ../proxmox-lxc.nix ];
+  config,
+  lib,
+  pkgs,
+  username,
+  ...
+}:
+let
+  sharedGroup = "users";
+in
+{
+  imports = [
+    ../proxmox-lxc.nix
+    (import ../services/aria2.nix {
+      inherit
+        config
+        lib
+        pkgs
+        username
+        sharedGroup
+        ;
+    })
+    ../services/qbittorrent.nix
+    ./autobangumi.nix
+  ];
 
   sops.age.keyFile = "/home/${username}/.config/sops/age/keys.txt";
 

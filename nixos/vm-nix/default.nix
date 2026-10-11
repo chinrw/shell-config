@@ -26,16 +26,6 @@ in
     ./container/jellyfin.nix
     ../services/github-runners.nix
     ../services/samba/wsl-server.nix
-    (import ../services/aria2.nix {
-      inherit
-        config
-        lib
-        pkgs
-        username
-        sharedGroup
-        ;
-    })
-    ../services/qbittorrent.nix
     ../services/nix-serve.nix
     # ../services/factorio.nix
     ./kernel.nix
@@ -66,7 +56,6 @@ in
       "networkmanager"
       "docker"
       "wheel"
-      "aria2"
       "media"
     ];
     shell = pkgs.zsh;
@@ -119,7 +108,6 @@ in
       5000 # local binary cache
       5001 # test webserver1
       5002 # test webserver2
-      7892 # AutoBangumi
 
       8000
       8888 # kik
