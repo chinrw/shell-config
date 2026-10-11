@@ -301,7 +301,7 @@
       checks.x86_64-linux = deployLib.deployChecks self.deploy;
 
       deploy = {
-        # The CLI's Nix builder sends all three profiles to nixos-ci.
+        # The CLI's Nix builder sends every profile to nixos-ci.
         # deploy-rs remoteBuild would instead build on each deployment target.
         remoteBuild = false;
         sshUser = "chin39";
@@ -326,6 +326,13 @@
             profiles.system = {
               user = "root";
               path = deployLib.activate.nixos self.nixosConfigurations.nixos-lxc;
+            };
+          };
+          media-lxc = {
+            hostname = "192.168.0.231";
+            profiles.system = {
+              user = "root";
+              path = deployLib.activate.nixos self.nixosConfigurations.media-lxc;
             };
           };
           vm-nix = {
@@ -353,6 +360,11 @@
           stateVersion = "26.11";
           localCaches = [ "home" ];
           extraModules = [ ./nixos/nixos-lxc ];
+        };
+        "media-lxc" = helpers.mkNixos {
+          hostname = "media-lxc";
+          stateVersion = "26.11";
+          extraModules = [ ./nixos/media-lxc ];
         };
         "wsl" = helpers.mkNixos {
           stateVersion = "25.05";
