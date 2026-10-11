@@ -27,6 +27,13 @@
     publicKey = "vm-nix:5SZMXyCcqGm5z/GJNdx+wRyyE8CKtcvSsaDY0uFp25s=";
   };
 
+  # vm-nix's own nix-serve. Every build on vm-nix is signed, so agents' local
+  # builds there reach other LAN hosts without being rebuilt.
+  vm-nix = {
+    url = "http://192.168.0.240:5000";
+    publicKey = "vm-nix:5SZMXyCcqGm5z/GJNdx+wRyyE8CKtcvSsaDY0uFp25s=";
+  };
+
   # Example — a second network with its own nix-serve and host set.
   # Uncomment, fill in the real key, then add `"office"` to `localCaches` on the
   # hosts that live on that network.

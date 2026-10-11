@@ -361,6 +361,8 @@
         "nixos-ci" = helpers.mkNixos {
           hostname = "nixos-ci";
           stateVersion = "26.11";
+          # CI builds commits that agents already checked on vm-nix.
+          localCaches = [ "vm-nix" ];
           extraModules = [ ./nixos/nixos-ci ];
         };
         "nixos-lxc" = helpers.mkNixos {

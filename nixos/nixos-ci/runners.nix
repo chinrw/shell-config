@@ -23,6 +23,13 @@ let
       cacheDir = "/cache/rex-runner";
       labels = [ "nixos-ci-canary" ];
     };
+    kikoeru-neo = {
+      enable = true;
+      name = "kikoeru-neo-nixos-ci";
+      url = "https://github.com/chinrw/kikoeru-neo";
+      cacheDir = "/cache/kikoeru-neo-runner";
+      labels = [ "kikoeru-neo" ];
+    };
     stocks = {
       enable = false;
       name = "stocks-nixos-ci-1";
