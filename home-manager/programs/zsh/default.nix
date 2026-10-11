@@ -159,6 +159,16 @@ fi
       )
     ];
 
+    # A multi-user install puts Nix on PATH from /etc/profile.d, which only
+    # login shells read. Non-interactive ssh, as used by deploy-rs and
+    # nix copy, reads only .zshenv.
+    envExtra = ''
+      if ! command -v nix-store >/dev/null 2>&1 \
+        && [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+      fi
+    '';
+
     profileExtra = ''
       # Source Nix profile for single user mode
       if [ -e /home/chin39/.nix-profile/etc/profile.d/nix.sh ]; then

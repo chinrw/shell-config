@@ -344,6 +344,14 @@
               path = deployLib.activate.home-manager self.homeConfigurations."chin39@vm-nix";
             };
           };
+          proxmox = {
+            hostname = "192.168.0.254";
+            profiles.home = {
+              user = "chin39";
+              profilePath = "/home/chin39/.local/state/nix/profiles/deploy-rs-home";
+              path = deployLib.activate.home-manager self.homeConfigurations."chin39@proxmox";
+            };
+          };
         };
       };
 
