@@ -23,7 +23,6 @@ in
     inputs.hardware.nixosModules.common-cpu-amd
     ./hardware.nix
     ./wireguard.nix
-    ./jellyfin.nix
     ../services/github-runners.nix
     ../services/samba/wsl-server.nix
     ../services/nix-serve.nix
@@ -128,7 +127,6 @@ in
 
       8765 # local python testing web
       8787
-      8096 # jellyfin
 
       10808
       10809
@@ -140,7 +138,6 @@ in
       53
       22000 # syncthing QUIC sync
       21027 # syncthing local discovery
-      7359 # jellyfin client autodiscovery
       1900 # SSDP / DLNA
     ];
     allowedUDPPortRanges = [

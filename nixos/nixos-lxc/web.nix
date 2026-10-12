@@ -4,8 +4,9 @@ let
   lanAddress = "192.168.0.241";
   tailAddress = "100.95.72.88";
   backends = {
-    openlist = 5244;
-    lrr = 3001;
+    openlist = "127.0.0.1:5244";
+    lrr = "127.0.0.1:3001";
+    jellyfin = "192.168.0.231:8096";
   };
 in
 {
@@ -34,11 +35,11 @@ in
     enable = true;
     openFirewall = false;
     virtualHosts = lib.mapAttrs' (
-      name: port:
+      name: upstream:
       lib.nameValuePair "${name}.${zone}" {
         useACMEHost = zone;
         listenAddresses = [ "0.0.0.0" ];
-        extraConfig = "reverse_proxy 127.0.0.1:${toString port}";
+        extraConfig = "reverse_proxy ${upstream}";
       }
     ) backends;
   };

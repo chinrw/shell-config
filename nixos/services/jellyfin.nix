@@ -1,6 +1,8 @@
+# stateDir holds config-jellyfin and cache, the two directories the old
+# container mounted at /config and /cache.
+{ stateDir }:
 { pkgs, config, ... }:
 let
-  stateDir = "/home/chin39/Documents/container/jellyfin";
   mountsDir = "/home/chin39/mounts";
   mediaDir = "/mnt/data/Video/jellyfin";
   jellyfinCjkFonts = pkgs.symlinkJoin {

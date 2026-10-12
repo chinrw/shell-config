@@ -334,6 +334,11 @@
               user = "root";
               path = deployLib.activate.nixos self.nixosConfigurations.media-lxc;
             };
+            profiles.home = {
+              user = "chin39";
+              profilePath = "/home/chin39/.local/state/nix/profiles/deploy-rs-home";
+              path = deployLib.activate.home-manager self.homeConfigurations."chin39@media-lxc";
+            };
           };
           vm-nix = {
             hostname = "192.168.0.240";
@@ -476,6 +481,17 @@
           features = [
             "atuin-sync"
             "dev-tools"
+          ];
+        };
+        "chin39@media-lxc" = helpers.mkHome {
+          stateVersion = "26.11";
+          hostname = "media-lxc";
+          isServer = true;
+          localCaches = [ "home" ];
+          features = [
+            "atuin-sync"
+            "dev-tools"
+            "rclone"
           ];
         };
         "chin39@proxmox" = helpers.mkHome {
