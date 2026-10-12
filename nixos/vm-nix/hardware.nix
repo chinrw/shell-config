@@ -1,6 +1,7 @@
 {
   lib,
   modulesPath,
+  username,
   ...
 }:
 
@@ -49,6 +50,10 @@
         neededForBoot = true;
       };
       "/var/lib/docker" = btrfs "@docker";
+      # btrbk snapshots @ and @home every 15 minutes, which pins deleted
+      # build output for a day. Build caches live in their own top-level
+      # subvolume so no snapshot ever holds them.
+      "/home/${username}/.cache/build" = btrfs "@cache";
       "/boot" = {
         device = "/dev/disk/by-uuid/A2E0-86A7";
         fsType = "vfat";
