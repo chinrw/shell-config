@@ -23,7 +23,7 @@ in
     inputs.hardware.nixosModules.common-cpu-amd
     ./hardware.nix
     ./wireguard.nix
-    ./container/jellyfin.nix
+    ./jellyfin.nix
     ../services/github-runners.nix
     ../services/samba/wsl-server.nix
     ../services/nix-serve.nix
@@ -61,6 +61,19 @@ in
     shell = pkgs.zsh;
     packages = with pkgs; [ ];
     openssh.authorizedKeys.keys = [ config.sops.secrets.ssh_pub_key.path ];
+  };
+
+  virtualisation.docker = {
+    enable = true;
+    autoPrune = {
+      enable = true;
+      dates = "weekly";
+      flags = [
+        "--all"
+        "--filter"
+        "until=720h"
+      ];
+    };
   };
 
   networking = {
