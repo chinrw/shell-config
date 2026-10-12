@@ -322,7 +322,7 @@
             };
           };
           nixos-lxc = {
-            hostname = "192.168.0.241";
+            hostname = "192.168.0.242";
             profiles.system = {
               user = "root";
               path = deployLib.activate.nixos self.nixosConfigurations.nixos-lxc;

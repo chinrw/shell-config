@@ -46,12 +46,13 @@ home-manager switch --flake .#chin39@archlinux
 
 ### Remote deployment with deploy-rs
 
-deploy-rs deploys the NixOS configuration on `nixos-ci` and `nixos-lxc`, and
-standalone Home Manager on `vm-nix`. Run it from an x86_64 Linux checkout, such
-as vm-nix. You need SSH key access as `chin39`, trusted host keys, and passwordless
-sudo on the two NixOS targets.
+deploy-rs deploys the NixOS configuration on `nixos-ci`, `nixos-lxc` and
+`media-lxc`, and standalone Home Manager on `vm-nix`, `media-lxc` and
+`proxmox`. Run it from an x86_64 Linux checkout, such as vm-nix. You need SSH
+key access as `chin39`, trusted host keys, and passwordless sudo on the NixOS
+targets.
 
-The `nix run .#deploy-rs-ci` entry point sends builds for all three targets, including
+The `nix run .#deploy-rs-ci` entry point sends builds for every target, including
 its automatic checks, to `nixos-ci` (`192.168.0.230`). Cached outputs can still be
 downloaded directly. It allows one remote build at a time with two cores and
 disables local builds for those commands. If an uncached build needs CI while it
@@ -68,7 +69,10 @@ This policy takes effect after `nix run` has prepared the CLI and its launcher.
 | --- | --- |
 | `nixos-ci.system` | `nixosConfigurations.nixos-ci` |
 | `nixos-lxc.system` | `nixosConfigurations.nixos-lxc` |
+| `media-lxc.system` | `nixosConfigurations.media-lxc` |
+| `media-lxc.home` | `homeConfigurations."chin39@media-lxc"` |
 | `vm-nix.home` | `homeConfigurations."chin39@vm-nix"` |
+| `proxmox.home` | `homeConfigurations."chin39@proxmox"` |
 
 Before the first activation, record the current generation and keep a console
 recovery path available. The previous native generation lacks deploy-rs's
@@ -113,7 +117,8 @@ nix develop .#hm
 | System configuration | Machine |
 | --- | --- |
 | `nixosConfigurations.nixos-ci` | Proxmox LXC that refreshes `flake.lock` and prebuilds the cache (see below) |
-| `nixosConfigurations.nixos-lxc` | Proxmox LXC that runs the home services |
+| `nixosConfigurations.nixos-lxc` | Proxmox LXC for running coding agents; it hosts no shared services |
+| `nixosConfigurations.media-lxc` | Proxmox LXC that runs the home services, including the proxy, DNS, OpenList, LANraragi and Jellyfin |
 | `nixosConfigurations.vm-nix` | x86_64-linux server |
 | `nixosConfigurations.wsl` | WSL2 with NVIDIA GPU |
 | `nixosConfigurations.wsl-mini` | WSL2 with AMD GPU |
@@ -132,7 +137,7 @@ The user configurations are:
 `chin39@macos`, `chin39@desktop`, `chin39@vm-nix`, `chin39@wsl`,
 `chin39@wsl-mini`, `chin39@work`, `chin39@vm-work`, `chin39@archlinux`,
 `chin39@arch-lxc`, `chin39@arch-vm`, `chin39@proxmox`, `chin39@nixos-lxc`,
-`chin39@gentoo-server`, `chin39@vm-gentoo`, `ruowen@ringo`
+`chin39@media-lxc`, `chin39@gentoo-server`, `chin39@vm-gentoo`, `ruowen@ringo`
 
 The ThinkPad pairs `nixosConfigurations.work-laptop` with
 `homeConfigurations."chin39@work"`; `nixos/services/shell-config-updater.nix`

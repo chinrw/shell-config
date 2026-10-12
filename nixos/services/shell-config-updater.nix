@@ -25,6 +25,7 @@ let
     ".#nixosConfigurations.nixos-lxc.config.system.build.toplevel"
     ".#nixosConfigurations.media-lxc.config.system.build.toplevel"
     ".#homeConfigurations.\"chin39@nixos-lxc\".activationPackage"
+    ".#homeConfigurations.\"chin39@media-lxc\".activationPackage"
   ];
 
   gitAskPass = pkgs.writeShellScript "${serviceName}-askpass" ''

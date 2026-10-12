@@ -31,12 +31,18 @@
     };
   };
 
-  users.groups.lanraragi = { };
+  # The thumbnails and the redis database came from CT107 with these ids, so
+  # pinning them keeps the copied state owned by the right users without a
+  # recursive chown.
+  users.groups.lanraragi.gid = 995;
   users.users.lanraragi = {
+    uid = 996;
     isSystemUser = true;
     group = "lanraragi";
     extraGroups = [ "users" ];
   };
+  users.groups.redis-lanraragi.gid = 994;
+  users.users.redis-lanraragi.uid = 995;
 
   systemd.services.lanraragi = {
     unitConfig.RequiresMountsFor = [ "/mnt/data" ];

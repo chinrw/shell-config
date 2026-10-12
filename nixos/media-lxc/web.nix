@@ -2,11 +2,11 @@
 let
   zone = "home.midashood.top";
   lanAddress = "192.168.0.241";
-  tailAddress = "100.95.72.88";
+  tailAddress = "100.67.38.92";
   backends = {
     openlist = "127.0.0.1:5244";
     lrr = "127.0.0.1:3001";
-    jellyfin = "192.168.0.231:8096";
+    jellyfin = "127.0.0.1:8096";
   };
 in
 {
@@ -68,6 +68,9 @@ in
       ];
       allowedUDPPorts = [ 53 ];
     };
-    interfaces.eth0.allowedTCPPorts = [ 80 443 ];
+    interfaces.eth0.allowedTCPPorts = [
+      80
+      443
+    ];
   };
 }

@@ -7,7 +7,6 @@ in
 {
   imports = [ ../services/adguardhome.nix ];
 
-  sops.age.keyFile = "/home/chin39/.config/sops/age/keys.txt";
   sops.secrets.xray = {
     sopsFile = ../../secrets/xray.conf;
     format = "binary";
@@ -23,7 +22,10 @@ in
   services.adguardhome = {
     host = "127.0.0.1";
     openFirewall = false;
-    settings.dns.bind_hosts = [ "127.0.0.1" "192.168.0.241" ];
+    settings.dns.bind_hosts = [
+      "127.0.0.1"
+      "192.168.0.241"
+    ];
   };
   networking.firewall.interfaces.eth0 = {
     # 10809 serves the xray HTTP proxy to LAN hosts, so their egress keeps
