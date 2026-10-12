@@ -62,6 +62,7 @@ in
     (import ./programs/rclone.nix {
       inherit config lib pkgs;
       progressEnabled = hasFeature "rclone-progress";
+      downloaderEnabled = hasFeature "rclone-downloader";
     })
   ]
   ++ lib.optionals (hasFeature "restic") [

@@ -30,6 +30,7 @@ let
     dev-tools = "iperf3, clang-tools, par2cmdline and asciinema";
     nix-gc = "daily nix GC from home-manager";
     rclone = "rclone mounts";
+    rclone-downloader = "move Baidu downloads from OpenList into /mnt/data/baidu";
     rclone-progress = "rclone progress logging instead of --log-systemd";
     restic = "restic backups";
     syncthing = "syncthing with the shared device list";
@@ -40,6 +41,10 @@ let
     nix-gc = {
       met = host: host.localCaches != [ ];
       reason = "needs localCaches, because home.nix only writes nix.conf for hosts with local caches";
+    };
+    rclone-downloader = {
+      met = host: builtins.elem "rclone" host.features;
+      reason = "needs rclone, because the downloader lives in the rclone module";
     };
   };
   # Home modules only ever ask whether a name is in the list, so a misspelled
@@ -111,7 +116,14 @@ in
           proxy
           gitProxy
           ;
-        features = checkFeatures { inherit hostname platform localCaches; } features;
+        features = checkFeatures {
+          inherit
+            hostname
+            platform
+            localCaches
+            features
+            ;
+        } features;
       };
       modules = [ ../home-manager/home.nix ];
     };

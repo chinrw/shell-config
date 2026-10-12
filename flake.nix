@@ -520,6 +520,7 @@
             "dev-tools"
             "nix-gc"
             "rclone"
+            "rclone-downloader"
             "rclone-progress"
             "restic"
             "syncthing"

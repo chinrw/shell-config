@@ -3,6 +3,7 @@
   lib,
   pkgs,
   progressEnabled ? false,
+  downloaderEnabled ? false,
   ...
 }:
 
@@ -76,10 +77,14 @@ let
         Service = {
           Type = "notify";
           TimeoutSec = "900";
-          # Drop any stale mount left by an unclean stop; a leftover blocks
-          # every remount ("directory already mounted"). "-" ignores the
-          # error when there is nothing to clean.
-          ExecStartPre = "-/run/wrappers/bin/fusermount -zu ${MOUNT_DIR}";
+          ExecStartPre = [
+            # Drop any stale mount left by an unclean stop; a leftover blocks
+            # every remount ("directory already mounted"). "-" ignores the
+            # error when there is nothing to clean.
+            "-/run/wrappers/bin/fusermount -zu ${MOUNT_DIR}"
+            # rclone does not create the mount point, and a new host has none.
+            "${pkgs.coreutils}/bin/mkdir -p ${MOUNT_DIR}"
+          ];
           ExecStart = ''
             ${pkgs.rclone}/bin/rclone mount \
                         --config=${config.xdg.configHome}/rclone/rclone.conf \
@@ -174,7 +179,9 @@ in
     #   RCLONE_MOUNT_TIMEOUT = "120m";
     #   RCLONE_MOUNT_VFS_CACHE_MAX_AGE = "48h0m0s";
     # })
-    {
+    # The Baidu downloader runs on one host only, or two hosts would race
+    # to move the same files out of /apps/Alist.
+    (lib.optionalAttrs downloaderEnabled {
       # "rclone_onedrive_sync" = {
       #   Unit = {
       #     Description = "rclone onedrive sync";
@@ -228,10 +235,10 @@ in
           ExecStart = "${pkgs.systemd}/bin/systemctl --user restart rclone_downloader.service";
         };
       };
-    }
+    })
   ];
 
-  systemd.user.timers = {
+  systemd.user.timers = lib.optionalAttrs downloaderEnabled {
     "rclone_downloader" = {
       Unit = {
         Description = "Timer for rclone baidu netdisk";
