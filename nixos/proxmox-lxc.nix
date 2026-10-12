@@ -121,13 +121,5 @@
 
   # The image tarball has no entry for /, so PVE creates the root directory
   # 0740. Services running as other users then fail to chdir to /.
-  systemd.tmpfiles.rules = [
-    "z / 0755 - - -"
-    "L+ /run/current-system - - - - /nix/var/nix/profiles/system"
-  ];
-
-  # On first boot the system profile does not exist yet. register-nix-paths
-  # creates it from /run/current-system, so it must run before the rule above
-  # repoints that link at the profile.
-  systemd.services.register-nix-paths.before = [ "systemd-tmpfiles-setup.service" ];
+  systemd.tmpfiles.rules = [ "z / 0755 - - -" ];
 }
