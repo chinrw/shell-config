@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 let
   flaresolverrSkill = pkgs.writeText "flaresolverr-skill.md" ''
     ---
@@ -45,8 +45,12 @@ let
     ```bash
     SESSION=$(curl -s -X POST http://localhost:8191/v1 \
       -H 'Content-Type: application/json' \
-      -d '{"cmd":"sessions.create"}' | jq -r '.session')
+      -d '{"cmd":"sessions.create","proxy":{"url":"http://192.168.0.240:10809"}}' | jq -r '.session')
     ```
+
+    Pass the proxy here. A session keeps the browser it was created with,
+    so a `proxy` block on a later `request.*` that names this session has
+    no effect.
 
     Reuse the session across multiple requests to the same site to keep
     cookies. Each fresh request without a session spawns a new browser
@@ -66,9 +70,10 @@ let
       }" | jq '.solution.response'    # HTML body
     ```
 
-    The `proxy` block is **required** for this setup — without it,
-    Chromium fetches direct and bypasses the operator's egress proxy.
-    Always include it. The URL is fixed; do not change it.
+    The `proxy` block is **required** for a request without a session —
+    without it, Chromium fetches direct and bypasses the operator's egress
+    proxy. With a session, the proxy given at `sessions.create` applies.
+    The URL is fixed; do not change it.
 
     `maxTimeout` is in **milliseconds**, default 60000. Bump to 120000 for
     slow sites or 30000 to fail-fast.
@@ -99,8 +104,8 @@ let
       -d "{\"cmd\":\"sessions.destroy\",\"session\":\"$SESSION\"}" > /dev/null
     ```
 
-    Sessions auto-close after ~10min idle — explicit destroy isn't
-    mandatory but is polite (frees the browser instance).
+    Always destroy a session when done; each open session keeps a
+    Chromium process running.
 
     ## Response structure
 
@@ -130,15 +135,15 @@ let
     Fetching a CF-protected feed:
 
     ```bash
-    # 1. open session
+    # 1. open session (the proxy is fixed for the session's lifetime)
     SESSION=$(curl -s -X POST http://localhost:8191/v1 \
       -H 'Content-Type: application/json' \
-      -d '{"cmd":"sessions.create"}' | jq -r '.session')
+      -d '{"cmd":"sessions.create","proxy":{"url":"http://192.168.0.240:10809"}}' | jq -r '.session')
 
-    # 2. fetch through it (with proxy)
+    # 2. fetch through it
     curl -s -X POST http://localhost:8191/v1 \
       -H 'Content-Type: application/json' \
-      -d "{\"cmd\":\"request.get\",\"url\":\"https://protected.example.com/feed\",\"maxTimeout\":60000,\"session\":\"$SESSION\",\"proxy\":{\"url\":\"http://192.168.0.240:10809\"}}" \
+      -d "{\"cmd\":\"request.get\",\"url\":\"https://protected.example.com/feed\",\"maxTimeout\":60000,\"session\":\"$SESSION\"}" \
       | jq -r '.solution.response' > /tmp/feed.html
 
     # 3. clean up
@@ -155,14 +160,14 @@ let
       fresh-browser per request. Use it whenever fetching multiple pages
       from the same site.
     - **Proxy is mandatory** in this deployment — `http://192.168.0.240:10809`.
-      Include it in every `request.*` call.
+      Pass it to `sessions.create`, or to each `request.*` that has no session.
     - **No JSON bodies.** `request.post` only accepts form-encoded
       `postData`. For JSON APIs that don't need CF bypass, use plain curl.
-    - **Healthcheck**: `sudo docker ps --filter name=flaresolverr` should
-      show `(healthy)`. If unhealthy, `sudo docker logs flaresolverr`.
-    - **No HTML in logs**: `LOG_HTML=false` is set on the container, so
-      response bodies aren't logged. Flip it to `true` in the nix module
-      if debugging.
+    - **Health**: `curl -s http://localhost:8191/` returns
+      `FlareSolverr is ready!`. It runs as the host service `flaresolverr`;
+      the owner reads its logs with `journalctl -u flaresolverr`.
+    - **No HTML in logs**: `LOG_HTML=false` is set on the service, so
+      response bodies aren't logged.
     - **Captcha**: `CAPTCHA_SOLVER=none` — flaresolverr can't solve hCaptcha
       or reCAPTCHA. If a site requires those, this tool won't help; pivot
       to manual collection or accept defeat.
@@ -171,70 +176,25 @@ let
   '';
 in
 {
-  virtualisation.docker.enable = lib.mkDefault true;
-  virtualisation.oci-containers.backend = lib.mkDefault "docker";
-
-  # Open 8191 to the LAN so flaresolverr is reachable from other
-  # devices. Merged with the host-wide allowedTCPPorts list in
-  # nixos/vm-nix/default.nix — NixOS unions list options.
-  networking.firewall.allowedTCPPorts = [ 8191 ];
-
-  virtualisation.oci-containers.containers."flaresolverr" = {
-    image = "ghcr.io/flaresolverr/flaresolverr:latest";
-
-    # Proxy env covers anything flaresolverr itself fetches outside of
-    # Chromium (image pulls within the container, package indexes if it
-    # ever updates, etc.). Chromium itself ignores HTTP_PROXY env vars —
-    # to route browser traffic through the proxy you must pass a
-    # `"proxy":{"url":"http://192.168.0.240:10809"}` block in each
-    # /v1 request payload. See "How hermes uses it" comment below.
-    environment = {
-      "LOG_LEVEL" = "info";
-      "LOG_HTML" = "false";
-      "CAPTCHA_SOLVER" = "none";
-      "TZ" = "Asia/Shanghai";
-
-      "http_proxy" = "http://192.168.0.240:10809";
-      "https_proxy" = "http://192.168.0.240:10809";
-      "no_proxy" = "127.0.0.1,localhost,192.168.0.0/24";
-      "HTTP_PROXY" = "http://192.168.0.240:10809";
-      "HTTPS_PROXY" = "http://192.168.0.240:10809";
-      "NO_PROXY" = "127.0.0.1,localhost,192.168.0.0/24";
-    };
-
-    # LAN-accessible bind on all interfaces (0.0.0.0:8191). Anything on
-    # 192.168.0.0/24 can hit the API.
-    #
-    # ⚠ Security note: the flaresolverr /v1 endpoint is UNAUTHENTICATED.
-    # Anyone with LAN reach can submit arbitrary URLs to be fetched
-    # through your egress proxy, including authenticated pages whose
-    # session cookies they supply. That's fine on a trusted home LAN;
-    # don't enable this on a multi-tenant network. If you ever expose
-    # this VM beyond the home LAN, add a firewall rule or move back to
-    # the previous 127.0.0.1 bind.
-    ports = [ "8191:8191/tcp" ];
-
-    log-driver = "journald";
-
-    extraOptions = [
-      # Chromium crashes without enough shared memory.
-      "--shm-size=1g"
-      # Health probe — TCP-connect to 8191; container marked unhealthy
-      # if flaresolverr's Python server has crashed but the container
-      # is still up.
-      "--health-cmd=python3 -c 'import socket,sys; s=socket.socket(); s.settimeout(3); s.connect((\"127.0.0.1\",8191)); s.close()' || exit 1"
-      "--health-interval=30s"
-      "--health-timeout=5s"
-      "--health-retries=3"
-      "--health-start-period=30s"
-    ];
+  services.flaresolverr = {
+    enable = true;
+    # The API is unauthenticated; the LAN is trusted to submit fetches.
+    openFirewall = true;
   };
 
-  systemd.services."docker-flaresolverr" = {
-    serviceConfig = {
-      Restart = lib.mkOverride 90 "on-failure";
-      RestartSec = "10s";
-    };
+  # Chromium ignores these and takes its proxy from each request's `proxy`
+  # field. They cover what FlareSolverr's Python layer fetches itself.
+  systemd.services.flaresolverr.environment = {
+    LOG_LEVEL = "info";
+    LOG_HTML = "false";
+    CAPTCHA_SOLVER = "none";
+    TZ = "Asia/Shanghai";
+    http_proxy = "http://192.168.0.240:10809";
+    https_proxy = "http://192.168.0.240:10809";
+    no_proxy = "127.0.0.1,localhost,192.168.0.0/24";
+    HTTP_PROXY = "http://192.168.0.240:10809";
+    HTTPS_PROXY = "http://192.168.0.240:10809";
+    NO_PROXY = "127.0.0.1,localhost,192.168.0.0/24";
   };
 
   # ── Install the SKILL.md into hermes' skills tree ────────────────────
@@ -258,29 +218,4 @@ in
     '';
     deps = [ "users" ];
   };
-
-  # ── How hermes-agent uses it ────────────────────────────────────────
-  #
-  # From inside the hermes container (--network=host), the agent's
-  # terminal tool can call:
-  #
-  #   curl -s -X POST http://localhost:8191/v1 \
-  #     -H 'Content-Type: application/json' \
-  #     -d '{
-  #       "cmd": "request.get",
-  #       "url": "https://protected.example.com/page",
-  #       "maxTimeout": 60000,
-  #       "proxy": {"url": "http://192.168.0.240:10809"}
-  #     }'
-  #
-  # The "proxy" key tells Selenium to launch Chromium with
-  # --proxy-server pointing at your HTTP proxy — same egress path as
-  # hermes' other traffic. Without that key, Chromium goes direct
-  # (which on this VM still works for most sites, but bypasses your
-  # proxy's caching/logging/CN-egress controls).
-  #
-  # The env vars set above ONLY help for any non-Chromium HTTP calls
-  # flaresolverr's Python layer makes (rare). Chromium ignores process
-  # env proxy — it must be told at launch time via the per-request
-  # "proxy" field.
 }
