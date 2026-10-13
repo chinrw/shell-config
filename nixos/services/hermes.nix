@@ -678,7 +678,7 @@ in
 
   # A bind taken before /mnt/data is up captures the empty mountpoint instead
   # of the virtiofs share. RequiresMountsFor implies Requires/After on
-  # mnt-data.mount (jellyfin.nix:101).
+  # mnt-data.mount.
   systemd.services.hermes-agent.unitConfig.RequiresMountsFor = [ mediaRoot ];
 
   # Reconcile named profiles before Gateway startup.

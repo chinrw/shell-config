@@ -48,7 +48,7 @@ in
         mediaDir
         stateDir
       ];
-      # Keep retrying while rclone is down; the next start re-runs the check.
+      # Keep retrying while rclone is down. The next start re-runs the check.
       StartLimitIntervalSec = 0;
     };
     serviceConfig = {

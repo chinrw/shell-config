@@ -178,7 +178,7 @@ in
 {
   services.flaresolverr = {
     enable = true;
-    # The API is unauthenticated; the LAN is trusted to submit fetches.
+    # The API is unauthenticated, so any LAN host can submit fetches.
     openFirewall = true;
   };
 
@@ -200,7 +200,7 @@ in
   # ── Install the SKILL.md into hermes' skills tree ────────────────────
   # The hermes gateway scans /data/.hermes/skills/**/SKILL.md at startup
   # and offers each matching skill to the LLM as available context.
-  # `install -D` creates parent dirs; ownership matches the hermes user
+  # `install -D` creates parent dirs. Ownership matches the hermes user
   # so the gateway can read it through normal group perms.
   #
   # Runs on every nixos-rebuild — the file becomes a fresh copy of the

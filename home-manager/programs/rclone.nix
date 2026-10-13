@@ -78,7 +78,7 @@ let
           Type = "notify";
           TimeoutSec = "900";
           ExecStartPre = [
-            # Drop any stale mount left by an unclean stop; a leftover blocks
+            # Drop any stale mount left by an unclean stop. A leftover blocks
             # every remount ("directory already mounted"). "-" ignores the
             # error when there is nothing to clean.
             "-/run/wrappers/bin/fusermount -zu ${MOUNT_DIR}"
