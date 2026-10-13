@@ -114,6 +114,21 @@
   # circuiting the forget/prune/check chain, and OnFailure fires.
   systemd.user.services.restic-backups-vm-nix.Service.SuccessExitStatus = "3";
 
+  # 115's open API sometimes rejects every request for half an hour, longer
+  # than the 15 minutes restic retries a backend call before it gives up.
+  # Run the unit again once the outage has passed instead of losing the day.
+  systemd.user.services.restic-backups-vm-nix.Service.Restart = "on-failure";
+  systemd.user.services.restic-backups-vm-nix.Service.RestartSec = "30min";
+
+  # Without RestartMode=direct every failed attempt passes through "failed"
+  # and sends its own email. With it, OnFailure fires only when the start
+  # limit blocks the next retry. Three starts in 12 hours allows two retries
+  # even when every attempt runs for two hours, and the window closes before
+  # the next 03:00 run, so a persistent failure still sends one email a day.
+  systemd.user.services.restic-backups-vm-nix.Service.RestartMode = "direct";
+  systemd.user.services.restic-backups-vm-nix.Unit.StartLimitIntervalSec = "12h";
+  systemd.user.services.restic-backups-vm-nix.Unit.StartLimitBurst = 3;
+
   # Leave the unit completely alone on `home-manager switch`. sd-switch
   # (the default HM activator) honours X-SwitchMethod=keep-old and will
   # NOT start, restart, or stop this unit — even if it changed.
