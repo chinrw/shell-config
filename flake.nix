@@ -379,6 +379,7 @@
         "media-lxc" = helpers.mkNixos {
           hostname = "media-lxc";
           stateVersion = "26.11";
+          localCaches = [ "home" ];
           extraModules = [ ./nixos/media-lxc ];
         };
         "wsl" = helpers.mkNixos {
