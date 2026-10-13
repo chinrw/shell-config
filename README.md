@@ -118,7 +118,7 @@ nix develop .#hm
 | --- | --- |
 | `nixosConfigurations.nixos-ci` | Proxmox LXC that refreshes `flake.lock` and prebuilds the cache (see below) |
 | `nixosConfigurations.nixos-lxc` | Proxmox LXC for running coding agents; it hosts no shared services |
-| `nixosConfigurations.media-lxc` | Proxmox LXC that runs the home services, including the proxy, DNS, OpenList, LANraragi and Jellyfin |
+| `nixosConfigurations.media-lxc` | Proxmox LXC that runs the home services, including the proxy, a tailnet exit node, DNS, OpenList, LANraragi and Jellyfin |
 | `nixosConfigurations.vm-nix` | x86_64-linux server |
 | `nixosConfigurations.wsl` | WSL2 with NVIDIA GPU |
 | `nixosConfigurations.wsl-mini` | WSL2 with AMD GPU |

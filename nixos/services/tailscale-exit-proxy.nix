@@ -36,12 +36,17 @@ let
 in
 {
   networking.firewall.trustedInterfaces = [ tsIface ];
-  networking.firewall.checkReversePath = false;
+  networking.firewall.checkReversePath = lib.mkDefault false;
 
   networking.firewall.extraCommands = ''
     while ${ip} -4 rule del fwmark ${toString fwMark} lookup ${toString routeTable} 2>/dev/null; do :; done
     ${ip} -4 rule add fwmark ${toString fwMark} lookup ${toString routeTable}
     ${ip} -4 route replace local 0.0.0.0/0 dev lo table ${toString routeTable}
+    # Reverse-path checks that honour the mark (src_valid_mark, which tailscaled
+    # sets outside nodivert mode, or rpfilter --validmark) look the client's
+    # source up in this table. Without the throw it hits the local route and
+    # the packet is dropped as a martian.
+    ${ip} -4 route replace throw 100.64.0.0/10 table ${toString routeTable}
 
     ${nft} delete table ip ts_tproxy 2>/dev/null || true
     ${nft} -f ${rulesetFile}
@@ -51,5 +56,6 @@ in
     ${nft} delete table ip ts_tproxy 2>/dev/null || true
     while ${ip} -4 rule del fwmark ${toString fwMark} lookup ${toString routeTable} 2>/dev/null; do :; done
     ${ip} -4 route del local 0.0.0.0/0 dev lo table ${toString routeTable} 2>/dev/null || true
+    ${ip} -4 route del throw 100.64.0.0/10 table ${toString routeTable} 2>/dev/null || true
   '';
 }
