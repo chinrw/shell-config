@@ -72,13 +72,15 @@ let
                   "timeout": "The task exceeded its time limit",
                   "watchdog": "The task stopped responding to watchdog checks",
                   "oom-kill": "The system ran out of memory and terminated the process",
-                  "start-limit-hit": "Too many start attempts; further starts were blocked",
+                  "start-limit-hit": "The service kept failing and systemd stopped retrying it",
                   "resources": "The service could not start because setup or resource allocation failed",
               }.get(result, f"The service reported an unexpected result: {result}")
               if status and result == "exit-code":
                   reason += f" (exit code {status})"
               elif status and result in ("signal", "core-dump"):
                   reason += f" ({status})"
+              elif status and result == "start-limit-hit":
+                  reason += f" (last exit status {status})"
               command = ["journalctl"]
               if scope == "user":
                   command.append("--user")
