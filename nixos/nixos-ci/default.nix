@@ -43,7 +43,7 @@
 
   nix.settings = {
     max-jobs = 1;
-    cores = 2;
+    cores = 6;
   };
 
   users.groups.ci.gid = 1001;
