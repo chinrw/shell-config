@@ -8,7 +8,6 @@
 }:
 {
   sops = {
-    age.keyFile = "/home/${username}/.config/sops/age/keys.txt"; # must have no password!
     defaultSopsFile = ../../secrets/hosts.yaml;
     defaultSopsFormat = "yaml";
 
