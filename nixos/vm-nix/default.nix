@@ -8,7 +8,6 @@
   ...
 }:
 let
-  sharedGroup = "users";
   # Backport Xray #6095; drop when stable Nixpkgs includes it.
   xrayPatched = pkgs.xray.overrideAttrs (old: {
     patches = (old.patches or [ ]) ++ [
@@ -138,7 +137,6 @@ in
       53
       22000 # syncthing QUIC sync
       21027 # syncthing local discovery
-      1900 # SSDP / DLNA
     ];
     allowedUDPPortRanges = [
       # { from = 4000; to = 4007; }
@@ -267,13 +265,11 @@ in
   # mount tag, which must match the Proxmox directory-mapping id (dirid=data)
   # attached to this VM's hardware.
   #
-  # Permissions: virtiofs passes host uid/gid through verbatim (no CIFS-style
-  # uid=/gid= remapping). The host dataset (elysion/data, acltype=posixacl)
-  # carries setgid dirs + POSIX default ACLs granting group 100 (${sharedGroup})
-  # rwx, and the device is attached with expose-acl=1 — so files created by
-  # chin39, aria2, or the factorio DynamicUser (all in `${sharedGroup}`) stay
-  # group-writable for the others regardless of the writer's umask. See
-  # nixos/services/factorio.nix for the group-permission note.
+  # virtiofs passes host uids and gids through unchanged, with no CIFS-style
+  # uid=/gid= remapping. The host dataset (elysion/data, acltype=posixacl) has
+  # setgid directories and POSIX default ACLs that grant group 100 (users) rwx,
+  # and the device is attached with expose-acl=1. Files that any member of
+  # users creates therefore stay group-writable whatever the writer's umask.
   fileSystems."/mnt/data" = {
     device = "data";
     fsType = "virtiofs";
