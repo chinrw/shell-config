@@ -48,8 +48,7 @@
       # key. On darwin that resolves to `inputs.nixpkgs-unstable` (the darwin/HM
       # build channel), NOT the input named `nixpkgs` (which is nixos-unstable).
       # nixPath still maps it (a registry indirection) so `<nixpkgs>` stays defined.
-      registry =
-        lib.mapAttrs (_: flake: { inherit flake; }) (removeAttrs flakeInputs [ "nixpkgs" ]);
+      registry = lib.mapAttrs (_: flake: { inherit flake; }) (removeAttrs flakeInputs [ "nixpkgs" ]);
       nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
 
       gc = {

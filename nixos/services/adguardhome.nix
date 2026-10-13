@@ -1,4 +1,9 @@
-{ inputs, lib, pkgs, ... }:
+{
+  inputs,
+  lib,
+  pkgs,
+  ...
+}:
 let
   # Domestic names use AliDNS and DNSPod directly; other names use dnscrypt-proxy.
   chinaDnsUpstreams =

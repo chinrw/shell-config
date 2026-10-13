@@ -38,41 +38,41 @@ in
   # Other entries, which zellij owns and rewrites, pass through untouched.
   # Running sessions keep their in-memory permissions until restarted.
   home.activation.zjSysinfoPermissions = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    ZELLIJ_CACHE_DIR="${zellijCacheDir}"
-    ZELLIJ_PERMISSIONS="$ZELLIJ_CACHE_DIR/permissions.kdl"
-    ZJ_SYSINFO_PLUGIN_PATH="${config.xdg.configHome}/zellij-plugins/zj-sysinfo.wasm"
+        ZELLIJ_CACHE_DIR="${zellijCacheDir}"
+        ZELLIJ_PERMISSIONS="$ZELLIJ_CACHE_DIR/permissions.kdl"
+        ZJ_SYSINFO_PLUGIN_PATH="${config.xdg.configHome}/zellij-plugins/zj-sysinfo.wasm"
 
-    run ${pkgs.coreutils}/bin/mkdir -p "$ZELLIJ_CACHE_DIR"
+        run ${pkgs.coreutils}/bin/mkdir -p "$ZELLIJ_CACHE_DIR"
 
-    {
-      # Drop our own block. permissions.kdl blocks are flat, so matching the
-      # quoted path and skipping to the next `}` is enough.
-      if [ -f "$ZELLIJ_PERMISSIONS" ]; then
-        ${pkgs.gawk}/bin/awk -v target="$ZJ_SYSINFO_PLUGIN_PATH" '
-          {
-              line = $0
-              sub(/^[ \t]+/, "", line)
-              sub(/[ \t]+$/, "", line)
-              if (skip) {
-                  if (line == "}") { skip = 0 }
-                  next
+        {
+          # Drop our own block. permissions.kdl blocks are flat, so matching the
+          # quoted path and skipping to the next `}` is enough.
+          if [ -f "$ZELLIJ_PERMISSIONS" ]; then
+            ${pkgs.gawk}/bin/awk -v target="$ZJ_SYSINFO_PLUGIN_PATH" '
+              {
+                  line = $0
+                  sub(/^[ \t]+/, "", line)
+                  sub(/[ \t]+$/, "", line)
+                  if (skip) {
+                      if (line == "}") { skip = 0 }
+                      next
+                  }
+                  if (line == "\"" target "\" {") { skip = 1; next }
+                  print
               }
-              if (line == "\"" target "\" {") { skip = 1; next }
-              print
-          }
-        ' "$ZELLIJ_PERMISSIONS"
-      fi
-      ${pkgs.coreutils}/bin/cat <<EOF
-"$ZJ_SYSINFO_PLUGIN_PATH" {
-    ReadApplicationState
-    FullHdAccess
-    MessageAndLaunchOtherPlugins
-    RunCommands
-}
-EOF
-    } > "$ZELLIJ_PERMISSIONS.hm-new"
+            ' "$ZELLIJ_PERMISSIONS"
+          fi
+          ${pkgs.coreutils}/bin/cat <<EOF
+    "$ZJ_SYSINFO_PLUGIN_PATH" {
+        ReadApplicationState
+        FullHdAccess
+        MessageAndLaunchOtherPlugins
+        RunCommands
+    }
+    EOF
+        } > "$ZELLIJ_PERMISSIONS.hm-new"
 
-    run ${pkgs.coreutils}/bin/mv -f "$ZELLIJ_PERMISSIONS.hm-new" "$ZELLIJ_PERMISSIONS"
+        run ${pkgs.coreutils}/bin/mv -f "$ZELLIJ_PERMISSIONS.hm-new" "$ZELLIJ_PERMISSIONS"
   '';
 
   # programs.zellij = {

@@ -1,7 +1,8 @@
-{ pkgs
-, lib
-, inputs
-, ...
+{
+  pkgs,
+  lib,
+  inputs,
+  ...
 }:
 
 let
@@ -32,18 +33,20 @@ let
 
 in
 (pkgs.linuxManualConfig.override {
-  buildPackages = pkgs.buildPackages // { stdenv = llvmStdenv; };
+  buildPackages = pkgs.buildPackages // {
+    stdenv = llvmStdenv;
+  };
 })
-{
-  version = "${fullVersion}-rolling";
-  modDirVersion = fullVersion;
+  {
+    version = "${fullVersion}-rolling";
+    modDirVersion = fullVersion;
 
-  src = kernelSrc;
+    src = kernelSrc;
 
-  configfile = ./kernel.config;
+    configfile = ./kernel.config;
 
-  features.efiBootStub = true;
+    features.efiBootStub = true;
 
-  stdenv = llvmStdenv;
-  extraMakeFlags = [ "LLVM=1" ];
-}
+    stdenv = llvmStdenv;
+    extraMakeFlags = [ "LLVM=1" ];
+  }
