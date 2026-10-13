@@ -48,8 +48,8 @@ home-manager switch --flake .#chin39@archlinux
 ### Remote deployment with deploy-rs
 
 deploy-rs deploys the NixOS configuration on `nixos-ci`, `nixos-lxc` and
-`media-lxc`, and standalone Home Manager on `vm-nix`, `media-lxc` and
-`proxmox`. Run it from an x86_64 Linux checkout, such as vm-nix. You need SSH
+`media-lxc`, and standalone Home Manager on `nixos-ci`, `vm-nix`,
+`media-lxc` and `proxmox`. Run it from an x86_64 Linux checkout, such as vm-nix. You need SSH
 key access as `chin39`, trusted host keys, and passwordless sudo on the NixOS
 targets.
 
@@ -70,6 +70,7 @@ and its launcher.
 | Target | Configuration |
 | --- | --- |
 | `nixos-ci.system` | `nixosConfigurations.nixos-ci` |
+| `nixos-ci.home` | `homeConfigurations."chin39@nixos-ci"` |
 | `nixos-lxc.system` | `nixosConfigurations.nixos-lxc` |
 | `media-lxc.system` | `nixosConfigurations.media-lxc` |
 | `media-lxc.home` | `homeConfigurations."chin39@media-lxc"` |

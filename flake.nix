@@ -320,6 +320,11 @@
               user = "root";
               path = deployLib.activate.nixos self.nixosConfigurations.nixos-ci;
             };
+            profiles.home = {
+              user = "chin39";
+              profilePath = "/home/chin39/.local/state/nix/profiles/deploy-rs-home";
+              path = deployLib.activate.home-manager self.homeConfigurations."chin39@nixos-ci";
+            };
           };
           nixos-lxc = {
             hostname = "192.168.0.242";
@@ -473,6 +478,14 @@
           hostname = "arch-lxc";
           isServer = true;
           localCaches = [ "home" ];
+        };
+        "chin39@nixos-ci" = helpers.mkHome {
+          stateVersion = "26.11";
+          hostname = "nixos-ci";
+          isServer = true;
+          # nixos-ci serves the "home" cache itself.
+          localCaches = [ "vm-nix" ];
+          features = [ "atuin-sync" ];
         };
         "chin39@nixos-lxc" = helpers.mkHome {
           stateVersion = "25.05";

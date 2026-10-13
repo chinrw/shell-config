@@ -22,6 +22,7 @@ let
     ".#homeConfigurations.\"chin39@work\".activationPackage"
     ".#nixosConfigurations.work-laptop.config.system.build.toplevel"
     ".#nixosConfigurations.nixos-ci.config.system.build.toplevel"
+    ".#homeConfigurations.\"chin39@nixos-ci\".activationPackage"
     ".#nixosConfigurations.nixos-lxc.config.system.build.toplevel"
     ".#nixosConfigurations.media-lxc.config.system.build.toplevel"
     ".#homeConfigurations.\"chin39@nixos-lxc\".activationPackage"
