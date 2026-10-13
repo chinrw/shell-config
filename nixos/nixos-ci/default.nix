@@ -41,9 +41,12 @@
     noProxy = (import ../../lib/proxy.nix).noProxy;
   };
 
+  # One build at a time keeps the daemon inside the slice's 6G limit. Six
+  # cores triples rustc and link parallelism over two without letting a wide
+  # dependency build fill this 8 GiB container.
   nix.settings = {
     max-jobs = 1;
-    cores = 2;
+    cores = 6;
   };
 
   users.groups.ci.gid = 1001;
