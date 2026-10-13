@@ -52,8 +52,11 @@
       "/var/lib/docker" = btrfs "@docker";
       # btrbk snapshots @ and @home every 15 minutes, which pins deleted
       # build output for a day. Build caches live in their own top-level
-      # subvolume so no snapshot ever holds them.
-      "/home/${username}/.cache/build" = btrfs "@cache";
+      # subvolume so no snapshot ever holds them. nofail because losing the
+      # subvolume only costs rebuilds, not the boot.
+      "/home/${username}/.cache/build" = btrfs "@cache" // {
+        options = (btrfs "@cache").options ++ [ "nofail" ];
+      };
       "/boot" = {
         device = "/dev/disk/by-uuid/A2E0-86A7";
         fsType = "vfat";
