@@ -104,6 +104,12 @@
     ];
   };
 
+  # Every pack is one upload, and OpenList turns each upload into several 115
+  # API calls plus a re-list of the parent folder. 64 MiB packs, up from the
+  # 16 MiB default, cut those calls to about a quarter. The variable also
+  # reaches prune, so repacked data does not fall back to small packs.
+  systemd.user.services.restic-backups-vm-nix.Service.Environment = [ "RESTIC_PACK_SIZE=64" ];
+
   # Ordering: HM sops-nix renders secrets via a user service; wait for it.
   systemd.user.services.restic-backups-vm-nix.Unit.After = [ "sops-nix.service" ];
 
