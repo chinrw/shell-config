@@ -10,6 +10,7 @@
     cachixConfigFile = "/var/lib/ci-secrets/shell-config-updater/cachix.dhall";
     maxJobs = 1;
     cores = 2;
+    ociRefresh = true;
     publish = true;
   };
 
