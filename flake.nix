@@ -332,6 +332,11 @@
               user = "root";
               path = deployLib.activate.nixos self.nixosConfigurations.nixos-lxc;
             };
+            profiles.home = {
+              user = "chin39";
+              profilePath = "/home/chin39/.local/state/nix/profiles/deploy-rs-home";
+              path = deployLib.activate.home-manager self.homeConfigurations."chin39@nixos-lxc";
+            };
           };
           media-lxc = {
             hostname = "192.168.0.231";
