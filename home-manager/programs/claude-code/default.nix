@@ -563,15 +563,20 @@ let
   # and the docs say that disables the plugin sweep with it — so on these
   # hosts the switch is the only update path guaranteed by the documented
   # contract, for ALL plugins. Third-party marketplaces never auto-update
-  # regardless (their autoUpdate flag is managed-settings-only). Explicit HTTPS clone URLs are deliberate —
-  # the CLI's owner/repo shorthand clones over SSH, which fails on hosts
-  # without GitHub keys. Every step warns instead of aborting so an offline
-  # switch still succeeds and the next switch retries. The subshell keeps the
-  # git PATH prefix (needed by the CLI's marketplace clone) out of later
-  # activation steps.
+  # regardless (their autoUpdate flag is managed-settings-only).
+  # `marketplace add` takes the owner/repo shorthand because the CLI refuses a
+  # source that differs from the github entry in extraKnownMarketplaces, and
+  # an https:// URL counts as a different source. The shorthand clones over
+  # SSH, so the git insteadOf rewrite sends it over HTTPS for hosts without
+  # GitHub keys. Every step warns instead of aborting so an offline switch
+  # still succeeds and the next switch retries. The subshell keeps the git
+  # PATH prefix and rewrite out of later activation steps.
   pluginBootstrapActivation = ''
     (
     export PATH="${pkgs.git}/bin:$PATH"
+    export GIT_CONFIG_COUNT=1
+    export GIT_CONFIG_KEY_0="url.https://github.com/.insteadOf"
+    export GIT_CONFIG_VALUE_0="git@github.com:"
     CLAUDE_PLUGINS="${config.home.homeDirectory}/.claude/plugins"
   ''
   + lib.concatStrings (
@@ -579,7 +584,7 @@ let
       mp_loc="$(${pkgs.jq}/bin/jq -r '."${name}".installLocation // ""' \
         "$CLAUDE_PLUGINS/known_marketplaces.json" 2>/dev/null || true)"
       if [ -z "$mp_loc" ]; then
-        run ${claudeCodePackage}/bin/claude plugin marketplace add "https://github.com/${repo}" \
+        run ${claudeCodePackage}/bin/claude plugin marketplace add "${repo}" \
           || echo "claude-code activation: marketplace add ${name} failed; will retry next switch" >&2
       elif [ ! -f "$mp_loc/.claude-plugin/marketplace.json" ]; then
         run ${claudeCodePackage}/bin/claude plugin marketplace update "${name}" \
