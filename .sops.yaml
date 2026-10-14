@@ -1,6 +1,6 @@
 # Rules are checked top to bottom and the first match wins.
 keys:
-  - &admin age1q67cwhfa29lqftt8cyeqeaftztz34edkfmxrc345ljalq7zpve4qr8d6zn
+  - &admin age18jx7h6hs4cgcdxu9pda5x0t6g6ee7y0egekdnts0as2c7uxdeelqsugx7k
   - &vm-nix age1nep8tx2m2dpezsl7nh3t4g2008d8gf42cq2665r0skc8r7c2092qldwzcu
   - &nixos-lxc age1lhs50pqy6qhnkvttq3ksl48rslj286w7fet2akt00zcxh7vcesrq60pl3x
   - &media-lxc age1vjrzhuuvzllck9u6wtnnhr7rtdrez6quuedylaqvz5psfcphggaqq4lx99
