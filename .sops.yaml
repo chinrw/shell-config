@@ -7,7 +7,8 @@ keys:
   - &nixos-ci age12m82lk8k3slk02fxwqkze27s62qra743870n4djhgn2v6yfra3hqcv3fvz
   - &proxmox age1c2k0c8paah0tgqcxtxn8gf98300eyyt84hwhquxvp3n2qtarcfxq4zvd8n
   - &macos age1cx7t4e9tkd6n3j60r9ek99c4v89lx389yp3nhsln9gawqn6yr4yqd8qvlg
-  - &archlinux age1y3dqhzvktelejlv9730d0l0s5h656dzdwv8mu490wgemge20kcgq50dw5w
+  - &archlinux age1rryykhdtzeauum5vf29fvx2hpcsf73ug7v4n2zwn6z934avaqugqulyd2e
+  - &linode age1hzqarxnqyhp69gxxddm7rpfqpkr2u2654t226z984ug3rappxenqze6dz0
 creation_rules:
   - path_regex: secrets/common\.yaml$
     key_groups:
@@ -72,6 +73,7 @@ creation_rules:
       - age:
           - *admin
           - *archlinux
+          - *linode
   - path_regex: secrets/
     key_groups:
       - age:
