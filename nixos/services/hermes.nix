@@ -583,7 +583,7 @@ in
           command = "/data/workspace/media-mcp/.venv/bin/media-mcp-lrr";
           args = [ ];
           env = {
-            LRR_URL = "http://192.168.0.211:3001";
+            LRR_URL = "http://192.168.0.241:3001";
           };
           connect_timeout = 15;
           timeout = 120;
