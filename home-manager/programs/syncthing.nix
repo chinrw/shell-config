@@ -11,7 +11,7 @@ let
 in
 {
   sops.secrets = lib.mkIf isEnabled {
-    "syncthing-gui" = { };
+    "syncthing-gui".sopsFile = ../../secrets/syncthing.yaml;
   };
 
   services.syncthing = lib.mkIf isEnabled {

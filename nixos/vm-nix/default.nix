@@ -173,7 +173,7 @@ in
     age.keyFile = "/home/${username}/.config/sops/age/keys.txt"; # must have no password!
     # It's also possible to use a ssh key, but only when it has no password:
     #age.sshKeyPaths = [ "/home/user/path-to-ssh-key" ];
-    defaultSopsFile = ../../secrets/hosts.yaml;
+    defaultSopsFile = ../../secrets/hosts/vm-nix.yaml;
     defaultSopsFormat = "yaml";
 
     secrets = {

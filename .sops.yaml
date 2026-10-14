@@ -1,13 +1,78 @@
+# Rules are checked top to bottom and the first match wins.
 keys:
-  - &chin39 age15meyx2lnegjd0rgzzg4k7yv3m45yl9jurfq6p2mssh2vzkkhmdlqsepnvr
-  - &server age1y3dqhzvktelejlv9730d0l0s5h656dzdwv8mu490wgemge20kcgq50dw5w
+  - &admin age1q67cwhfa29lqftt8cyeqeaftztz34edkfmxrc345ljalq7zpve4qr8d6zn
+  - &vm-nix age1nep8tx2m2dpezsl7nh3t4g2008d8gf42cq2665r0skc8r7c2092qldwzcu
+  - &nixos-lxc age1lhs50pqy6qhnkvttq3ksl48rslj286w7fet2akt00zcxh7vcesrq60pl3x
+  - &media-lxc age1vjrzhuuvzllck9u6wtnnhr7rtdrez6quuedylaqvz5psfcphggaqq4lx99
+  - &nixos-ci age12m82lk8k3slk02fxwqkze27s62qra743870n4djhgn2v6yfra3hqcv3fvz
+  - &proxmox age1c2k0c8paah0tgqcxtxn8gf98300eyyt84hwhquxvp3n2qtarcfxq4zvd8n
+  - &macos age1cx7t4e9tkd6n3j60r9ek99c4v89lx389yp3nhsln9gawqn6yr4yqd8qvlg
+  - &archlinux age1y3dqhzvktelejlv9730d0l0s5h656dzdwv8mu490wgemge20kcgq50dw5w
 creation_rules:
-  - path_regex: secrets/[^/]+\.(yaml|json|env|ini|sops|conf)$
+  - path_regex: secrets/common\.yaml$
     key_groups:
-    - age:
-      - *chin39
-  - path_regex: secrets/server/[^/]+\.(yaml|json|env|ini|sops|conf)$
+      - age:
+          - *admin
+          - *vm-nix
+          - *nixos-lxc
+          - *media-lxc
+          - *nixos-ci
+          - *proxmox
+          - *macos
+  - path_regex: secrets/hosts/vm-nix\.yaml$
     key_groups:
-    - age:
-      - *server
-      - *chin39
+      - age:
+          - *admin
+          - *vm-nix
+  - path_regex: secrets/hosts/media-lxc\.yaml$
+    key_groups:
+      - age:
+          - *admin
+          - *media-lxc
+  - path_regex: secrets/hosts/wsl\.yaml$
+    key_groups:
+      - age:
+          - *admin
+  - path_regex: secrets/syncthing\.yaml$
+    key_groups:
+      - age:
+          - *admin
+          - *vm-nix
+          - *proxmox
+          - *macos
+  - path_regex: secrets/(hermes\.env|hermes-dashboard\.yaml|restic-rclone\.conf)$
+    key_groups:
+      - age:
+          - *admin
+          - *vm-nix
+  - path_regex: secrets/xray\.conf$
+    key_groups:
+      - age:
+          - *admin
+          - *vm-nix
+          - *media-lxc
+  - path_regex: secrets/lanraragi\.env$
+    key_groups:
+      - age:
+          - *admin
+          - *media-lxc
+  - path_regex: secrets/email\.yaml$
+    key_groups:
+      - age:
+          - *admin
+          - *nixos-ci
+          - *vm-nix
+  - path_regex: secrets/mac_xray\.conf$
+    key_groups:
+      - age:
+          - *admin
+          - *macos
+  - path_regex: secrets/public/[^/]+$
+    key_groups:
+      - age:
+          - *admin
+          - *archlinux
+  - path_regex: secrets/
+    key_groups:
+      - age:
+          - *admin

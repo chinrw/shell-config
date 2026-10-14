@@ -34,6 +34,7 @@ in
   # sops-nix decrypts during activation with nobody to type a passphrase, so
   # this key must have none.
   sops.age.keyFile = "/home/${username}/.config/sops/age/keys.txt";
+  sops.defaultSopsFile = ../../secrets/hosts/media-lxc.yaml;
 
   # 192.168.0.241 is the home services address: hermes, the strm library,
   # CT101's forwards and every host's proxy setting use it. It follows the

@@ -11,7 +11,6 @@ let
 in
 {
   sops.secrets.namesilo-api-key = {
-    sopsFile = ../../secrets/hosts.yaml;
     key = "api_key";
     mode = "0400";
   };

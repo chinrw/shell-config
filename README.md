@@ -165,13 +165,17 @@ Secrets are encrypted with sops and age. The age key lives at
 it during activation with nobody there to type one
 (`home-manager/programs/sops.nix`).
 
-- The default file is `secrets/hosts.yaml`. Hosts flagged `isPublic` use
-  `secrets/public/hosts.yaml` instead.
-- `.sops.yaml` encrypts `secrets/*` to the `chin39` age key, and
-  `secrets/server/*` to both the `server` and `chin39` keys.
-- Edit a file with `sops secrets/hosts.yaml`. Files for a single service, such
-  as `secrets/xray.conf` or `secrets/hermes.env`, are declared next to the
-  service that reads them.
+- Each machine has its own age key in that file. `.sops.yaml` makes a machine
+  a recipient only of the files it reads. The admin key is a recipient of
+  every file and is kept off the machines.
+- Home-manager reads `secrets/common.yaml`. Hosts flagged `isPublic` read
+  `secrets/public/hosts.yaml` instead. System secrets for one host live in
+  `secrets/hosts/<host>.yaml`. Files for a single service, such as
+  `secrets/xray.conf` or `secrets/hermes.env`, are declared next to the
+  service that reads them. `secrets/archive.yaml` holds values no host reads.
+- Edit a file on the admin machine with the admin key loaded, for example
+  `sops secrets/common.yaml`. After adding a machine's key to `.sops.yaml`, run
+  `sops updatekeys` on each file it should read.
 
 ## Binary caches
 

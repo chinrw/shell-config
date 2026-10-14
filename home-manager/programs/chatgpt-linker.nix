@@ -2,7 +2,9 @@
 # CLI and its tunnel are enabled together.
 { config, ... }:
 {
-  sops.secrets."chatgpt-linker/tunnel-api-key" = { };
+  sops.secrets."chatgpt-linker/tunnel-api-key" = {
+    sopsFile = ../../secrets/hosts/vm-nix.yaml;
+  };
 
   programs.chatgpt-linker = {
     enable = true;

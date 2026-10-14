@@ -8,7 +8,9 @@
   imports = [ (import ../../lib/failure-email.nix).homeManager ];
 
   # Keep these Home Manager secrets scoped to hosts that enable restic.
-  sops.secrets.restic_password = { };
+  sops.secrets.restic_password = {
+    sopsFile = ../../secrets/hosts/vm-nix.yaml;
+  };
   sops.secrets.restic_rclone_conf = {
     sopsFile = ../../secrets/restic-rclone.conf;
     format = "binary";

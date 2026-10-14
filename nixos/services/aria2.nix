@@ -7,14 +7,7 @@
   ...
 }:
 {
-  sops = {
-    defaultSopsFile = ../../secrets/hosts.yaml;
-    defaultSopsFormat = "yaml";
-
-    secrets = {
-      "aria2-token" = { };
-    };
-  };
+  sops.secrets."aria2-token" = { };
   services.aria2 = {
     enable = true;
     rpcSecretFile = config.sops.secrets."aria2-token".path;
