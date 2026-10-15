@@ -22,7 +22,6 @@ in
     inputs.hardware.nixosModules.common-cpu-amd
     ./hardware.nix
     ./wireguard.nix
-    ../services/github-runners.nix
     ../services/samba/wsl-server.nix
     ../services/nix-serve.nix
     # ../services/factorio.nix
@@ -180,19 +179,6 @@ in
       "wg-vm-nix/privatekey" = { };
       "ssh_pub_key" = { };
       "access-tokens" = { };
-      "github-runners/asterinas-selfhost" = {
-        restartUnits = [ "github-runner-asterinas-selfhost.service" ];
-      };
-      "github-runners/stocks" = {
-        restartUnits = [
-          "github-runner-stocks-1.service"
-          "github-runner-stocks-2.service"
-          "github-runner-stocks-3.service"
-          "github-runner-stocks-4.service"
-          "github-runner-stocks-5.service"
-          "github-runner-stocks-6.service"
-        ];
-      };
     };
   };
 
