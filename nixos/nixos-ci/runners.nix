@@ -5,16 +5,6 @@
   ...
 }:
 let
-  waitForUpdater = pkgs.writeShellScript "wait-for-config-updater.sh" ''
-    set -eu
-    while :; do
-      state=$(${pkgs.systemd}/bin/systemctl show shell-config-updater.service -p ActiveState --value)
-      case "$state" in
-        active|activating|deactivating) ${pkgs.coreutils}/bin/sleep 5 ;;
-        *) break ;;
-      esac
-    done
-  '';
   # Each runner takes one job at a time, so parallel kikoeru-neo jobs need
   # one runner each. They keep separate caches so concurrent jobs do not share
   # a working tree.
@@ -118,7 +108,6 @@ in
       NO_PROXY = config.networking.proxy.noProxy;
       XDG_CACHE_HOME = runner.cacheDir;
       CARGO_BUILD_JOBS = "4";
-      ACTIONS_RUNNER_HOOK_JOB_STARTED = "${waitForUpdater}";
     }
     // lib.optionalAttrs (usesStocksCache runner) {
       CARGO_HOME = "/var/cache/stocks-ci/cargo";
@@ -166,7 +155,9 @@ in
     ) enabledRunners)
     // {
 
-      # The activating state is visible before this check. New workers wait in their start hook.
+      # An updater run can rebuild hundreds of packages, so it only starts on an
+      # idle machine. Jobs that arrive mid-run proceed anyway, because a runner
+      # that waits for the updater can stall CI for hours.
       shell-config-updater.serviceConfig.ExecCondition = pkgs.writeShellScript "skip-updater-while-ci-busy" ''
         if ${pkgs.procps}/bin/pgrep -u ci -f '(^|/)\.?Runner\.Worker(-wrapped)?([[:space:]]|$)' >/dev/null; then
           exit 1
