@@ -62,5 +62,9 @@
     "d /work 0700 ci ci -"
     "d /cache/stocks-ci 0700 ci ci -"
     "L+ /var/cache/stocks-ci - - - - /cache/stocks-ci"
+    # The Nix sandbox drops supplementary groups, so kvm membership never
+    # reaches a VM test and qemu falls back to TCG. The build users' primary
+    # group gets an ACL instead, keeping the node 0660 for everyone else.
+    "a+ /dev/kvm - - - - g:nixbld:rw"
   ];
 }
