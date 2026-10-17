@@ -17,10 +17,12 @@
 
   systemd.services.docker.unitConfig.ConditionPathIsMountPoint = lib.mkForce [ ];
 
-  # Bound daemon builds and updater evaluation together, leaving room for node services.
+  # Bound daemon builds and updater evaluation together, leaving room for node
+  # services. The stocks runners build outside this slice and each peaks near
+  # 8 GB, so the slice takes a bit over half of the 24 GB container.
   systemd.slices.nix-build.sliceConfig = {
-    MemoryHigh = "5G";
-    MemoryMax = "6G";
+    MemoryHigh = "12G";
+    MemoryMax = "14G";
     MemorySwapMax = "24G";
   };
   systemd.services.nix-daemon.serviceConfig.Slice = "nix-build.slice";
@@ -41,9 +43,11 @@
     noProxy = (import ../../lib/proxy.nix).noProxy;
   };
 
+  # max-jobs counts per client, so each CI run builds its independent checks
+  # three at a time, and three busy kikoeru-neo runners can reach nine builds.
   nix.settings = {
-    max-jobs = 1;
-    cores = 6;
+    max-jobs = 3;
+    cores = 4;
   };
 
   users.groups.ci.gid = 1001;
