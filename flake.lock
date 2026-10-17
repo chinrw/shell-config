@@ -714,11 +714,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792057342,
-        "narHash": "sha256-ccZkTbvgYOcYw5DptFY3WDIihE35Zzub7AhXyzQxu/A=",
+        "lastModified": 1792245568,
+        "narHash": "sha256-4WUnUSDw43kP5CtW2zh3Ns7Rkj64e9Ce6c+vBAVe4f8=",
         "ref": "main",
-        "rev": "7543f4a5a5fb8128e166deb0a6d4eefaf036d9de",
-        "revCount": 269,
+        "rev": "51c056ade449e4f17f3773b0aa7ad4de8512d30f",
+        "revCount": 272,
         "type": "git",
         "url": "ssh://git@github.com/chinrw/kikoeru-neo"
       },
