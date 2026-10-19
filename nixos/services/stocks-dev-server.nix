@@ -13,15 +13,15 @@ let
   # worktree below links to.
   devDir = "${home}/Documents/play/stocks-dev";
 
-  # Machine-owned deployment worktree, detached at origin/stocks-dev. A separate
-  # unit rather than a parameterisation of stocks-server.nix: the branches
-  # differ and the DB sync only exists here.
+  # Machine-owned deployment worktree, detached at origin/main. A separate
+  # unit rather than a parameterisation of stocks-server.nix: it has its own
+  # worktree and port, and the DB sync only exists here.
   #
   # The port is not set here. The launcher resolves it from the linked .env
   # (PORT=5002) and defaults GATHER_PORT to 5106, so main (:5001/:5101) and dev
   # (:5002/:5106) do not collide.
   devSrvDir = "${home}/Documents/play/stocks-dev-srv";
-  devBranch = "stocks-dev";
+  devBranch = "main";
 
   endpoints = import ../../lib/stocks-endpoints.nix;
 
@@ -140,7 +140,7 @@ let
     '';
   };
 
-  # Follow origin/stocks-dev and bounce the dev server when it moves. Nobody
+  # Follow origin/main and bounce the dev server when it moves. Nobody
   # works in the deployment worktree, so blocked states fail the unit rather
   # than skipping quietly; only network errors are soft.
   updateScript = pkgs.writeShellApplication {
@@ -237,7 +237,7 @@ in
 {
   systemd.user.services = {
     stocks-dev-server = {
-      description = "Stock Analyzer dev server (stocks-dev worktree, nix run .#server)";
+      description = "Stock Analyzer dev server (dev worktree following main, nix run .#server)";
       after = [ "network-online.target" ];
       wantedBy = [ "default.target" ];
       unitConfig = onlyForUser;
@@ -270,7 +270,7 @@ in
     };
 
     stocks-dev-update = {
-      description = "Fast-forward the stocks-dev deployment worktree and restart the dev server on updates";
+      description = "Fast-forward the dev deployment worktree to main and restart the dev server on updates";
       unitConfig = onlyForUser;
       enableDefaultPath = inheritUserPath;
       serviceConfig = {
@@ -286,7 +286,7 @@ in
   };
 
   systemd.user.timers.stocks-dev-update = {
-    description = "Poll the stocks-dev upstream for updates";
+    description = "Poll origin/main for dev deployment updates";
     wantedBy = [ "timers.target" ];
     unitConfig = onlyForUser;
     timerConfig = {
