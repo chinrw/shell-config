@@ -572,11 +572,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1792413607,
-        "narHash": "sha256-apdL4SotQ19Cp3P5RLGwVk0/XkGq5Gq3zsemIU3XvgE=",
+        "lastModified": 1792422578,
+        "narHash": "sha256-lRtdv1K/MzvvsBqY8T/S9/YEcAvnhwL8XYUXhe/eS+Y=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "b4170e73b0bbd74b47dc567c36166d749c069699",
+        "rev": "6e9b3e3b8852f12bf965f888213470574b72803e",
         "type": "github"
       },
       "original": {
@@ -630,11 +630,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792098797,
-        "narHash": "sha256-u4DIIZgznEGzByxXrxWCXK19VcMtTBmi/M9gZ7Jk9bM=",
+        "lastModified": 1792421589,
+        "narHash": "sha256-kd1uAerzkPNEBTh+Bl5wdfVqP2MPpxTRvcWtfbIP1kI=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "640725978b99076e18e069f6e7d2959124584f8f",
+        "rev": "94c556362d7ef878175d2f0eb3045565d1685b0c",
         "type": "github"
       },
       "original": {
@@ -712,11 +712,11 @@
     "mattpocock-skills": {
       "flake": false,
       "locked": {
-        "lastModified": 1791543409,
-        "narHash": "sha256-NljCSZNI3sZ+vbCw7pRdrwR7try4BxOFp4gdjuWYtzs=",
+        "lastModified": 1792425100,
+        "narHash": "sha256-2FKfe3/Fwc4MmwBLa+d/oQW4/gtYIssdWapy2MPd39I=",
         "owner": "mattpocock",
         "repo": "skills",
-        "rev": "49dd158d1076134a641b33efb035946536778336",
+        "rev": "5beb35b040e3de97e54fa9e386d7e42d15c295c2",
         "type": "github"
       },
       "original": {
@@ -908,11 +908,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1792414424,
-        "narHash": "sha256-Skuo/BEJLa4HBA23WSJABZ7WsR8gRbhIcJHT9X03RiQ=",
+        "lastModified": 1792424735,
+        "narHash": "sha256-j5dR1YJQNxvtUTrzoV4L3n5q3U5h7xak8A5DbcRCmxs=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "945a831904fc229fe380bb0ef8d448ac451fa26b",
+        "rev": "e64548d8b13f490dd8f175828f6b07facf8ef686",
         "type": "github"
       },
       "original": {
@@ -1105,11 +1105,11 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1792410707,
-        "narHash": "sha256-W2pT9eVjTbQCwbLrsHY2HHZR+P42MSjFFo2raCvtF4c=",
+        "lastModified": 1792425541,
+        "narHash": "sha256-T7QYLIV4Ya9FHYboRDwXLEpKgo94UmSL4g5ZdjbVmHM=",
         "owner": "pwndbg",
         "repo": "pwndbg",
-        "rev": "c5469c9928732e4ada9a5a73246beedcecdbb981",
+        "rev": "00bc8c5a5d35af49e9ea00f071a7015fb2e499c5",
         "type": "github"
       },
       "original": {
