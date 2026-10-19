@@ -16,7 +16,6 @@ in
     ./web.nix
     ./postgresql.nix
     ./openlist.nix
-    ./kikoeru-neo.nix
     ./lanraragi.nix
     (import ../services/aria2.nix {
       inherit
