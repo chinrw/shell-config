@@ -199,11 +199,6 @@
       inputs.home-manager.follows = "home-manager";
     };
 
-    telegram-reader = {
-      url = "github:chinrw/telegram-reader";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     mattpocock-skills = {
       url = "github:mattpocock/skills?ref=main";
       flake = false;

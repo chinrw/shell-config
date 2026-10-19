@@ -163,8 +163,6 @@ let
     idle_compact_after_seconds = 3600;
   };
 
-  telegramExecFloors = import ./hermes-telegram-floors.nix;
-
   sharedSettings = {
     agent.image_input_mode = "native";
     compression = compressionPolicy;
@@ -198,8 +196,7 @@ let
         "*nixos-rebuild*"
         "rm *-*r*/mnt/data*"
         "find */mnt/data*-delete*"
-      ]
-      ++ telegramExecFloors;
+      ];
     };
     # Cron and -q runs never reach the smart guardian; without an exact match
     # here, tirith findings in routine arguments (Chinese notes, LAN IPs) block
@@ -365,7 +362,6 @@ in
       inherit lib;
       hermesInput = inputs.hermes-agent;
     })
-    ./telegram-reader.nix
   ];
 
   # SOPS decrypts credentials at activation; never embed their values in Nix.
@@ -626,29 +622,6 @@ in
               "queue_diagnosis"
               "pause_torrent"
               "resume_torrent"
-            ];
-            prompts = false;
-            resources = false;
-          };
-        };
-
-        # Runs on the host under its own user (telegram-reader.nix), so the
-        # account session never enters the container. Downloads land in
-        # /mnt/data/Downloads/telegram, and telegramExecFloors keeps Hermes
-        # from running them.
-        telegram = {
-          url = config.services.telegram-reader.url;
-          connect_timeout = 15;
-          timeout = 120;
-          sampling.enabled = false;
-          tools = {
-            include = [
-              "list_chats"
-              "read_messages"
-              "search_messages"
-              "get_message"
-              "download_media"
-              "download_status"
             ];
             prompts = false;
             resources = false;
