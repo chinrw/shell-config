@@ -1293,6 +1293,7 @@
         "rust-overlay": "rust-overlay",
         "rustowl-overlay": "rustowl-overlay",
         "sops-nix": "sops-nix",
+        "telegram-reader": "telegram-reader",
         "yazi": "yazi",
         "yazi-plugin-augment-command": "yazi-plugin-augment-command",
         "yazi-plugin-git": "yazi-plugin-git",
@@ -1536,6 +1537,26 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "telegram-reader": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792051470,
+        "narHash": "sha256-fFLWx72YgQuL8ajYuTzHCss6Zd727UycT2HLCeT0m2k=",
+        "owner": "chinrw",
+        "repo": "telegram-reader",
+        "rev": "ac3a1731979d2ddbb703f8bcbff5dd3230907c3a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "chinrw",
+        "repo": "telegram-reader",
         "type": "github"
       }
     },
