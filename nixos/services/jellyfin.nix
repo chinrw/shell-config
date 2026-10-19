@@ -14,6 +14,9 @@ let
   };
 in
 {
+  # Cover images use system fonts rather than the subtitle fallback directory.
+  fonts.packages = [ jellyfinCjkFonts ];
+
   services.jellyfin = {
     enable = true;
     user = "chin39";
