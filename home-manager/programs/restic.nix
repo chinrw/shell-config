@@ -61,6 +61,9 @@
       # warnings") on every backup.
       "*.perf.data"
       "perf.data"
+      # A lost machine key is replaced and re-keyed with the admin key, so a
+      # copy in the backup only widens who can decrypt the secrets.
+      "/home/chin39/.config/sops/age"
     ];
 
     extraBackupArgs = [
