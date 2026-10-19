@@ -144,6 +144,11 @@
     zjstatus.inputs.nixpkgs.follows = "nixpkgs-unstable";
     zjstatus.inputs.rust-overlay.follows = "rust-overlay";
 
+    kikoeru-neo = {
+      url = "git+ssh://git@github.com/chinrw/kikoeru-neo?ref=main";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     zj-sysinfo.url = "github:chinrw/zj-sysinfo";
     zj-sysinfo.inputs.nixpkgs.follows = "nixpkgs-unstable";
     zj-sysinfo.inputs.rust-overlay.follows = "rust-overlay";
