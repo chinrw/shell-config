@@ -210,11 +210,11 @@
         "systems": "systems_5"
       },
       "locked": {
-        "lastModified": 1792410356,
-        "narHash": "sha256-RmfquSPrmzTVDQN8UMdPc8xNyTt4p5e++Fz1sSEOoDI=",
+        "lastModified": 1792463715,
+        "narHash": "sha256-tNDoBjVuIWLmSx0UdLaYK24jQJdtSeWV5DfzfBItwEU=",
         "owner": "chinrw",
         "repo": "deepseek-harness-nix",
-        "rev": "f8d3f3b962a525f795d665723e1638e79eff9b48",
+        "rev": "b1f502612ec4f19ef6c8e2e76e16ee27ef51f6e3",
         "type": "github"
       },
       "original": {
