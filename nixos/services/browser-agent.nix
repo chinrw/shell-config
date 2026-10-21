@@ -29,7 +29,12 @@ let
   # which is the whole point of splitting it out.
   browserChromium = pkgs.chromium;
 
-  novncWebRoot = "${pkgs.novnc}/share/webapps/novnc";
+  # The noVNC package wraps websockify. Copy its static assets directly so
+  # this browser does not inherit that Python dependency.
+  novncWebRoot = pkgs.runCommand "browser-agent-novnc-${pkgs.novnc.version}" { } ''
+    mkdir -p "$out"
+    cp -r ${pkgs.novnc.src}/{app,core,po,vendor,vnc.html,vnc_lite.html} "$out/"
+  '';
 
   # South Plus is a Chinese board and Baidu Pan is a Chinese SPA; without CJK
   # coverage Chromium renders both as boxes and the operator cannot read the
@@ -47,6 +52,30 @@ let
   cdpPort = 9222;
   vncPort = 5900;
   novncPort = 6080;
+
+  # x11vnc accepts WebSockets on its VNC port, so the web server only needs
+  # to serve noVNC and forward the upgraded connection.
+  novncConfig = pkgs.writeText "browser-agent-Caddyfile" ''
+    {
+      admin off
+      auto_https off
+      persist_config off
+    }
+
+    :${toString novncPort} {
+      bind 0.0.0.0
+      @vnc header Upgrade websocket
+      handle @vnc {
+        reverse_proxy 127.0.0.1:${toString vncPort}
+      }
+      handle {
+        root * ${novncWebRoot}
+        file_server {
+          index vnc.html
+        }
+      }
+    }
+  '';
 
   # Chromium ignores --remote-debugging-address and binds DevTools to loopback
   # only, so Docker's port forwarder finds nothing on the container IP. socat
@@ -70,7 +99,7 @@ let
         pkgs.xvfb
         pkgs.xdpyinfo
         pkgs.x11vnc
-        pkgs.python3Packages.websockify
+        pkgs.caddy
         pkgs.coreutils
         pkgs.socat
         browserChromium
@@ -99,7 +128,7 @@ let
         done
         xdpyinfo >/dev/null 2>&1 || { echo "Xvfb failed to become ready" >&2; exit 1; }
 
-        # The VNC port itself is not published, but websockify below bridges it
+        # The VNC port itself is not published, but Caddy below exposes it
         # to the LAN, so this session needs a password: without one, anyone on
         # the network can drive a browser that is logged into these sites.
         #
@@ -116,8 +145,7 @@ let
           -rfbauth /tmp/vncpasswd \
           -listen localhost -no6 -noipv6 -noxdamage -quiet &
 
-        websockify --web=${novncWebRoot} \
-          "0.0.0.0:${toString novncPort}" "127.0.0.1:${toString vncPort}" &
+        caddy run --config ${novncConfig} --adapter caddyfile &
 
         # Reaches Chromium's loopback-only DevTools listener from the container
         # interface. Started before Chromium so no connection races the exec;
