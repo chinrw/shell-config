@@ -164,6 +164,14 @@ let
             name = "aihot";
             source = "${inputs.khazix-skills}/aihot";
           }
+          {
+            name = "neat-freak";
+            source = "${inputs.khazix-skills}/neat-freak";
+          }
+          {
+            name = "context-bundle";
+            source = "${inputs.agent-skills}/codex-skills/context-bundle";
+          }
           # Codex CLI port of babysit-prs (github:chinrw/agent-skills). Lives in
           # ~/.agents/skills only — the Claude Code variant of the same repo is
           # linked into ~/.claude/skills by the activation below.
@@ -721,6 +729,9 @@ in
   };
 
   home.file.".claude/skills/humanizer".source = inputs.humanizer;
+
+  home.file.".claude/skills/context-bundle".source =
+    "${inputs.agent-skills}/codex-skills/context-bundle";
 
   # User-authored slash command kept in this repo. Maps to user scope so `/ship`
   # is available in every repo. link_children only sweeps symlinks into $REPO
