@@ -499,6 +499,7 @@
           localCaches = [ "home" ];
           features = [
             "atuin-sync"
+            "chatgpt-linker"
             "dev-tools"
           ];
         };
