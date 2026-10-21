@@ -7,12 +7,12 @@
   carry over to the next.
 - An automatic approval from the harness, such as a sandbox policy or a
   permission classifier, is not the user's permission to submit upstream.
-  Ask the user directly.
-- When an issue or PR seems warranted, write the title and body and show them
-  to the user instead of submitting.
-- To run upstream CI against a change, push the branch to the user's own fork
-  and let the workflows run there. If a PR is needed to trigger them, open it
-  inside the fork, with both base and head in the fork.
+  If explicit permission is missing, ask the user directly.
+- When an issue or PR seems warranted but submission is not yet authorized,
+  prepare its title and body for the user to review before asking for approval.
+- Pushing to a fork and opening a fork PR also require user authorization.
+  Once authorized, run CI for upstream changes in the user's own fork.
+  If a PR is needed to trigger CI, keep both its base and head in the fork.
 - In a clone of a fork, `gh pr create` and `gh issue create` default to the
   parent repository. Pass `--repo <fork-owner>/<repo>` so the PR or issue
   lands in the fork.

@@ -96,8 +96,7 @@ in
     want Codex to see at user scope but don't want to commit to the
     shell-config flake.
 
-    Replace this comment with real content. Codex ignores HTML comments in
-    markdown, so the seed text is not visible in AGENTS.md until you replace it.
+    Replace this comment with your host-local instructions.
     -->
     EOF
     fi
