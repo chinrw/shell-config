@@ -407,7 +407,6 @@
             ./nixos/services/samba/wsl-server.nix
             ./nixos/nvidia-wsl.nix
             ./nixos/services/nvidia-container.nix
-            ./nixos/services/llm.nix
           ];
         };
         "wsl-mini" = helpers.mkNixos {

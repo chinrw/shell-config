@@ -211,16 +211,6 @@ in
   services = {
     qemuGuest.enable = true;
 
-    # open-webui = {
-    #   enable = true;
-    #   package = pkgs.stable.open-webui;
-    #   host = "192.168.0.240";
-    #   environment = {
-    #     http_proxy = "http://192.168.0.240:10809";
-    #     https_proxy = "http://192.168.0.240:10809";
-    #   };
-    # };
-
     # kavita = {
     #   enable = true;
     #   tokenKeyFile = "/etc/nixos/secrets/kavita_token.key";
