@@ -56,9 +56,10 @@ targets.
 
 The `nix run .#deploy-rs-ci` entry point sends builds for every target, including
 its automatic checks, to `nixos-ci` (`192.168.0.230`). Cached outputs can still be
-downloaded directly. It allows one remote build at a time with two cores and
-disables local builds for those commands. If an uncached build needs CI while it
-is unavailable, deployment fails before activation.
+downloaded directly. It allows one remote build at a time, using CI's Nix
+configuration for parallelism within that build, and disables local builds for
+those commands. If an uncached build needs CI while it is unavailable,
+deployment fails before activation.
 
 The local Nix daemon must be able to read your unencrypted
 `$HOME/.ssh/id_ed25519`, and that key must authenticate as `chin39` on CI. The
@@ -189,9 +190,12 @@ name fails the build and prints the known ones, which are listed in
 `lib/caches.nix`.
 
 Every three hours `nixos-ci` runs `nixos/services/shell-config-updater.nix`. It
-clones this repo, runs `nix flake update`, builds the configured Linux system
-and home outputs, pushes them to Cachix, and only then pushes `main`. Other
-machines therefore usually download prebuilt closures instead of building.
+clones this repo and runs `nix flake update`. It builds the deployment CLI,
+checks and profiles, along with the additional Linux system and home outputs,
+and archives the flake's input sources. It retains and uploads these paths to
+Cachix before pushing `main`, so other machines can fetch both deployment
+outputs and evaluation sources from the caches instead of building or fetching
+upstream sources.
 
 ## Everyday commands
 

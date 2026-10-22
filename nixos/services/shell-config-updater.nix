@@ -17,16 +17,12 @@ let
     else
       cfg.githubTokenFile;
   linuxTargets = [
-    ".#homeConfigurations.\"chin39@vm-nix\".activationPackage"
     ".#nixosConfigurations.vm-nix.config.system.build.toplevel"
     ".#homeConfigurations.\"chin39@work\".activationPackage"
     ".#nixosConfigurations.work-laptop.config.system.build.toplevel"
-    ".#nixosConfigurations.nixos-ci.config.system.build.toplevel"
-    ".#homeConfigurations.\"chin39@nixos-ci\".activationPackage"
-    ".#nixosConfigurations.nixos-lxc.config.system.build.toplevel"
-    ".#nixosConfigurations.media-lxc.config.system.build.toplevel"
-    ".#homeConfigurations.\"chin39@nixos-lxc\".activationPackage"
-    ".#homeConfigurations.\"chin39@media-lxc\".activationPackage"
+    ".#packages.x86_64-linux.deploy-rs-ci"
+    ".#checks.x86_64-linux.deploy-schema"
+    ".#checks.x86_64-linux.deploy-activate"
   ];
 
   gitAskPass = pkgs.writeShellScript "${serviceName}-askpass" ''
@@ -82,7 +78,6 @@ let
         cd "$repo_dir"
         NIX_CONFIG="$nix_config" nix flake update --commit-lock-file
       )
-      unset github_token nix_config
 
       candidate_revision="$(git -C "$repo_dir" rev-parse HEAD)"
       if [[ "$candidate_revision" != "$base_revision" ]]; then
@@ -113,10 +108,10 @@ let
       [[ -z "$(git -C "$repo_dir" status --porcelain=v1)" ]] \
         || fail 'flake update left a dirty checkout'
 
-      # Avoid re-pushing an unchanged closure on every timer tick. If local GC
-      # removes an output, fall through and rebuild/re-upload it.
+      # A partial root registration must be retried even when all paths exist.
       state_file="$STATE_DIRECTORY/last-cached"
-      if [[ "$candidate_revision" == "$base_revision" && -r "$state_file" ]]; then
+      gc_roots="$STATE_DIRECTORY/gcroots"
+      if [[ "$candidate_revision" == "$base_revision" && -r "$state_file" && -f "$gc_roots/$base_revision/complete" ]]; then
         mapfile -t cached <"$state_file"
         if (( ''${#cached[@]} > 1 )) && [[ "''${cached[0]}" == "$base_revision" ]]; then
           all_present=1
@@ -131,19 +126,44 @@ let
       fi
 
       store_paths_file="$RUNTIME_DIRECTORY/store-paths"
-      : >"$store_paths_file"
-      targets=( ${lib.escapeShellArgs linuxTargets} )
+      (
+        cd "$repo_dir"
+        NIX_CONFIG="$nix_config" nix flake archive --json --no-update-lock-file .
+      ) >"$RUNTIME_DIRECTORY/sources.json"
+      unset github_token nix_config
+      jq -r '[.. | objects | .path? // empty] | unique[]' \
+        "$RUNTIME_DIRECTORY/sources.json" >"$store_paths_file"
+
+      # Keep the candidate alive without replacing the last successful cache.
+      temporary_roots="$RUNTIME_DIRECTORY/gcroots"
+      mkdir -p "$temporary_roots"
+      mapfile -t store_paths <"$store_paths_file"
+      nix-store --realise "''${store_paths[@]}" --add-root "$temporary_roots/source" >/dev/null
+
+      # Checks do not reference profiles in their runtime closures, so cache
+      # each profile explicitly and read its target from the candidate flake.
+      (
+        cd "$repo_dir"
+        NIX_CONFIG='accept-flake-config = false' nix eval --json .#deploy.nodes --apply '
+          nodes: builtins.concatLists (builtins.attrValues (builtins.mapAttrs
+            (nodeName: node: map
+              (profileName: ".#deploy.nodes." + nodeName + ".profiles." + profileName + ".path")
+              (builtins.attrNames node.profiles))
+            nodes))
+        '
+      ) | jq -r '.[]' >"$RUNTIME_DIRECTORY/deploy-targets"
+      mapfile -t deploy_targets <"$RUNTIME_DIRECTORY/deploy-targets"
+      targets=( "''${deploy_targets[@]}" ${lib.escapeShellArgs linuxTargets} )
       index=0
       for target in "''${targets[@]}"; do
         index=$((index + 1))
         (
           cd "$repo_dir"
-          # Separate clients release evaluation state between targets. Keep every
-          # output rooted until all targets have built and the upload finishes.
+          # Separate clients release evaluation state between targets.
           NIX_CONFIG='accept-flake-config = false' nix build \
             --print-build-logs \
             --print-out-paths \
-            --out-link "$RUNTIME_DIRECTORY/result-$index" \
+            --out-link "$temporary_roots/result-$index" \
             --max-jobs ${toString cfg.maxJobs} \
             --cores ${toString cfg.cores} \
             "$target"
@@ -165,12 +185,24 @@ let
         git -C "$repo_dir" push origin HEAD:refs/heads/main
       fi
 
+      # Root the complete published revision before releasing the previous one.
+      root_generation="$gc_roots/$candidate_revision"
+      mkdir -p "$root_generation"
+      nix-store --realise "''${store_paths[@]}" --add-root "$root_generation/path" >/dev/null
+      touch "$root_generation/complete"
+
       state_file_tmp="$STATE_DIRECTORY/.last-cached.tmp"
       {
         printf '%s\n' "$candidate_revision"
         printf '%s\n' "''${store_paths[@]}"
       } >"$state_file_tmp"
       mv "$state_file_tmp" "$state_file"
+
+      for root in "$gc_roots"/*; do
+        if [[ "$root" != "$root_generation" ]]; then
+          rm -r -- "$root"
+        fi
+      done
 
       printf 'shell-config updater: cached %s\n' "$candidate_revision"
     '';

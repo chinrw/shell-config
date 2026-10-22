@@ -253,6 +253,13 @@
       forAllSystems = nixpkgs.lib.genAttrs systems;
       helpers = import ./lib { inherit inputs outputs; };
       deployLib = inputs.deploy-rs.lib.x86_64-linux;
+      # buildEnv disables cache substitution by default. Enable it so clients
+      # can fetch prebuilt activation wrappers from CI.
+      cacheable =
+        drv:
+        drv.overrideAttrs (_: {
+          allowSubstitutes = true;
+        });
 
       # The dev shells need rust-bin and llvmPinned, which plain
       # legacyPackages does not carry.
@@ -318,36 +325,36 @@
             hostname = "192.168.0.230";
             profiles.system = {
               user = "root";
-              path = deployLib.activate.nixos self.nixosConfigurations.nixos-ci;
+              path = cacheable (deployLib.activate.nixos self.nixosConfigurations.nixos-ci);
             };
             profiles.home = {
               user = "chin39";
               profilePath = "/home/chin39/.local/state/nix/profiles/deploy-rs-home";
-              path = deployLib.activate.home-manager self.homeConfigurations."chin39@nixos-ci";
+              path = cacheable (deployLib.activate.home-manager self.homeConfigurations."chin39@nixos-ci");
             };
           };
           nixos-lxc = {
             hostname = "192.168.0.242";
             profiles.system = {
               user = "root";
-              path = deployLib.activate.nixos self.nixosConfigurations.nixos-lxc;
+              path = cacheable (deployLib.activate.nixos self.nixosConfigurations.nixos-lxc);
             };
             profiles.home = {
               user = "chin39";
               profilePath = "/home/chin39/.local/state/nix/profiles/deploy-rs-home";
-              path = deployLib.activate.home-manager self.homeConfigurations."chin39@nixos-lxc";
+              path = cacheable (deployLib.activate.home-manager self.homeConfigurations."chin39@nixos-lxc");
             };
           };
           media-lxc = {
             hostname = "192.168.0.231";
             profiles.system = {
               user = "root";
-              path = deployLib.activate.nixos self.nixosConfigurations.media-lxc;
+              path = cacheable (deployLib.activate.nixos self.nixosConfigurations.media-lxc);
             };
             profiles.home = {
               user = "chin39";
               profilePath = "/home/chin39/.local/state/nix/profiles/deploy-rs-home";
-              path = deployLib.activate.home-manager self.homeConfigurations."chin39@media-lxc";
+              path = cacheable (deployLib.activate.home-manager self.homeConfigurations."chin39@media-lxc");
             };
           };
           vm-nix = {
@@ -356,7 +363,7 @@
               user = "chin39";
               # HM updates its own profile during activation, so keep the wrapper separate.
               profilePath = "/home/chin39/.local/state/nix/profiles/deploy-rs-home";
-              path = deployLib.activate.home-manager self.homeConfigurations."chin39@vm-nix";
+              path = cacheable (deployLib.activate.home-manager self.homeConfigurations."chin39@vm-nix");
             };
           };
           proxmox = {
@@ -364,7 +371,7 @@
             profiles.home = {
               user = "chin39";
               profilePath = "/home/chin39/.local/state/nix/profiles/deploy-rs-home";
-              path = deployLib.activate.home-manager self.homeConfigurations."chin39@proxmox";
+              path = cacheable (deployLib.activate.home-manager self.homeConfigurations."chin39@proxmox");
             };
           };
         };
