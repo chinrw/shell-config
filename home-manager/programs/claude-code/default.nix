@@ -365,6 +365,9 @@ let
     # auto-update pass. This re-enables the plugin pass only.
     env.FORCE_AUTOUPDATE_PLUGINS = "1";
     skipAutoPermissionPrompt = true;
+    # Keep transcripts forever; Claude Code only deletes them, never compresses.
+    # 0 is rejected by the settings schema, so use a century instead.
+    cleanupPeriodDays = 36500;
     # Stop Claude Code appending a `Co-Authored-By: Claude` trailer to commits.
     # CLAUDE.md already forbids it, but that relies on the model complying every
     # time; this suppresses the trailer at the source.
