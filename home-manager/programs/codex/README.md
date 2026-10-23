@@ -60,6 +60,13 @@ configuration, since Codex does not reapprove those changes.
 
 After applying this entry-point migration, trust the hooks once more. Later,
 review any new trust request after changing the naming script or hook settings.
-Codex's `config.toml` and session database remain managed by Codex.
+
+Home Manager merges the declared personality, approval reviewer, memory
+toggle, shortcuts and status-line preferences into a writable `config.toml`
+on each activation. Codex can still save settings in that file. Manual changes
+to declared preferences last until the next activation; undeclared settings,
+including the model, reasoning effort, service tier, context limits and
+project trust, are preserved. Removing a preference from Nix does not remove
+its existing value from the file. The session database remains managed by Codex.
 
 The event contract is documented in the [official Hooks guide](https://learn.chatgpt.com/docs/hooks).

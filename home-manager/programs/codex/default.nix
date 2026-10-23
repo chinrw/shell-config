@@ -6,8 +6,8 @@
 # the Nix base plus an untracked AGENTS.local.md, mirroring how CLAUDE.md is
 # built in ../claude-code/default.nix.
 #
-# config.toml, rules/, and the sqlite state stay owned by the Codex app,
-# which rewrites those files at runtime.
+# Codex writes config.toml at runtime, so declared preferences must be merged
+# into a writable file rather than linked from the Nix store.
 {
   config,
   lib,
@@ -50,6 +50,37 @@ let
   };
 in
 {
+  programs.codex = {
+    enable = true;
+    package = codexPackage;
+    mutableSettings = true;
+    settings = {
+      personality = "none";
+      approvals_reviewer = "auto_review";
+      features.memories = true;
+      tui = {
+        status_line = [
+          "model-with-reasoning"
+          "current-dir"
+          "git-branch"
+          "run-state"
+          "context-used"
+          "five-hour-limit"
+          "task-progress"
+          "weekly-limit"
+        ];
+        keymap = {
+          global = {
+            open_external_editor = "ctrl-x ctrl-e";
+            open_transcript = "ctrl-o";
+            copy = "alt-c";
+            toggle_fast_mode = "alt-o";
+          };
+        };
+      };
+    };
+  };
+
   home.file.".codex/bin/codex-rename-first-turn".source = "${renameHook}/bin/codex-rename-first-turn";
 
   home.file.".codex/hooks.json".text = builtins.toJSON {

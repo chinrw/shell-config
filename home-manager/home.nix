@@ -288,7 +288,6 @@ in
         inputs.rustowl-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
         inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
         inputs.deepseek-harness-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
-        codexPackage
         codexZshCompletion
         abtop # Monitor local AI coding agent sessions
         rustscan # modern scanner
