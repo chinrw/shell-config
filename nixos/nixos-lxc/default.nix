@@ -21,6 +21,11 @@
 
   systemd.services.docker.unitConfig.ConditionPathIsMountPoint = lib.mkForce [ ];
 
+  # The Nix sandbox drops supplementary groups, so kvm membership never
+  # reaches a VM test and qemu falls back to TCG. The build users' primary
+  # group gets an ACL instead, keeping the node 0660 for everyone else.
+  systemd.tmpfiles.rules = [ "a+ /dev/kvm - - - - g:nixbld:rw" ];
+
   networking.nameservers = [ "192.168.0.1" ];
   networking.proxy = {
     default = "http://192.168.0.241:10809";
