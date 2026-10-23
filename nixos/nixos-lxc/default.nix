@@ -26,6 +26,8 @@
   # group gets an ACL instead, keeping the node 0660 for everyone else.
   systemd.tmpfiles.rules = [ "a+ /dev/kvm - - - - g:nixbld:rw" ];
 
+  networking.firewall.allowedTCPPorts = [ 8888 ];
+
   networking.nameservers = [ "192.168.0.1" ];
   networking.proxy = {
     default = "http://192.168.0.241:10809";
