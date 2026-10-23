@@ -502,45 +502,82 @@ let
     editorMode = "normal";
   };
 
-  enforcedSettingsFile = pkgs.writeText "claude-settings-enforced.json" (
-    builtins.toJSON enforcedSettings
+  settingsFile = pkgs.writeText "claude-settings.json" (
+    builtins.toJSON {
+      seed = seedSettings;
+      enforced = enforcedSettings;
+    }
   );
-  seedSettingsFile = pkgs.writeText "claude-settings-seed.json" (builtins.toJSON seedSettings);
 
-  # Materialize ~/.claude/settings.json as a REAL, user-writable file instead of
-  # a read-only Nix-store symlink. Claude Code writes this file at runtime
-  # (/effort, /model, vim toggle); a store symlink makes those writes fail with
-  # EROFS. The merge is (seed * existing) * enforced:
-  #   - seed * existing : existing values win, so runtime tweaks persist; seed
-  #                       only fills keys the file has never set.
-  #   - * enforced      : Nix structural keys always win, so config updates
-  #                       (plugins, hooks, permissions, statusline) propagate.
+  # Replace settings.json itself so a user-owned symlink target stays untouched.
+  # The shared HM merger follows symlinks and cannot provide that behavior.
   settingsActivation = ''
-    SETTINGS="${config.home.homeDirectory}/.claude/settings.json"
-    # Strip a stale Nix-store symlink left by previous home.file management so we
-    # can replace it with a writable file.
-    if [ -L "$SETTINGS" ]; then
-      case "$(${pkgs.coreutils}/bin/readlink "$SETTINGS")" in
-        /nix/store/*) run ${pkgs.coreutils}/bin/rm "$SETTINGS" ;;
-      esac
-    fi
-    SETTINGS_EXISTING="$(${pkgs.coreutils}/bin/mktemp -p "$(${pkgs.coreutils}/bin/dirname "$SETTINGS")")"
-    if [ -f "$SETTINGS" ]; then
-      ${pkgs.coreutils}/bin/cat "$SETTINGS" > "$SETTINGS_EXISTING"
+    if [[ -v DRY_RUN ]]; then
+      echo "Would merge Claude Code settings into ${config.home.homeDirectory}/.claude/settings.json"
     else
-      ${pkgs.coreutils}/bin/printf '{}' > "$SETTINGS_EXISTING"
+      (
+        SETTINGS="${config.home.homeDirectory}/.claude/settings.json"
+        SETTINGS_TMP="$(${pkgs.coreutils}/bin/mktemp -d "$SETTINGS.merge.XXXXXX")"
+        trap '${pkgs.coreutils}/bin/rm -rf -- "$SETTINGS_TMP"' EXIT
+        SETTINGS_LINK=
+        if [[ -L "$SETTINGS" ]]; then
+          SETTINGS_LINK="$(${pkgs.coreutils}/bin/readlink -- "$SETTINGS")"
+        fi
+
+        SETTINGS_READ=false
+        case "$SETTINGS_LINK" in
+          /nix/store/*) ;;
+          *)
+            if [[ -f "$SETTINGS" ]]; then
+              ${pkgs.coreutils}/bin/cp --preserve=mode -- "$SETTINGS" "$SETTINGS_TMP/existing.json"
+              SETTINGS_READ=true
+            elif [[ -e "$SETTINGS" ]]; then
+              echo "claude-code activation: settings.json is not a regular file; left unchanged" >&2
+              exit 1
+            fi
+            ;;
+        esac
+        if ! "$SETTINGS_READ"; then
+          printf '{}' > "$SETTINGS_TMP/existing.json"
+        fi
+
+        if ! ${pkgs.jq}/bin/jq -s --slurpfile settings ${settingsFile} '
+          if length == 1 then
+            ($settings[0].seed * .[0]) * $settings[0].enforced
+          else
+            error("expected exactly one JSON value")
+          end
+        ' "$SETTINGS_TMP/existing.json" > "$SETTINGS_TMP/merged.json"; then
+          echo "claude-code activation: jq merge into settings.json failed; left unchanged" >&2
+          exit 1
+        fi
+
+        # Preserve runtime edits made while the snapshot is being merged.
+        SETTINGS_CONFLICT=false
+        if [[ -n "$SETTINGS_LINK" ]]; then
+          if [[ ! -L "$SETTINGS" ]] || [[ "$(${pkgs.coreutils}/bin/readlink -- "$SETTINGS")" != "$SETTINGS_LINK" ]]; then
+            SETTINGS_CONFLICT=true
+          fi
+        elif [[ -L "$SETTINGS" ]]; then
+          SETTINGS_CONFLICT=true
+        fi
+        if "$SETTINGS_READ"; then
+          if ! ${pkgs.diffutils}/bin/cmp -s -- "$SETTINGS_TMP/existing.json" "$SETTINGS" \
+            || [[ "$(${pkgs.coreutils}/bin/stat -Lc '%a' -- "$SETTINGS")" != "$(${pkgs.coreutils}/bin/stat -c '%a' -- "$SETTINGS_TMP/existing.json")" ]]; then
+            SETTINGS_CONFLICT=true
+          fi
+        elif [[ "$SETTINGS_LINK" != /nix/store/* && -e "$SETTINGS" ]]; then
+          SETTINGS_CONFLICT=true
+        fi
+        if "$SETTINGS_CONFLICT"; then
+          echo "claude-code activation: settings.json changed during activation; left unchanged" >&2
+          exit 1
+        fi
+
+        ${pkgs.coreutils}/bin/chmod 600 "$SETTINGS_TMP/merged.json"
+        ${pkgs.coreutils}/bin/mv -fT -- "$SETTINGS_TMP/merged.json" "$SETTINGS"
+      )
     fi
-    SETTINGS_TMP="$(${pkgs.coreutils}/bin/mktemp -p "$(${pkgs.coreutils}/bin/dirname "$SETTINGS")")"
-    if ${pkgs.jq}/bin/jq -s '(.[0] * .[1]) * .[2]' \
-        ${seedSettingsFile} "$SETTINGS_EXISTING" ${enforcedSettingsFile} > "$SETTINGS_TMP"; then
-      run ${pkgs.coreutils}/bin/mv "$SETTINGS_TMP" "$SETTINGS"
-    else
-      ${pkgs.coreutils}/bin/rm -f "$SETTINGS_TMP"
-      ${pkgs.coreutils}/bin/rm -f "$SETTINGS_EXISTING"
-      echo "claude-code activation: jq merge into settings.json failed; left unchanged" >&2
-      exit 1
-    fi
-    ${pkgs.coreutils}/bin/rm -f "$SETTINGS_EXISTING"
   '';
 
   # Marketplaces the plugin bootstrap must ensure exist before installing.
@@ -708,10 +745,8 @@ let
   '';
 in
 {
-  # settings.json is NOT managed via home.file (that produces a read-only store
-  # symlink Claude Code cannot write to). It is built as a writable real file in
-  # settingsActivation below. See the comment on settingsActivation for the
-  # seed-vs-enforce merge rationale.
+  # Claude Code saves runtime preferences in settings.json, so activation keeps
+  # it writable.
 
   # claude-hud reads this file at runtime to toggle optional HUD features.
   # The plugin's own state lives in sibling ~/.claude/plugins/claude-hud/config-cache/.
