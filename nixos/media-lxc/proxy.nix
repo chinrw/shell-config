@@ -32,9 +32,13 @@ in
     # working while vm-nix, which runs the other proxy, is down.
     allowedTCPPorts = [
       53
+      10808
       10809
     ];
-    allowedUDPPorts = [ 53 ];
+    allowedUDPPorts = [
+      53
+      10808
+    ];
   };
 
   services.resolved.settings.Resolve.MulticastDNS = false;
