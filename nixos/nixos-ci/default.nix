@@ -44,7 +44,7 @@
   };
 
   # max-jobs counts per client, so each CI run builds its independent checks
-  # three at a time, and three busy kikoeru-neo runners can reach nine builds.
+  # three at a time, and three busy runners can reach nine builds.
   nix.settings = {
     max-jobs = 3;
     cores = 4;

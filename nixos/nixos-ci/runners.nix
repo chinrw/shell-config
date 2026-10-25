@@ -5,16 +5,6 @@
   ...
 }:
 let
-  # Each runner takes one job at a time, so parallel kikoeru-neo jobs need
-  # one runner each. They keep separate caches so concurrent jobs do not share
-  # a working tree.
-  kikoeruNeoRunner = suffix: {
-    enable = true;
-    name = "kikoeru-neo-nixos-ci${suffix}";
-    url = "https://github.com/chinrw/kikoeru-neo";
-    cacheDir = "/cache/kikoeru-neo-runner${suffix}";
-    labels = [ "kikoeru-neo" ];
-  };
   # One stocks CI run starts its jobs in parallel, one per runner. All stocks
   # runners share one cache tree, because cargo and uv lock their caches for
   # concurrent use and the e2e job reads tarballs other jobs leave in share/.
@@ -38,9 +28,6 @@ let
       cacheDir = "/cache/rex-runner";
       labels = [ "nixos-ci-canary" ];
     };
-    kikoeru-neo = kikoeruNeoRunner "";
-    kikoeru-neo-2 = kikoeruNeoRunner "-2";
-    kikoeru-neo-3 = kikoeruNeoRunner "-3";
     asterinas-selfhost = {
       enable = true;
       name = "asterinas-selfhost-nixos-ci";
