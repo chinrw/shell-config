@@ -15,6 +15,7 @@ let
           pkgs.coreutils
           pkgs.curl
           pkgs.python3
+          pkgs.systemd
         ];
         text = ''
           scope="$1"
@@ -35,8 +36,10 @@ let
           trap 'rm -f "$message"' EXIT
           python3 - "$scope" "$unit" >"$message" <<'PY'
           import os
+          import re
           import shlex
           import socket
+          import subprocess
           import sys
           from datetime import datetime, timedelta, timezone
           from email.message import EmailMessage
@@ -92,6 +95,35 @@ let
                   f"To investigate, sign in to {host} and check the latest logs:\n\n"
                   f"  {shlex.join(command)}\n"
               )
+              if unit == "shell-config-updater.service":
+                  invocation = os.environ.get("MONITOR_INVOCATION_ID", "")
+                  logs = "Logs unavailable: the failed invocation ID was not provided."
+                  if re.fullmatch(r"[0-9a-f]{32}", invocation):
+                      # Match the failed run, not a later timer run or restart.
+                      command += [f"_SYSTEMD_INVOCATION_ID={invocation}", "--output=cat", "--quiet"]
+                      try:
+                          completed = subprocess.run(
+                              command, capture_output=True, text=True, errors="replace",
+                              check=True, timeout=10,
+                          )
+                          logs = completed.stdout.strip() or "No journal entries were found for the failed run."
+                      except (OSError, subprocess.SubprocessError):
+                          logs = "Logs unavailable: reading the failed invocation's journal failed."
+                  # Redact common credential formats before adding journal output to email.
+                  logs = re.sub(
+                      r"(?im)^.*\b(?:authorization|cookie|[\w-]*(?:password|passwd|token|secret|api[_-]?key)[\w-]*)\b[\"']?\s*[:=].*$",
+                      "[REDACTED: credential-bearing log line]", logs,
+                  )
+                  logs = re.sub(r"\b(?:github_pat_|gh[pousr]_)[A-Za-z0-9_]+", "[REDACTED]", logs)
+                  logs = re.sub(r"(\w+://)[^/\s@]+@", r"\1[REDACTED]@", logs)
+                  logs = re.sub(r"(https?://[^\s?#]+)\?[^\s]*", r"\1?[REDACTED]", logs)
+                  logs = logs.encode("utf-8")
+                  if len(logs) > 12000:
+                      logs = b"[Earlier log output truncated]\n" + logs[-11950:]
+                  body += (
+                      "\nFailed run's journal (last 50 entries; common credentials redacted):\n\n"
+                      f"{logs.decode('utf-8', errors='replace')}\n"
+                  )
 
           message = EmailMessage(policy=SMTP)
           message["From"] = ${builtins.toJSON address}
