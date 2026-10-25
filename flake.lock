@@ -619,11 +619,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1792926256,
-        "narHash": "sha256-P2VOHYNbWH+o1Dqgiv7tDIBcEx9jqw7+OLxnjUy0aso=",
+        "lastModified": 1792940851,
+        "narHash": "sha256-l+AVjE6mEoIJYfRBHaErfRIzx2UaLVnUBhTZ2FOxFiI=",
         "owner": "QWERChin",
         "repo": "kikoeru-neo",
-        "rev": "379607f564e7e57c91a9b71b33e6cc371b2b4506",
+        "rev": "239311ab6cb8d6eaf197b3646db39ce436763a80",
         "type": "github"
       },
       "original": {
