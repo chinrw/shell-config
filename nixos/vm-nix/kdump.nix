@@ -69,13 +69,6 @@ let
 
 in
 {
-  assertions = [
-    {
-      assertion = config.boot.initrd.systemd.enable;
-      message = "vm-nix kdump requires the systemd initrd.";
-    }
-  ];
-
   boot.crashDump = {
     enable = true;
     reservedMemory = "1G";
