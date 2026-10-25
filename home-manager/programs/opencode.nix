@@ -184,7 +184,7 @@ in
 {
   programs.opencode = {
     enable = true;
-    tui.plugin = [
+    cli.plugins = [
       ohMyOpenCodeSlimTuiPluginSpec
       goalTuiPluginSpec
     ];
