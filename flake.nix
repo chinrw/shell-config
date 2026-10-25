@@ -221,7 +221,7 @@
     # nixpkgs deliberately not followed, so pi builds against the pin upstream
     # tests with.
     pi = {
-      url = "github:lukasl-dev/pi.nix";
+      url = "github:earendil-works/pi/stable";
     };
 
     pwndbg = {
