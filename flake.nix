@@ -144,6 +144,10 @@
     zjstatus.inputs.nixpkgs.follows = "nixpkgs-unstable";
     zjstatus.inputs.rust-overlay.follows = "rust-overlay";
 
+    # kikoeru-neo keeps its own nixpkgs: its pnpm dependency hash and the
+    # build CI tested are only valid with the nixpkgs it locks.
+    kikoeru-neo.url = "github:QWERChin/kikoeru-neo";
+
     zj-sysinfo.url = "github:chinrw/zj-sysinfo";
     zj-sysinfo.inputs.nixpkgs.follows = "nixpkgs-unstable";
     zj-sysinfo.inputs.rust-overlay.follows = "rust-overlay";

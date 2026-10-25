@@ -189,6 +189,21 @@
     },
     "crane": {
       "locked": {
+        "lastModified": 1790899423,
+        "narHash": "sha256-THGtz65UGJU+sonZidRboyCMk+9DclpMF7pwL4uDV4M=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "47b6b27ed9a3a9181415e4367d0c30ab2a0e0250",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
+    "crane_2": {
+      "locked": {
         "lastModified": 1788465171,
         "narHash": "sha256-Y1/TTVXjYXGF068IThQH9fPSZ0SIE74PABlUxnWTUH0=",
         "owner": "ipetkov",
@@ -691,6 +706,25 @@
         "type": "github"
       }
     },
+    "kikoeru-neo": {
+      "inputs": {
+        "crane": "crane",
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1792898165,
+        "narHash": "sha256-suaPw1SFYgGilkrLTcCv3twE5Zo/H/Ub6u3Bx7ZwtrU=",
+        "owner": "QWERChin",
+        "repo": "kikoeru-neo",
+        "rev": "b48c0c36638ab5edb0a0c7d944fbb47eabdfb144",
+        "type": "github"
+      },
+      "original": {
+        "owner": "QWERChin",
+        "repo": "kikoeru-neo",
+        "type": "github"
+      }
+    },
     "linux-src": {
       "flake": false,
       "locked": {
@@ -987,6 +1021,22 @@
     },
     "nixpkgs_3": {
       "locked": {
+        "lastModified": 1791456040,
+        "narHash": "sha256-H83yz/do+hjOO0uujHyH8RgtIQP2v7Mw+cLwcZK/xKc=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "e7439b6b14ad3cc35d05608ebca9bce01a25f5f8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_4": {
+      "locked": {
         "lastModified": 1792502884,
         "narHash": "sha256-IoNisKcGbUjdd45qCqywGMCYmZ5EnkxezvLII0FWwNA=",
         "owner": "nixos",
@@ -1001,7 +1051,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_4": {
+    "nixpkgs_5": {
       "locked": {
         "lastModified": 1789286504,
         "narHash": "sha256-eiEK7cKZORNEvX0GeF3RtNEF/JXhgf2RqSp3230q13E=",
@@ -1078,7 +1128,7 @@
         "bun2nix-x86_64-darwin": "bun2nix-x86_64-darwin",
         "flake-parts": "flake-parts_4",
         "jail-nix": "jail-nix",
-        "nixpkgs": "nixpkgs_4",
+        "nixpkgs": "nixpkgs_5",
         "nixpkgs-x86_64-darwin": "nixpkgs-x86_64-darwin"
       },
       "locked": {
@@ -1237,6 +1287,7 @@
         "home-manager": "home-manager_2",
         "humanizer": "humanizer",
         "khazix-skills": "khazix-skills",
+        "kikoeru-neo": "kikoeru-neo",
         "linux-src": "linux-src",
         "mattpocock-skills": "mattpocock-skills",
         "mtg-agent-skill": "mtg-agent-skill",
@@ -1244,7 +1295,7 @@
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",
         "nixos-wsl": "nixos-wsl",
-        "nixpkgs": "nixpkgs_3",
+        "nixpkgs": "nixpkgs_4",
         "nixpkgs-master": "nixpkgs-master",
         "nixpkgs-stable": "nixpkgs-stable",
         "nixpkgs-unstable": "nixpkgs-unstable",
@@ -1751,7 +1802,7 @@
     },
     "zjstatus": {
       "inputs": {
-        "crane": "crane",
+        "crane": "crane_2",
         "flake-utils": "flake-utils_4",
         "nixpkgs": [
           "nixpkgs-unstable"
