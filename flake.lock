@@ -927,6 +927,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_5": {
+      "locked": {
+        "lastModified": 1791637130,
+        "narHash": "sha256-TuvwvSjJrpqyIYdjhQ7Wu+ADVfeOpO2Um21/V7TOubw=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "ca1659429c950a11a565b5764e37a1b704e17ec8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "npm-lockfile-fix": {
       "inputs": {
         "nixpkgs": [
@@ -1142,6 +1158,7 @@
         "rust-overlay": "rust-overlay",
         "rustowl-overlay": "rustowl-overlay",
         "sops-nix": "sops-nix",
+        "telegram-reader": "telegram-reader",
         "yazi": "yazi",
         "yazi-plugin-augment-command": "yazi-plugin-augment-command",
         "yazi-plugin-git": "yazi-plugin-git",
@@ -1370,6 +1387,24 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "telegram-reader": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_5"
+      },
+      "locked": {
+        "lastModified": 1792926993,
+        "narHash": "sha256-skHm2FJ2RMmMZvbV0Pnr2Lg01NsCfzXiP6inyskAX/Q=",
+        "owner": "chinrw",
+        "repo": "telegram-reader",
+        "rev": "9a2e10b5a88ba5c46437e2e1412b24a7202265a3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "chinrw",
+        "repo": "telegram-reader",
         "type": "github"
       }
     },

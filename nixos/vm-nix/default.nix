@@ -35,6 +35,7 @@ in
     ../services/reclaim-cargo-targets.nix
     ../services/rclone-progress.nix
     ../services/hermes.nix
+    inputs.telegram-reader.nixosModules.default
     ../services/flaresolverr.nix
     ../services/browser-agent.nix
     ../services/tailscale-exit-proxy.nix
@@ -43,6 +44,17 @@ in
     ../services/stocks-proxy.nix
     # ./proxy.nix
   ];
+
+  services.telegram-reader = {
+    enable = true;
+    apiIdFile = config.sops.secrets."telegram-reader/api_id".path;
+    apiHashFile = config.sops.secrets."telegram-reader/api_hash".path;
+    proxy = "http://127.0.0.1:10809";
+    downloads = {
+      directory = "/mnt/data/Downloads/telegram";
+      createAs = username;
+    };
+  };
 
   users.users.chin39 = {
     isNormalUser = true;
@@ -179,6 +191,16 @@ in
       "wg-vm-nix/privatekey" = { };
       "ssh_pub_key" = { };
       "access-tokens" = { };
+      "telegram-reader/api_id" = {
+        owner = "telegram-reader";
+        mode = "0400";
+        restartUnits = [ "telegram-reader.service" ];
+      };
+      "telegram-reader/api_hash" = {
+        owner = "telegram-reader";
+        mode = "0400";
+        restartUnits = [ "telegram-reader.service" ];
+      };
     };
   };
 

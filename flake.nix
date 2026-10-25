@@ -55,6 +55,9 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    # Recovery uses Telethon internals, so keep its tested nixpkgs pin.
+    telegram-reader.url = "github:chinrw/telegram-reader";
+
     # Lossless Context Management engine for hermes, copied into
     # /var/lib/hermes/.hermes/plugins by services/hermes-lcm.nix (the
     # container boot chown breaks on store symlinks). Pin release tags only
