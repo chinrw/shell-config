@@ -218,12 +218,6 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    # nixpkgs deliberately not followed, so pi builds against the pin upstream
-    # tests with.
-    pi = {
-      url = "github:earendil-works/pi/stable";
-    };
-
     pwndbg = {
       url = "github:pwndbg/pwndbg";
       inputs.nixpkgs.follows = "nixpkgs-unstable";

@@ -817,22 +817,6 @@
         "type": "github"
       }
     },
-    "nixpkgs-darwin-x64": {
-      "locked": {
-        "lastModified": 1788334797,
-        "narHash": "sha256-nskSa8kDimM7F0VFSP8IdoSNo4G0vKzOtxwvOFpoGDI=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "c19db427a1fdfc7591c0b0baeb4665dcef2c61da",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixpkgs-26.05-darwin",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs-lib": {
       "locked": {
         "lastModified": 1790477367,
@@ -943,22 +927,6 @@
         "type": "github"
       }
     },
-    "nixpkgs_5": {
-      "locked": {
-        "lastModified": 1788316716,
-        "narHash": "sha256-bc7rSpXIdn9QWGNqfWcPZWOhEVF8NoeAZkWq0XWnf/k=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "3ed67ec0a4d3c7ab4ae1f04f8ee8df07bfa506a2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "npm-lockfile-fix": {
       "inputs": {
         "nixpkgs": [
@@ -1011,26 +979,6 @@
         "owner": "prevalentWare",
         "ref": "main",
         "repo": "opencode-goal-plugin",
-        "type": "github"
-      }
-    },
-    "pi": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_5",
-        "nixpkgs-darwin-x64": "nixpkgs-darwin-x64"
-      },
-      "locked": {
-        "lastModified": 1792621753,
-        "narHash": "sha256-N9NOpiiZTbOMDMV+CxvJAgtLjJJ1/8NJBGS0cFHkhsc=",
-        "owner": "earendil-works",
-        "repo": "pi",
-        "rev": "4a080252f06caf63a525d7873c5d94d3c23887e0",
-        "type": "github"
-      },
-      "original": {
-        "owner": "earendil-works",
-        "ref": "stable",
-        "repo": "pi",
         "type": "github"
       }
     },
@@ -1190,7 +1138,6 @@
         "nixpkgs-unstable": "nixpkgs-unstable",
         "oh-my-opencode-slim": "oh-my-opencode-slim",
         "opencode-goal-plugin": "opencode-goal-plugin",
-        "pi": "pi",
         "pwndbg": "pwndbg",
         "rust-overlay": "rust-overlay",
         "rustowl-overlay": "rustowl-overlay",
