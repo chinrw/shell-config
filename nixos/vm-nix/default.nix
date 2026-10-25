@@ -51,7 +51,7 @@ in
     apiHashFile = config.sops.secrets."telegram-reader/api_hash".path;
     proxy = "http://127.0.0.1:10809";
     downloads = {
-      directory = "/mnt/data/Downloads/telegram";
+      directory = "/mnt/data/Downloads/Telegram";
       createAs = username;
     };
   };
