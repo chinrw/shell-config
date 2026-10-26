@@ -1,6 +1,6 @@
 # Coding agents (claude, codex, opencode) run whatever -j their tools pick;
 # several compiling at once put the VM into oomd's kill on 2026-08-14 and
-# 2026-09-04. One slice caps what all of them together may hold, entered
+# 2026-09-04. One slice caps how much swap all of them together may take, entered
 # through `agentsh`: everything started from that shell inherits the cgroup,
 # the `claude agents` daemon and nested codex/opencode included. A zellij or
 # tmux server already running outside stays outside; start a new one inside.
@@ -34,12 +34,6 @@ in
   systemd.user.slices.agents = {
     description = "Coding agents started through agentsh";
     sliceConfig = {
-      # Past 32G resident the kernel reclaims into zswap and the Optane zvol
-      # and throttles allocators. No MemoryMax on purpose: nothing in here is
-      # killed (oom-guard.nix retired the oomd pressure kill for the same
-      # reason); a stalled agent is the signal to raise this live with
-      # `systemctl --user set-property agents.slice MemoryHigh=`.
-      MemoryHigh = "32G";
       # Half of the 128G zvol; the rest stays for shells, nested qemu and
       # system.slice.
       MemorySwapMax = "64G";

@@ -5,10 +5,9 @@
   swapDevices = [
     {
       # NixOS only mkswaps swapfiles and encrypted devices. Initialise once:
+      #   mkswap -L vm-nix-swap-opt /dev/vda
+      # Label, not /dev/vda: virtio names follow PCI order and can shift.
       label = "vm-nix-swap-opt";
-
-      # zswap caches pages in guest RAM and writes cold entries back here.
-      priority = 0;
 
       # Per-page discard too: the zvol shares the Optane special vdev with the
       # pool's metadata, so freed slots must go back to it, not sit allocated.

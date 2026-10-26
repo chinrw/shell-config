@@ -4,8 +4,6 @@
 {
   boot.kernelParams = [
     "zswap.enabled=1"
-    "zswap.compressor=zstd"
-    "zswap.max_pool_percent=20"
     # Reclaim cold compressed pages before the pool reaches its size limit.
     "zswap.shrinker_enabled=1"
   ];

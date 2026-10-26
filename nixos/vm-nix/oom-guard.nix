@@ -50,14 +50,9 @@
   # 2026-09-06 only the swap trigger is wired: the 80%/30s pressure kill
   # on -.slice and user.slice fired on plain compile load and took the
   # whole login session; swap on the Optane zvol absorbs that load now.
-  systemd.oomd = {
-    enable = true;
-    enableRootSlice = false;
-    enableUserSlices = false;
-    # Upstream default, kept visible: it is the one number that still
-    # decides a kill.
-    settings.OOM.SwapUsedLimit = "90%";
-  };
+  # Upstream default, kept visible: it is the one number that still decides
+  # a kill.
+  systemd.oomd.settings.OOM.SwapUsedLimit = "90%";
   # Swap over SwapUsedLimit: kill the biggest swap consumers.
   systemd.slices."-".sliceConfig.ManagedOOMSwap = "kill";
   # 2G of system.slice (journald, sshd) protected from reclaim.
