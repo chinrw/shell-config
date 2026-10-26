@@ -35,11 +35,11 @@ in
       PrivateTmp = true;
       Restart = "on-failure";
       ReadWritePaths = [
+        "/mnt/data/Downloads"
         "/mnt/data/Video/jellyfin"
+        "/mnt/data/Video/动画刮削中"
         "/mnt/data/harmony"
-        "/mnt/data/Downloads/bt"
-        "/mnt/data/Downloads/incomplete"
-      ]; # :contentReference[oaicite:1]{index=1}
+      ];
     };
   };
 
