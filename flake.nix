@@ -17,8 +17,6 @@
       "https://mirror.sjtu.edu.cn/nix-channels/store?priority=39"
       # status: https://mirrors.ustc.edu.cn/status/
       # "https://mirrors.ustc.edu.cn/nix-channels/store"
-      # Tuna mirror — ?priority=39 ranks it above cache.nixos.org (40);
-      "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store/?priority=39"
       "https://cache.nixos.org"
     ];
     extra-trusted-public-keys = [

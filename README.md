@@ -184,7 +184,7 @@ it during activation with nobody there to type one
 
 `flake.nix` sets `extra-substituters` and `extra-trusted-public-keys`. It uses
 the appending `extra-*` form because the replacing keys would overwrite the
-settings in each host's `nix.conf`. Besides `chinrw.cachix.org` and a TUNA
+settings in each host's `nix.conf`. Besides `chinrw.cachix.org` and the SJTU
 mirror, a host can use LAN caches by naming them in `localCaches`. An unknown
 name fails the build and prints the known ones, which are listed in
 `lib/caches.nix`.
