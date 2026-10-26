@@ -39,9 +39,6 @@ in
     ../services/flaresolverr.nix
     ../services/browser-agent.nix
     ../services/tailscale-exit-proxy.nix
-    ../services/stocks-server.nix
-    ../services/stocks-dev-server.nix
-    ../services/stocks-proxy.nix
     # ./proxy.nix
   ];
 
@@ -127,8 +124,6 @@ in
       5432
 
       5000 # local binary cache
-      5001 # test webserver1
-      5002 # test webserver2
 
       8000
       8888 # kik
