@@ -20,7 +20,7 @@ in
   };
 
   services.adguardhome = {
-    host = "127.0.0.1";
+    settings.http.address = "127.0.0.1:3000";
     openFirewall = false;
     settings.dns.bind_hosts = [
       "127.0.0.1"
