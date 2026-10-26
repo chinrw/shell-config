@@ -18,6 +18,7 @@ in
     ./openlist.nix
     ./kikoeru-neo.nix
     ./lanraragi.nix
+    ./stocks.nix
     (import ../services/aria2.nix {
       inherit
         config

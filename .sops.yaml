@@ -62,6 +62,11 @@ creation_rules:
       - age:
           - *admin
           - *media-lxc
+  - path_regex: secrets/stocks(\.env|-deploy-key)$
+    key_groups:
+      - age:
+          - *admin
+          - *media-lxc
   - path_regex: secrets/email\.yaml$
     key_groups:
       - age:
