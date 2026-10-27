@@ -7,6 +7,7 @@
   config,
   pkgs,
   username,
+  smallNode,
   localCacheSubstituters,
   localCacheTrustedKeys,
   ...
@@ -98,10 +99,10 @@
     };
 
   virtualisation.docker = {
-    enable = lib.mkDefault true;
+    enable = lib.mkDefault (!smallNode);
     rootless = {
-      enable = lib.mkDefault true;
-      setSocketVariable = lib.mkDefault true;
+      enable = lib.mkDefault (!smallNode);
+      setSocketVariable = lib.mkDefault (!smallNode);
       daemon.settings = {
         features.cdi = true;
       };
@@ -111,36 +112,42 @@
     };
   };
 
-  environment.systemPackages = with pkgs; [
-    git
-    curl
-    tzdata
-    nodejs
-    unzip
-    wget
-    inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
-    (lib.hiPrio clang)
-    (lib.hiPrio llvm)
-    gcc
-    rustc
-    cargo
-    mold
-    wireguard-tools
-    ueberzugpp
-    tcpdump
-    trash-cli
-    gnumake
-    pnpm_12
+  environment.systemPackages =
+    with pkgs;
+    [
+      git
+      curl
+      tzdata
+      inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
+    ]
+    ++ lib.optionals (!smallNode) [
+      (lib.hiPrio clang)
+      (lib.hiPrio llvm)
+      gcc
+      mold
+      gnumake
+      rustc
+      cargo
+      nodejs
+      pnpm_12
 
-    btrfs-progs
-    bpftools
-    bpftrace
-    lsof
-    psmisc
-    perf
-    osc # Access the system clipboard from anywhere using the ANSI OSC52 sequence
-  ];
-  # Set the default editor to vim
+      wget
+      wireguard-tools
+      tcpdump
+
+      bpftools
+      bpftrace
+      perf
+      lsof
+      psmisc
+
+      btrfs-progs
+      unzip
+      trash-cli
+
+      ueberzugpp
+      osc # Access the system clipboard from anywhere using the ANSI OSC52 sequence
+    ];
   environment.variables = {
     EDITOR = "nvim";
   };
@@ -148,7 +155,7 @@
   programs = {
     zsh.enable = true;
     nix-ld = {
-      enable = true;
+      enable = !smallNode;
     };
 
     fuse = {

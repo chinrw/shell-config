@@ -47,12 +47,12 @@ home-manager switch --flake .#chin39@archlinux
 
 ### Remote deployment with deploy-rs
 
-deploy-rs deploys the NixOS configuration on `nixos-ci`, `nixos-lxc` and
+deploy-rs deploys the NixOS configuration on `aliyun`, `nixos-ci`, `nixos-lxc` and
 `media-lxc`, and standalone Home Manager on `nixos-ci`, `nixos-lxc`,
-`vm-nix`, `media-lxc` and `proxmox`. Run it from an x86_64 Linux checkout,
-such as vm-nix. You need SSH
-key access as `chin39`, trusted host keys, and passwordless sudo on the NixOS
-targets.
+`vm-nix`, `media-lxc`, `proxmox` and `aliyun`. Run it from an x86_64 Linux
+checkout, such as vm-nix. Most targets need SSH key access as `chin39`,
+trusted host keys, and passwordless sudo. `aliyun` connects as `root` so its
+system profile can create `chin39` before Home Manager activation.
 
 The `nix run .#deploy-rs-ci` entry point sends builds for every target, including
 its automatic checks, to `nixos-ci` (`192.168.0.230`). Cached outputs can still be
@@ -71,6 +71,8 @@ and its launcher.
 
 | Target | Configuration |
 | --- | --- |
+| `aliyun.system` | `nixosConfigurations.aliyun` |
+| `aliyun.home` | `homeConfigurations."chin39@aliyun"` |
 | `nixos-ci.system` | `nixosConfigurations.nixos-ci` |
 | `nixos-ci.home` | `homeConfigurations."chin39@nixos-ci"` |
 | `nixos-lxc.system` | `nixosConfigurations.nixos-lxc` |
@@ -122,6 +124,7 @@ nix develop .#hm
 
 | System configuration | Machine |
 | --- | --- |
+| `nixosConfigurations.aliyun` | Small Alibaba Cloud server |
 | `nixosConfigurations.nixos-ci` | Proxmox LXC that refreshes `flake.lock` and prebuilds the cache (see below) |
 | `nixosConfigurations.nixos-lxc` | Proxmox LXC for coding agents |
 | `nixosConfigurations.media-lxc` | Proxmox LXC that runs the home services |
@@ -138,9 +141,11 @@ atuin sync are turned on per host through `features`. `lib/helpers.nix` lists
 the valid feature names and rejects unknown ones. `proxy` and `gitProxy` set the
 shell and git proxies.
 
+For a small server, set `smallNode` on both its system and user configurations.
+
 The user configurations are:
 
-`chin39@macos`, `chin39@desktop`, `chin39@vm-nix`, `chin39@wsl`,
+`chin39@aliyun`, `chin39@macos`, `chin39@desktop`, `chin39@vm-nix`, `chin39@wsl`,
 `chin39@wsl-mini`, `chin39@work`, `chin39@vm-work`, `chin39@archlinux`,
 `chin39@arch-lxc`, `chin39@arch-vm`, `chin39@proxmox`, `chin39@nixos-lxc`,
 `chin39@media-lxc`, `chin39@gentoo-server`, `chin39@vm-gentoo`, `ruowen@ringo`

@@ -320,6 +320,23 @@
           "ConnectTimeout=10"
         ];
         nodes = {
+          aliyun = {
+            hostname = "112.126.64.56";
+            sshUser = "root";
+            profilesOrder = [
+              "system"
+              "home"
+            ];
+            profiles.system = {
+              user = "root";
+              path = cacheable (deployLib.activate.nixos self.nixosConfigurations.aliyun);
+            };
+            profiles.home = {
+              user = "chin39";
+              profilePath = "/home/chin39/.local/state/nix/profiles/deploy-rs-home";
+              path = cacheable (deployLib.activate.home-manager self.homeConfigurations."chin39@aliyun");
+            };
+          };
           nixos-ci = {
             hostname = "192.168.0.230";
             profiles.system = {
@@ -379,6 +396,13 @@
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
       nixosConfigurations = {
+        "aliyun" = helpers.mkNixos {
+          hostname = "aliyun";
+          stateVersion = "23.11";
+          nixpkgs = inputs.nixpkgs-stable;
+          smallNode = true;
+          extraModules = [ ./nixos/aliyun ];
+        };
         "nixos-ci" = helpers.mkNixos {
           hostname = "nixos-ci";
           stateVersion = "26.11";
@@ -437,6 +461,13 @@
       # Standalone home-manager configuration entrypoint
       # Available through 'home-manager --flake .#your-username@your-hostname'
       homeConfigurations = {
+        "chin39@aliyun" = helpers.mkHome {
+          stateVersion = "26.05";
+          hostname = "aliyun";
+          isServer = true;
+          isPublic = true;
+          smallNode = true;
+        };
         "chin39@desktop" = helpers.mkHome {
           stateVersion = "25.05";
           hostname = "desktop";

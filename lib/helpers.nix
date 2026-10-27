@@ -133,6 +133,8 @@ in
     {
       hostname,
       stateVersion,
+      nixpkgs ? inputs.nixpkgs,
+      smallNode ? false,
       username ? "chin39",
       desktop ? null,
       platform ? "x86_64-linux",
@@ -146,7 +148,7 @@ in
       localCacheSubstituters = cacheCfg.substituters;
       localCacheTrustedKeys = cacheCfg.trustedKeys;
     in
-    inputs.nixpkgs.lib.nixosSystem {
+    nixpkgs.lib.nixosSystem {
       system = platform;
       specialArgs = {
         inherit
@@ -157,6 +159,7 @@ in
           platform
           username
           stateVersion
+          smallNode
           isWsl
           localCacheSubstituters
           localCacheTrustedKeys
@@ -167,7 +170,7 @@ in
         { system.stateVersion = stateVersion; }
       ]
       ++ extraModules
-      ++ inputs.nixpkgs.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
+      ++ nixpkgs.lib.optionals isWsl [ inputs.nixos-wsl.nixosModules.default ];
     };
 
   mkDarwin =
