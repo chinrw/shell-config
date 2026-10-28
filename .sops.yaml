@@ -71,8 +71,7 @@ creation_rules:
     key_groups:
       - age:
           - *admin
-          - *nixos-ci
-          - *vm-nix
+          - *media-lxc
   - path_regex: secrets/mac_xray\.conf$
     key_groups:
       - age:

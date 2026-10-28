@@ -14,6 +14,7 @@ in
     ../services/tailscale-exit-proxy.nix
     ./proxy.nix
     ./web.nix
+    ./ntfy.nix
     ./postgresql.nix
     ./openlist.nix
     ./kikoeru-neo.nix

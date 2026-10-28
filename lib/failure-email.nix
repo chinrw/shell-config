@@ -2,13 +2,11 @@ let
   mkModule =
     userService:
     {
-      config,
       lib,
       pkgs,
       ...
     }:
     let
-      address = "chinqrw@gmail.com";
       sender = pkgs.writeShellApplication {
         name = "failure-email";
         runtimeInputs = [
@@ -25,16 +23,11 @@ let
             *) echo 'Expected system or user service scope' >&2; exit 1 ;;
           esac
 
-          password=$(tr -d '[:space:]' <"$CREDENTIALS_DIRECTORY/smtp-password")
-          if [[ ! "$password" =~ ^[a-zA-Z0-9]{16}$ ]]; then
-            echo 'Expected a 16-character Google app password' >&2
-            exit 1
-          fi
-
           umask 077
           message=$(mktemp)
           trap 'rm -f "$message"' EXIT
           python3 - "$scope" "$unit" >"$message" <<'PY'
+          import json
           import os
           import re
           import shlex
@@ -42,9 +35,6 @@ let
           import subprocess
           import sys
           from datetime import datetime, timedelta, timezone
-          from email.message import EmailMessage
-          from email.policy import SMTP
-          from email.utils import format_datetime, make_msgid
 
           scope, unit = sys.argv[1:]
           host = socket.gethostname()
@@ -125,33 +115,19 @@ let
                       f"{logs.decode('utf-8', errors='replace')}\n"
                   )
 
-          message = EmailMessage(policy=SMTP)
-          message["From"] = ${builtins.toJSON address}
-          message["To"] = ${builtins.toJSON address}
-          message["Subject"] = subject
-          message["Date"] = format_datetime(now)
-          message["Message-ID"] = make_msgid(domain=host)
-          message.set_content(body, cte="base64")
-          sys.stdout.buffer.write(message.as_bytes())
+          json.dump({"topic": "alerts", "title": subject, "message": body}, sys.stdout, ensure_ascii=False)
           PY
 
-          # Read authentication through a file descriptor so it stays out of argv.
-          # SMTP needs an explicit HTTP CONNECT tunnel through the LAN proxy.
-          curl --disable --silent --show-error \
-            --config <(printf 'user = "%s:%s"\n' ${lib.escapeShellArg address} "$password") \
-            --url smtp://smtp.gmail.com:587 --ssl-reqd \
-            --cacert ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt \
-            --proxy http://192.168.0.241:10809 --proxytunnel \
-            --mail-from ${lib.escapeShellArg address} --mail-rcpt ${lib.escapeShellArg address} \
-            --upload-file "$message" \
-            --connect-timeout 15 --max-time 60 \
-            --retry 2 --retry-all-errors --retry-delay 30
+          curl --disable --silent --show-error --fail-with-body \
+            --noproxy '*' --url http://192.168.0.241:9080/ \
+            --json "@$message" \
+            --connect-timeout 15 --max-time 70 \
+            --retry 2 --retry-connrefused --retry-delay 30
         '';
       };
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${lib.getExe sender} ${if userService then "user" else "system"} %i";
-        LoadCredential = "smtp-password:${config.sops.secrets."email/smtp-password".path}";
         TimeoutStartSec = "5min";
         UMask = "0077";
         NoNewPrivileges = true;
@@ -160,10 +136,6 @@ let
     {
       # Several task modules can import the same notifier without duplicating it.
       key = "shell-config.failure-email.${if userService then "home-manager" else "nixos"}";
-      sops.secrets."email/smtp-password" = {
-        sopsFile = ../secrets/email.yaml;
-        key = "smtp-password";
-      };
     }
     // (
       if userService then
@@ -171,8 +143,6 @@ let
           systemd.user.services."email-failure@" = {
             Unit = {
               Description = "Email failure notification for %i";
-              Requires = [ "sops-nix.service" ];
-              After = [ "sops-nix.service" ];
             };
             Service = serviceConfig;
           };
