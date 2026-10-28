@@ -254,7 +254,7 @@ let
   };
 
   # Hermes reads and downloads Telegram content but never runs it.
-  telegramExecFloors = import ./hermes-telegram-floors.nix;
+  telegramExecFloors = import ./hermes-telegram-floors.nix { inherit lib; };
   # The floors refuse interpreters that name a Telegram path, so Hermes moves
   # downloads into the organized tree with this fixed, no-replace command.
   telegramOrganizeMove = pkgs.writers.writePython3Bin "telegram-organize-move" {
