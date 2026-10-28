@@ -58,6 +58,7 @@ in
       personality = "none";
       approvals_reviewer = "auto_review";
       features.memories = true;
+      plugins."superpowers@openai-curated".enabled = false;
       tui = {
         status_line = [
           "model-with-reasoning"
