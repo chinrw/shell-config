@@ -627,6 +627,30 @@ in
             resources = false;
           };
         };
+
+        # The reader runs on the host as its own user, so the account session
+        # never enters the container. find_media and check_file only read; they
+        # let Hermes trace hand-downloaded files back to their posts.
+        telegram = {
+          url = config.services.telegram-reader.url;
+          connect_timeout = 15;
+          timeout = 120;
+          sampling.enabled = false;
+          tools = {
+            include = [
+              "list_chats"
+              "read_messages"
+              "search_messages"
+              "get_message"
+              "download_media"
+              "download_status"
+              "find_media"
+              "check_file"
+            ];
+            prompts = false;
+            resources = false;
+          };
+        };
       };
     };
 
