@@ -121,6 +121,8 @@ let
       "${rankingWrapper} *"
       "python3 ${downloadStatus} *"
       "/usr/bin/python3 ${downloadStatus} *"
+      # The daily Telegram cron moves finished downloads with this command.
+      "telegram-organize-move /data/workspace/telegram-organize/*.tsv /mnt/data/harmony/telegram/.organize-*.tsv"
     ];
 
   # Shared by the default config and every named profile; profiles are
@@ -196,7 +198,8 @@ let
         "*nixos-rebuild*"
         "rm *-*r*/mnt/data*"
         "find */mnt/data*-delete*"
-      ];
+      ]
+      ++ telegramExecFloors;
     };
     # Cron and -q runs never reach the smart guardian; without an exact match
     # here, tirith findings in routine arguments (Chinese notes, LAN IPs) block
@@ -250,6 +253,14 @@ let
     imagemagickBig = pkgs.imagemagick;
   };
 
+  # Hermes reads and downloads Telegram content but never runs it.
+  telegramExecFloors = import ./hermes-telegram-floors.nix;
+  # The floors refuse interpreters that name a Telegram path, so Hermes moves
+  # downloads into the organized tree with this fixed, no-replace command.
+  telegramOrganizeMove = pkgs.writers.writePython3Bin "telegram-organize-move" {
+    flakeIgnore = [ "E501" ];
+  } (builtins.readFile ./telegram-organize-move.py);
+
   # ── Container PATH ──────────────────────────────────────────────
   # Add tools here, not in the PATH string. Nix-provided tools survive container
   # rebuilds; the apt-provisioned writable layer does not, and they come before
@@ -258,6 +269,7 @@ let
   containerTools = [
     pkgs.bubblewrap # sandbox for the Codex app-server
     qrDecoder
+    telegramOrganizeMove
     pkgs.git # Hermes commits its own workspace and skill edits
     codexPackage
     claudePackage
