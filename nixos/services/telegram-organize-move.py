@@ -1,18 +1,7 @@
-"""Move files from the Telegram inbox into the organized tree, never replacing anything.
+"""Move Telegram files without replacing existing paths.
 
-Usage: telegram-organize-move <plan.tsv> <log.tsv>
-       telegram-organize-move --undo <log.tsv> <undo-log.tsv>
-
-Each plan line is "old<TAB>new". Hermes's deny floors refuse interpreters that
-name a Telegram path, so this fixed command is how Hermes organizes downloads.
-It renames with RENAME_NOREPLACE and appends "new<TAB>old" to the log after
-each move, so a round can be undone with --undo, which replays a log in
-reverse. It stops at the first error.
-
-Paths are checked once, with symlinks resolved, and then renamed by path, so a
-parent directory swapped for a symlink in between is not caught. The command
-guards against mistakes in a plan. It is not a security boundary: Hermes can
-already move files under /mnt/data with mv.
+Plans contain "source<TAB>target"; logs record "target<TAB>source".
+--undo replays the log in reverse. Both modes stop at the first error.
 """
 
 import ctypes
@@ -46,10 +35,10 @@ def rename_noreplace(old, new):
 
 
 def open_log(path):
-    """Open and lock the log for appending and return its descriptor. It must be a plain,
-    singly linked file in the organized tree, so appending can never write into
-    a media file. Lines go straight to the descriptor; a buffered file object
-    would retry a failed write when it is closed."""
+    """Open a singly linked regular log and lock it for the run.
+
+    Unbuffered writes prevent closing the log from retrying a failed append.
+    """
     if not inside(path, [ORGANIZED]) or not os.path.basename(path).startswith(".organize-"):
         sys.exit(f"log must be {ORGANIZED}.organize-<name>.tsv")
     try:
@@ -60,8 +49,7 @@ def open_log(path):
     if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
         os.close(fd)
         sys.exit(f"log must be a regular file with one link: {path}")
-    # Failure recovery truncates the log to its earlier length, which would drop
-    # lines another run appended in between, so one run holds a log at a time.
+    # Rollback must not truncate lines appended by another run.
     try:
         fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
@@ -149,9 +137,7 @@ def main():
         undone, log = args[1], args[2]
         if os.path.realpath(undone) == os.path.realpath(log):
             sys.exit("the undo log must differ from the log being undone")
-        # A log line is "new<TAB>old"; undoing moves new back to old, last move first.
-        pairs = [(number, new, old) for number, new, old in reversed(read_pairs(undone))]
-        move_all(pairs, log, [ORGANIZED], [INBOX, ORGANIZED])
+        move_all(reversed(read_pairs(undone)), log, [ORGANIZED], [INBOX, ORGANIZED])
     elif len(args) == 2 and not args[0].startswith("--"):
         move_all(read_pairs(args[0]), args[1], [INBOX, ORGANIZED], [ORGANIZED])
     else:

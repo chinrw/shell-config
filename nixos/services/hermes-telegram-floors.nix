@@ -1,19 +1,7 @@
 { lib }:
 let
-  # The owner's rule for Telegram: Hermes reads and downloads, and never runs
-  # what it downloaded. Downloads are created without execute bits and owned
-  # by telegram-reader, so running one takes an interpreter. These floors deny
-  # the common ways to do that while ls, mv, cp, 7zz and sha256sum still pass.
-  # Files hand-downloaded in the Telegram client do carry execute bits, and
-  # organized files move out of the inbox, so the floors cover both trees:
-  # /mnt/data/Downloads/Telegram is the inbox and /mnt/data/harmony/telegram
-  # holds the organized files. Hermes lowercases the command and the glob
-  # before matching, so "/telegram/" covers both spellings. Matching on that
-  # word rather than the full paths catches ./, // and .. spellings too, and
-  # relies on Hermes matching each command word with its basename folded.
-  # A file moved or extracted outside both trees, the terminal workdir
-  # argument, and globbed or variable paths all escape them. The smart policy
-  # covers those in chat sessions. Cron and -q runs have no such second layer.
+  # Hermes matches lowercased commands and executable basenames. The shared
+  # /telegram/ component covers both the download inbox and the organized tree.
   telegramRunners = [
     "sh"
     "bash"
@@ -52,9 +40,7 @@ let
     "dpkg"
     "apt*"
   ];
-  # Interpreters that run a script fed on stdin or handed over by find -exec.
-  # awk is left out: piping a listing into awk processes text, and awk -f on
-  # a download is caught above.
+  # Plain awk reads stdin as data; awk -f on a download is covered above.
   telegramPipeRunners = [
     "sh"
     "bash"
@@ -73,10 +59,10 @@ let
     "php*"
     "lua*"
   ];
-  # A runner such as "python*" already matches its versions. A plain name must
-  # end the command or be followed by something that cannot continue a command
-  # name, such as a space, ";" or "|", so "sh" does not catch sha256sum.
-  ends = runner: if lib.hasSuffix "*" runner then [ runner ] else [ runner "${runner}[!a-z0-9._-]*" ];
+  # Match complete names so sh does not catch sha256sum; wildcards cover versions.
+  pipeRunnerPatterns = lib.concatMap (
+    runner: [ runner ] ++ lib.optional (!(lib.hasSuffix "*" runner)) "${runner}[!a-z0-9._-]*"
+  ) telegramPipeRunners;
 in
 [
   "/mnt*/telegram/*"
@@ -84,11 +70,8 @@ in
   "pushd */telegram*"
 ]
 ++ map (runner: "${runner} */telegram/*") telegramRunners
-# The pipe and -exec globs see the whole command, where the interpreter may
-# follow "|" with no space or come as /bin/bash or env bash. [ /] stands for
-# the space or slash before its name. A glob cannot tell an argument from the
-# command after "|", so a read such as "ls .../telegram/ | grep bash" is
-# refused too; such a command has to avoid naming an interpreter.
-++ lib.concatMap (runner: map (tail: "*/telegram/*|${tail}") (ends runner)) telegramPipeRunners
-++ lib.concatMap (runner: map (tail: "*/telegram/*|*[ /]${tail}") (ends runner)) telegramPipeRunners
-++ lib.concatMap (runner: map (tail: "find */telegram*-exec*[ /]${tail}") (ends runner)) telegramPipeRunners
+# [ /] covers /bin/bash and env bash. Globs also match arguments, so a read
+# such as `ls .../telegram/ | grep bash` is blocked too.
+++ map (runner: "*/telegram/*|${runner}") pipeRunnerPatterns
+++ map (runner: "*/telegram/*|*[ /]${runner}") pipeRunnerPatterns
+++ map (runner: "find */telegram*-exec*[ /]${runner}") pipeRunnerPatterns
