@@ -2,6 +2,9 @@
 let
   # Hermes matches lowercased commands and executable basenames. The shared
   # /telegram/ component covers both the download inbox and the organized tree.
+  # Files moved or extracted outside both trees, the terminal workdir argument,
+  # and globbed or variable paths escape these globs. Chat sessions still have
+  # the smart policy behind them; cron and -q runs do not.
   telegramRunners = [
     "sh"
     "bash"

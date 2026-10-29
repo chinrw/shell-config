@@ -2,6 +2,11 @@
 
 Plans contain "source<TAB>target"; logs record "target<TAB>source".
 --undo replays the log in reverse. Both modes stop at the first error.
+
+This guards against mistakes in a plan and is not a security boundary: Hermes
+can already move files under /mnt/data with mv. Paths are checked once and
+then renamed by path, so a parent directory swapped for a symlink in between
+is not caught.
 """
 
 import ctypes
