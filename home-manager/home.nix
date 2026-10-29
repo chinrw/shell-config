@@ -75,6 +75,7 @@ in
   ++ lib.optionals (!smallNode) [
     ./programs/opencode.nix
     ./programs/pi
+    ./programs/dsh.nix
     (import ./programs/codex {
       inherit
         codexPackage
@@ -287,7 +288,6 @@ in
         unar
         inputs.rustowl-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
         inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
-        inputs.deepseek-harness-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
         codexZshCompletion
         abtop # Monitor local AI coding agent sessions
         rustscan # modern scanner
