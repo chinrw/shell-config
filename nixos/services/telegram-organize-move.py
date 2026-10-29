@@ -9,10 +9,12 @@ then renamed by path, so a parent directory swapped for a symlink in between
 is not caught.
 """
 
+import contextlib
 import ctypes
 import errno
 import fcntl
 import os
+import shutil
 import stat
 import sys
 
@@ -24,6 +26,7 @@ USAGE = (
 )
 AT_FDCWD = -100
 RENAME_NOREPLACE = 1
+COPY_CHUNK = 16 << 20
 
 libc = ctypes.CDLL(None, use_errno=True)
 
@@ -39,12 +42,53 @@ def rename_noreplace(old, new):
         raise OSError(err, os.strerror(err), new)
 
 
+def move_file(src, dst):
+    """Rename src to dst without replacing dst.
+
+    In the Hermes container the inbox and the organized tree are separate bind
+    mounts, where rename fails with EXDEV. A file is then copied to a temporary
+    name beside dst, renamed into place and removed from src. An interrupted
+    copy leaves that .organize-part file behind, and the next try stops on it.
+    """
+    try:
+        rename_noreplace(src, dst)
+        return
+    except OSError as e:
+        if e.errno != errno.EXDEV or not os.path.isfile(src):
+            raise
+    if os.path.lexists(dst):
+        raise OSError(errno.EEXIST, os.strerror(errno.EEXIST), dst)
+    info = os.stat(src)
+    part = os.path.join(os.path.dirname(dst), f".{os.path.basename(dst)}.organize-part")
+    fd = os.open(part, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o664)
+    try:
+        with open(src, "rb") as source, os.fdopen(fd, "wb") as target:
+            shutil.copyfileobj(source, target, COPY_CHUNK)
+            target.flush()
+            os.fsync(target.fileno())
+            if os.fstat(target.fileno()).st_size != info.st_size:
+                raise OSError(errno.EIO, "copy size differs from the source", part)
+            os.utime(target.fileno(), ns=(info.st_atime_ns, info.st_mtime_ns))
+        rename_noreplace(part, dst)
+    except BaseException:
+        with contextlib.suppress(FileNotFoundError):
+            os.unlink(part)
+        raise
+    try:
+        os.unlink(src)
+    except OSError:
+        # Keeping both copies would leave a move the log cannot describe.
+        os.unlink(dst)
+        raise
+
+
 def open_log(path):
     """Open a singly linked regular log and lock it for the run.
 
     Unbuffered writes prevent closing the log from retrying a failed append.
     """
-    if not inside(path, [ORGANIZED]) or not os.path.basename(path).startswith(".organize-"):
+    name = os.path.basename(path)
+    if not inside(path, [ORGANIZED]) or not (name.startswith(".organize-") and name.endswith(".tsv")):
         sys.exit(f"log must be {ORGANIZED}.organize-<name>.tsv")
     try:
         fd = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW | os.O_CLOEXEC, 0o664)
@@ -105,9 +149,9 @@ def move_all(pairs, log, src_roots, dst_roots):
                 sys.exit(f"line {number}: {problem}: {src} -> {dst}; {moved} moved before it")
             try:
                 os.makedirs(os.path.dirname(dst), exist_ok=True)
-                rename_noreplace(src, dst)
+                move_file(src, dst)
             except OSError as e:
-                sys.exit(f"line {number}: {e.strerror}: {dst}; {moved} moved before it")
+                sys.exit(f"line {number}: {e.strerror}: {e.filename or dst}; {moved} moved before it")
             logged = os.fstat(out).st_size
             try:
                 line = f"{dst}\t{src}\n".encode()
@@ -118,7 +162,7 @@ def move_all(pairs, log, src_roots, dst_roots):
                 # An unlogged move could not be undone, so put the file back and
                 # drop any partial line, which would stop a later --undo.
                 try:
-                    rename_noreplace(dst, src)
+                    move_file(dst, src)
                 except OSError:
                     sys.exit(f"line {number}: log write failed ({e.strerror}) and moving back failed; "
                              f"{src} is now at {dst}; {moved} moved before it")
