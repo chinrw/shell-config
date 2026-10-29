@@ -65,125 +65,146 @@ let
       export GIT_ASKPASS=${lib.escapeShellArg gitAskPass}
       export GIT_TERMINAL_PROMPT=0
 
-      repo_dir="$RUNTIME_DIRECTORY/repo"
-      git clone --depth 1 --branch main --single-branch --no-tags \
-        ${lib.escapeShellArg repoUrl} "$repo_dir"
-      git -C "$repo_dir" config --local user.name 'Ruowen Qin'
-      git -C "$repo_dir" config --local user.email 'chinqrw@gmail.com'
+      prepare_candidate() {
+        local github_token nix_config
+        repo_dir="$RUNTIME_DIRECTORY/repo-$1"
+        git clone --depth 1 --branch main --single-branch --no-tags \
+          ${lib.escapeShellArg repoUrl} "$repo_dir"
+        git -C "$repo_dir" config --local user.name 'Ruowen Qin'
+        git -C "$repo_dir" config --local user.email 'chinqrw@gmail.com'
 
-      base_revision="$(git -C "$repo_dir" rev-parse HEAD)"
-      github_token="$(<"$CREDENTIALS_DIRECTORY/github-token")"
-      nix_config="$(printf 'accept-flake-config = false\naccess-tokens = github.com=%s\n' "$github_token")"
-      (
-        cd "$repo_dir"
-        NIX_CONFIG="$nix_config" nix flake update --commit-lock-file
-      )
-
-      candidate_revision="$(git -C "$repo_dir" rev-parse HEAD)"
-      if [[ "$candidate_revision" != "$base_revision" ]]; then
-        [[ "$(git -C "$repo_dir" diff --name-only "$base_revision..$candidate_revision")" == flake.lock ]] \
-          || fail 'flake update committed paths other than flake.lock'
-        git -C "$repo_dir" commit --amend --no-edit --signoff
-        candidate_revision="$(git -C "$repo_dir" rev-parse HEAD)"
-      fi
-      ${lib.optionalString cfg.ociRefresh ''
-        # A failed lookup skips the whole run, so main never mixes a new lock
-        # with a stale image.
-        lock="$repo_dir/lib/oci-images.json"
-        # set -e ignores a failure inside a for-loop word list, so a malformed
-        # lock would otherwise end the loop early and still publish.
-        names="$(jq -r 'keys[]' "$lock")" || fail 'cannot read OCI image lock'
-        for name in $names; do
-          ref="$(jq -r --arg n "$name" '.[$n] | "\(.repository):\(.tag)"' "$lock")"
-          digest="$(crane digest "$ref")" || fail "cannot resolve $ref"
-          jq --arg n "$name" --arg d "$digest" '.[$n].digest = $d' "$lock" >"$lock.new"
-          mv "$lock.new" "$lock"
-        done
-        if ! git -C "$repo_dir" diff --quiet; then
-          git -C "$repo_dir" commit --quiet --signoff -m 'chore: Update OCI image digests' -- lib/oci-images.json
-          candidate_revision="$(git -C "$repo_dir" rev-parse HEAD)"
-        fi
-      ''}
-
-      [[ -z "$(git -C "$repo_dir" status --porcelain=v1)" ]] \
-        || fail 'flake update left a dirty checkout'
-
-      # A partial root registration must be retried even when all paths exist.
-      state_file="$STATE_DIRECTORY/last-cached"
-      gc_roots="$STATE_DIRECTORY/gcroots"
-      if [[ "$candidate_revision" == "$base_revision" && -r "$state_file" && -f "$gc_roots/$base_revision/complete" ]]; then
-        mapfile -t cached <"$state_file"
-        if (( ''${#cached[@]} > 1 )) && [[ "''${cached[0]}" == "$base_revision" ]]; then
-          all_present=1
-          for store_path in "''${cached[@]:1}"; do
-            [[ -e "$store_path" ]] || { all_present=0; break; }
-          done
-          if (( all_present )); then
-            printf 'shell-config updater: %s already cached\n' "$base_revision"
-            exit 0
-          fi
-        fi
-      fi
-
-      store_paths_file="$RUNTIME_DIRECTORY/store-paths"
-      (
-        cd "$repo_dir"
-        NIX_CONFIG="$nix_config" nix flake archive --json --no-update-lock-file .
-      ) >"$RUNTIME_DIRECTORY/sources.json"
-      unset github_token nix_config
-      jq -r '[.. | objects | .path? // empty] | unique[]' \
-        "$RUNTIME_DIRECTORY/sources.json" >"$store_paths_file"
-
-      # Keep the candidate alive without replacing the last successful cache.
-      temporary_roots="$RUNTIME_DIRECTORY/gcroots"
-      mkdir -p "$temporary_roots"
-      mapfile -t store_paths <"$store_paths_file"
-      nix-store --realise "''${store_paths[@]}" --add-root "$temporary_roots/source" >/dev/null
-
-      # Checks do not reference profiles in their runtime closures, so cache
-      # each profile explicitly and read its target from the candidate flake.
-      (
-        cd "$repo_dir"
-        NIX_CONFIG='accept-flake-config = false' nix eval --json .#deploy.nodes --apply '
-          nodes: builtins.concatLists (builtins.attrValues (builtins.mapAttrs
-            (nodeName: node: map
-              (profileName: ".#deploy.nodes." + nodeName + ".profiles." + profileName + ".path")
-              (builtins.attrNames node.profiles))
-            nodes))
-        '
-      ) | jq -r '.[]' >"$RUNTIME_DIRECTORY/deploy-targets"
-      mapfile -t deploy_targets <"$RUNTIME_DIRECTORY/deploy-targets"
-      targets=( "''${deploy_targets[@]}" ${lib.escapeShellArgs linuxTargets} )
-      index=0
-      for target in "''${targets[@]}"; do
-        index=$((index + 1))
+        base_revision="$(git -C "$repo_dir" rev-parse HEAD)"
+        github_token="$(<"$CREDENTIALS_DIRECTORY/github-token")"
+        nix_config="$(printf 'accept-flake-config = false\naccess-tokens = github.com=%s\n' "$github_token")"
         (
           cd "$repo_dir"
-          # Separate clients release evaluation state between targets.
-          NIX_CONFIG='accept-flake-config = false' nix build \
-            --print-build-logs \
-            --print-out-paths \
-            --out-link "$temporary_roots/result-$index" \
-            --max-jobs ${toString cfg.maxJobs} \
-            --cores ${toString cfg.cores} \
-            "$target"
-        ) >>"$store_paths_file"
-      done
+          NIX_CONFIG="$nix_config" nix flake update --commit-lock-file
+        )
 
-      mapfile -t store_paths <"$store_paths_file"
-      (( ''${#store_paths[@]} > 0 )) || fail 'Nix returned no output paths'
-      if ${if cfg.publish then "false" else "true"}; then
-        printf 'shell-config updater: build validation passed; publishing is disabled\n'
-        exit 0
-      fi
+        candidate_revision="$(git -C "$repo_dir" rev-parse HEAD)"
+        if [[ "$candidate_revision" != "$base_revision" ]]; then
+          [[ "$(git -C "$repo_dir" diff --name-only "$base_revision..$candidate_revision")" == flake.lock ]] \
+            || fail 'flake update committed paths other than flake.lock'
+          git -C "$repo_dir" commit --amend --no-edit --signoff
+          candidate_revision="$(git -C "$repo_dir" rev-parse HEAD)"
+        fi
+        ${lib.optionalString cfg.ociRefresh ''
+          # A failed lookup skips the whole run, so main never mixes a new lock
+          # with a stale image.
+          lock="$repo_dir/lib/oci-images.json"
+          # set -e ignores a failure inside a for-loop word list, so a malformed
+          # lock would otherwise end the loop early and still publish.
+          names="$(jq -r 'keys[]' "$lock")" || fail 'cannot read OCI image lock'
+          for name in $names; do
+            ref="$(jq -r --arg n "$name" '.[$n] | "\(.repository):\(.tag)"' "$lock")"
+            digest="$(crane digest "$ref")" || fail "cannot resolve $ref"
+            jq --arg n "$name" --arg d "$digest" '.[$n].digest = $d' "$lock" >"$lock.new"
+            mv "$lock.new" "$lock"
+          done
+          if ! git -C "$repo_dir" diff --quiet; then
+            git -C "$repo_dir" commit --quiet --signoff -m 'chore: Update OCI image digests' -- lib/oci-images.json
+            candidate_revision="$(git -C "$repo_dir" rev-parse HEAD)"
+          fi
+        ''}
 
-      cachix --config "$CREDENTIALS_DIRECTORY/cachix-config" \
-        push chinrw "''${store_paths[@]}"
+        [[ -z "$(git -C "$repo_dir" status --porcelain=v1)" ]] \
+          || fail 'flake update left a dirty checkout'
 
-      if [[ "$candidate_revision" != "$base_revision" ]]; then
+        # A partial root registration must be retried even when all paths exist.
+        state_file="$STATE_DIRECTORY/last-cached"
+        gc_roots="$STATE_DIRECTORY/gcroots"
+        if [[ "$candidate_revision" == "$base_revision" && -r "$state_file" && -f "$gc_roots/$base_revision/complete" ]]; then
+          mapfile -t cached <"$state_file"
+          if (( ''${#cached[@]} > 1 )) && [[ "''${cached[0]}" == "$base_revision" ]]; then
+            all_present=1
+            for store_path in "''${cached[@]:1}"; do
+              [[ -e "$store_path" ]] || { all_present=0; break; }
+            done
+            if (( all_present )); then
+              printf 'shell-config updater: %s already cached\n' "$base_revision"
+              store_paths=( "''${cached[@]:1}" )
+              return
+            fi
+          fi
+        fi
+
+        store_paths_file="$RUNTIME_DIRECTORY/store-paths"
+        (
+          cd "$repo_dir"
+          NIX_CONFIG="$nix_config" nix flake archive --json --no-update-lock-file .
+        ) >"$RUNTIME_DIRECTORY/sources.json"
+        unset github_token nix_config
+        jq -r '[.. | objects | .path? // empty] | unique[]' \
+          "$RUNTIME_DIRECTORY/sources.json" >"$store_paths_file"
+
+        # Keep the candidate alive without replacing the last successful cache.
+        temporary_roots="$RUNTIME_DIRECTORY/gcroots-$1"
+        mkdir -p "$temporary_roots"
+        mapfile -t store_paths <"$store_paths_file"
+        nix-store --realise "''${store_paths[@]}" --add-root "$temporary_roots/source" >/dev/null
+
+        # Checks do not reference profiles in their runtime closures, so cache
+        # each profile explicitly and read its target from the candidate flake.
+        (
+          cd "$repo_dir"
+          NIX_CONFIG='accept-flake-config = false' nix eval --json .#deploy.nodes --apply '
+            nodes: builtins.concatLists (builtins.attrValues (builtins.mapAttrs
+              (nodeName: node: map
+                (profileName: ".#deploy.nodes." + nodeName + ".profiles." + profileName + ".path")
+                (builtins.attrNames node.profiles))
+              nodes))
+          '
+        ) | jq -r '.[]' >"$RUNTIME_DIRECTORY/deploy-targets"
+        mapfile -t deploy_targets <"$RUNTIME_DIRECTORY/deploy-targets"
+        targets=( "''${deploy_targets[@]}" ${lib.escapeShellArgs linuxTargets} )
+        index=0
+        for target in "''${targets[@]}"; do
+          index=$((index + 1))
+          (
+            cd "$repo_dir"
+            # Separate clients release evaluation state between targets.
+            NIX_CONFIG='accept-flake-config = false' nix build \
+              --print-build-logs \
+              --print-out-paths \
+              --out-link "$temporary_roots/result-$index" \
+              --max-jobs ${toString cfg.maxJobs} \
+              --cores ${toString cfg.cores} \
+              "$target"
+          ) >>"$store_paths_file"
+        done
+
+        mapfile -t store_paths <"$store_paths_file"
+        (( ''${#store_paths[@]} > 0 )) || fail 'Nix returned no output paths'
+        ${lib.optionalString cfg.publish ''
+          cachix --config "$CREDENTIALS_DIRECTORY/cachix-config" \
+            push chinrw "''${store_paths[@]}"
+        ''}
+      }
+
+      for attempt in 1 2 3; do
+        # A conditional function call would suppress errexit inside preparation.
+        prepare_candidate "$attempt"
+        if ${if cfg.publish then "false" else "true"}; then
+          printf 'shell-config updater: build validation passed; publishing is disabled\n'
+          exit 0
+        fi
+
         # Main must never point at a lock whose paths are not yet in Cachix.
-        git -C "$repo_dir" push origin HEAD:refs/heads/main
-      fi
+        if [[ "$candidate_revision" != "$base_revision" ]] \
+          && git -C "$repo_dir" push origin HEAD:refs/heads/main; then
+          break
+        fi
+
+        git -C "$repo_dir" fetch --depth 1 origin main
+        if [[ "$(git -C "$repo_dir" rev-parse FETCH_HEAD)" == "$base_revision" ]]; then
+          [[ "$candidate_revision" == "$base_revision" ]] \
+            || fail 'Git push failed while remote main was unchanged'
+          break
+        fi
+
+        (( attempt < 3 )) || fail 'remote main changed during all 3 attempts'
+        printf 'shell-config updater: remote main changed; starting attempt %s/3\n' "$((attempt + 1))"
+      done
 
       # Root the complete published revision before releasing the previous one.
       root_generation="$gc_roots/$candidate_revision"
