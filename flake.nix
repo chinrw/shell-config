@@ -537,6 +537,10 @@
             "atuin-sync"
             "chatgpt-linker"
             "dev-tools"
+            "restic"
+          ];
+          extraModules = [
+            { services.restic.backups.nixos-lxc.timerConfig.OnCalendar = "*-*-* 02:00:00"; }
           ];
         };
         "chin39@media-lxc" = helpers.mkHome {
@@ -548,6 +552,10 @@
             "atuin-sync"
             "dev-tools"
             "rclone"
+            "restic"
+          ];
+          extraModules = [
+            { services.restic.backups.media-lxc.timerConfig.OnCalendar = "*-*-* 02:30:00"; }
           ];
         };
         "chin39@proxmox" = helpers.mkHome {
@@ -596,6 +604,10 @@
             "rclone-progress"
             "restic"
             "syncthing"
+          ];
+          extraModules = [
+            ./home-manager/programs/restic-upload.nix
+            { services.restic.backups.vm-nix.paths = [ "/mnt/data/Documents/onedrive" ]; }
           ];
         };
         "chin39@macos" = helpers.mkHome {

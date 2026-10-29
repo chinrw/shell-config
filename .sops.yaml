@@ -39,6 +39,13 @@ creation_rules:
     key_groups:
       - age:
           - *admin
+  - path_regex: secrets/restic-password$
+    key_groups:
+      - age:
+          - *admin
+          - *vm-nix
+          - *nixos-lxc
+          - *media-lxc
   - path_regex: secrets/syncthing\.yaml$
     key_groups:
       - age:

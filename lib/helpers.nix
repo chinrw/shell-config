@@ -82,6 +82,7 @@ in
       localCaches ? [ ],
       # Names from knownFeatures above.
       features ? [ ],
+      extraModules ? [ ],
       # Where the shell proxy URL comes from: { secret = "<sops key>"; } or
       # { url = "..."; }. Empty means no proxy.
       proxy ? { },
@@ -125,7 +126,7 @@ in
             ;
         } features;
       };
-      modules = [ ../home-manager/home.nix ];
+      modules = [ ../home-manager/home.nix ] ++ extraModules;
     };
 
   # Helper function for generating NixOS configs
