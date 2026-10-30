@@ -134,7 +134,11 @@ let
           NIX_CONFIG="$nix_config" nix flake archive --json --no-update-lock-file .
         ) >"$RUNTIME_DIRECTORY/sources.json"
         unset github_token nix_config
-        jq -r '[.. | objects | .path? // empty] | unique[]' \
+        # Every listed source is pushed to the public Cachix cache below, so
+        # private inputs are dropped here.
+        jq -r --argjson private ${lib.escapeShellArg (builtins.toJSON cfg.privateInputs)} \
+          'reduce $private[] as $name (.; del(.inputs[$name]))
+            | [.. | objects | .path? // empty] | unique[]' \
           "$RUNTIME_DIRECTORY/sources.json" >"$store_paths_file"
 
         # Keep the candidate alive without replacing the last successful cache.
@@ -255,6 +259,11 @@ in
       type = lib.types.bool;
       default = false;
       description = "Refresh the digests in lib/oci-images.json from their tags and publish them with the lock update.";
+    };
+    privateInputs = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Flake inputs whose sources must not be uploaded to the public Cachix cache.";
     };
     publish = lib.mkOption {
       type = lib.types.bool;
