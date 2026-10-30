@@ -1175,6 +1175,7 @@
         "rust-overlay": "rust-overlay",
         "rustowl-overlay": "rustowl-overlay",
         "sops-nix": "sops-nix",
+        "stocks": "stocks",
         "telegram-reader": "telegram-reader",
         "yazi": "yazi",
         "yazi-plugin-augment-command": "yazi-plugin-augment-command",
@@ -1284,6 +1285,22 @@
       "original": {
         "owner": "Mic92",
         "repo": "sops-nix",
+        "type": "github"
+      }
+    },
+    "stocks": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793330670,
+        "narHash": "sha256-BkHJ0DWrFOyaRAAKrxP6FhkRJHcEM/NhRyHg322nF5E=",
+        "owner": "chinrw",
+        "repo": "stocks",
+        "rev": "30af8c5f32a5519a3b0defc662c2d9af97ef9ea1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "chinrw",
+        "repo": "stocks",
         "type": "github"
       }
     },
