@@ -129,7 +129,7 @@ in
       8888 # kik
       8443 # tt-sync
 
-      8765 # local python testing web
+      8765 # chatgpt-linker task exchange
       8787
 
       10808

@@ -25,11 +25,6 @@ creation_rules:
       - age:
           - *admin
           - *vm-nix
-  - path_regex: secrets/hosts/nixos-lxc\.yaml$
-    key_groups:
-      - age:
-          - *admin
-          - *nixos-lxc
   - path_regex: secrets/hosts/media-lxc\.yaml$
     key_groups:
       - age:
