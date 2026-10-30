@@ -70,7 +70,7 @@
 
   nix.settings = {
     substituters = [
-      "https://mirror.sjtu.edu.cn/nix-channels/store?priority=39"
+      "https://mirrors.ustc.edu.cn/nix-channels/store?priority=39"
       "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
     ];
     require-sigs = true;

@@ -14,9 +14,9 @@
       "https://chinrw.cachix.org"
       # cache mirror located in China
       # status: https://mirror.sjtu.edu.cn/
-      "https://mirror.sjtu.edu.cn/nix-channels/store?priority=39"
+      # "https://mirror.sjtu.edu.cn/nix-channels/store?priority=39"
       # status: https://mirrors.ustc.edu.cn/status/
-      # "https://mirrors.ustc.edu.cn/nix-channels/store"
+      "https://mirrors.ustc.edu.cn/nix-channels/store?priority=39"
       "https://cache.nixos.org"
     ];
     extra-trusted-public-keys = [
