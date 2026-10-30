@@ -76,7 +76,7 @@
     require-sigs = true;
     max-jobs = 1;
     cores = 2;
-    connect-timeout = 10;
-    stalled-download-timeout = 60;
+    connect-timeout = 5;
+    stalled-download-timeout = 15;
   };
 }

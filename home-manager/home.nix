@@ -143,6 +143,9 @@ in
       # whenever this host roams off the home network, so fail over fast
       # instead of hanging per-path, and never let a flaky cache hard-fail.
       connect-timeout = 5; # seconds to give up on an unreachable substituter
+      # A mirror that accepts TLS and then sends nothing would otherwise hold
+      # each download for Nix's 300s default, times 5 attempts.
+      stalled-download-timeout = 30;
       fallback = true; # build from source if substitution fails
 
       # Build performance.
