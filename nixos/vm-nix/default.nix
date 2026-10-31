@@ -126,7 +126,6 @@ in
       5000 # local binary cache
 
       8000
-      8888 # kik
       8443 # tt-sync
 
       8765 # chatgpt-linker task exchange
