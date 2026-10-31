@@ -21,7 +21,7 @@ in
     ../services/adguardhome.nix
     inputs.hardware.nixosModules.common-cpu-amd
     ./hardware.nix
-    ./wireguard.nix
+    # ./wireguard.nix # arch-synology peer is offline; restore once it returns
     ../services/samba/wsl-server.nix
     ../services/nix-serve.nix
     # ../services/factorio.nix
@@ -267,21 +267,6 @@ in
     options = [
       "nofail"
       "x-systemd.automount" # lazy-mount on first access
-    ];
-    neededForBoot = false;
-  };
-
-  fileSystems."/mnt/autofs/data" = {
-    device = "10.0.0.254:/volume1/Data";
-    fsType = "nfs4";
-    options = [
-      "noauto"
-      "x-systemd.requires=wireguard-wg0-peer-arch-synology-refresh.service"
-      "x-systemd.after=wireguard-wg0-peer-arch-synology-refresh.service"
-      "noatime"
-      "nofail"
-      "_netdev"
-      "x-systemd.automount"
     ];
     neededForBoot = false;
   };
