@@ -33,17 +33,20 @@ let
 
   commandcodeEndpoint = "https://api.commandcode.ai/provider/v1";
   commandcodeFlash = "deepseek/deepseek-v4.1-flash";
+  commandcodeFlashFast = "deepseek/deepseek-v4.1-flash-fast";
   commandcodeVision = "Qwen/Qwen3.8-Flash";
+  commandcodeFlashModel = {
+    context_length = 1000000;
+    supports_vision = true;
+  };
   commandcodeProvider = {
     name = "CommandCode API";
     base_url = commandcodeEndpoint;
     key_env = "COMMAND_CODE_API";
     transport = "chat_completions";
     discover_models = true;
-    models.${commandcodeFlash} = {
-      context_length = 1000000;
-      supports_vision = true;
-    };
+    models.${commandcodeFlash} = commandcodeFlashModel;
+    models.${commandcodeFlashFast} = commandcodeFlashModel;
     models.${commandcodeVision}.supports_vision = true;
   };
   commandcodeTarget = model: {
@@ -477,14 +480,15 @@ in
       # Main-loop effort overrides follow model switches and delegation.
       # Auxiliary tasks carry their own reasoning effort.
       model = {
-        default = codexLuna;
-        provider = "openai-codex";
+        default = commandcodeFlashFast;
+        provider = "commandcode-api";
+        base_url = commandcodeEndpoint;
+        key_env = "COMMAND_CODE_API";
         openai_runtime = "auto";
 
-        # Clear persisted app-server mode during additive config reconciliation.
-        api_mode = "codex_responses";
+        # Clear the persisted Codex mode during additive config reconciliation.
+        api_mode = "chat_completions";
 
-        base_url = "";
         api_key = "";
       };
 
@@ -559,7 +563,7 @@ in
 
       # Main chat and unpinned delegates share this fallback route.
       fallback_providers = [
-        commandcodeFlashTarget
+        (deepseekApiTarget deepseekFlash)
       ];
 
       security = {
