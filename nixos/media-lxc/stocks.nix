@@ -5,10 +5,10 @@
   ...
 }:
 
-# The units come from the stocks repository's nix/module.nix; this file holds
-# only what is specific to this host.
+# The units come from the stocks repository's nix/module.nix, which its CI
+# mirrors to helper-module; this file holds only what is specific to this host.
 {
-  imports = [ "${inputs.stocks}/nix/module.nix" ];
+  imports = [ inputs.helper-module.nixosModules.stocks ];
 
   # Read-only deploy key for the private repository; the updater fetches the
   # deploy/production branch with it.

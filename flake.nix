@@ -56,18 +56,10 @@
     # Recovery uses Telethon internals, so keep its tested nixpkgs pin.
     telegram-reader.url = "github:chinrw/telegram-reader";
 
-    # Only for services.stocks on media-lxc. The updater bumps it with the
-    # other inputs, but the application follows the repo's deploy/production
-    # branch, so a newer lock entry changes the host only when nix/module.nix
-    # changed. The repository is private: fetching it needs a GitHub token
-    # that can read it (access-tokens), here and in shell-config-updater,
-    # whose privateInputs keeps it out of Cachix. Not a flake, so
-    # nix.registry, which copies every flake input into each host's closure,
-    # leaves it out.
-    stocks = {
-      url = "github:chinrw/stocks";
-      flake = false;
-    };
+    # NixOS modules whose source repositories are private (services.stocks for
+    # media-lxc), mirrored here by their CI. A private input would need a
+    # GitHub token on every machine that updates this lock.
+    helper-module.url = "github:chinrw/helper-module";
 
     # Lossless Context Management engine for hermes, copied into
     # /var/lib/hermes/.hermes/plugins by services/hermes-lcm.nix (the

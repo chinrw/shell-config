@@ -12,7 +12,6 @@
     cores = 16;
     ociRefresh = true;
     publish = true;
-    privateInputs = [ "stocks" ];
   };
 
   systemd.services.shell-config-updater.onFailure = [ "email-failure@%n.service" ];
