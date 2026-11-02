@@ -37,7 +37,7 @@ in
     ../services/hermes.nix
     inputs.telegram-reader.nixosModules.default
     ../services/flaresolverr.nix
-    ../services/browser-agent.nix
+    ./browser-agents.nix
     ../services/tailscale-exit-proxy.nix
     # ./proxy.nix
   ];

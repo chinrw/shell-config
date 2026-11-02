@@ -1,44 +1,31 @@
-{ pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
-  lanAddress = "192.168.0.240";
+  cfg = config.services.browser-agent;
+  lanAddress = cfg.listenAddress;
 
-  # hermes runs as this uid on the host and owns the profile directories. The
-  # browser must run as the same uid or it cannot write the profile it is
-  # given, and Chromium's sandbox refuses to start as root regardless.
-  hermesUid = 987;
+  browserUid = cfg.uid;
 
-  # Same egress proxy flaresolverr.nix pins. Keep the two in step: this host
-  # gives bridged containers no direct route out.
-  egressProxy = "http://192.168.0.240:10809";
+  egressProxy = cfg.proxy;
 
-  # Derived from this host's own running container spec rather than copied off
-  # the internet, so every one of the 377 syscalls this Docker version grants
-  # is preserved exactly; the only delta is the namespace flags Chromium's
-  # sandbox needs (NEWUSER/NEWPID/NEWNET/NEWNS) plus an `unshare` rule under
-  # the same mask. NEWCGROUP/NEWUTS/NEWIPC stay denied.
-  #
-  # It is a frozen copy. Docker's builtin default changes across releases and
-  # this file will not follow, so re-derive it when Docker is upgraded:
-  #   jq '.linux.seccomp' /var/run/docker/containerd/daemon/*/moby/<id>/config.json
-  # Symptom of drift is a syscall returning EPERM for no visible reason.
-  # Captured from Docker 29.7.2 on 2026-08-17.
+  # Chromium needs additional namespace syscalls to keep its sandbox enabled.
+  # This policy snapshots Docker defaults and must be reviewed on Docker upgrades.
   chromiumSeccomp = ./browser-agent/chromium-seccomp.json;
 
-  # Plain pkgs.chromium, deliberately NOT the --no-sandbox wrapper hermes.nix
-  # builds for its own consumers. Sandbox policy is this container's job now,
-  # which is the whole point of splitting it out.
+  # Use Chromium directly; wrappers that add --no-sandbox disable its renderer sandbox.
   browserChromium = pkgs.chromium;
 
-  # The noVNC package wraps websockify. Copy its static assets directly so
-  # this browser does not inherit that Python dependency.
+  # x11vnc handles WebSockets, so only noVNC static assets are needed.
   novncWebRoot = pkgs.runCommand "browser-agent-novnc-${pkgs.novnc.version}" { } ''
     mkdir -p "$out"
     cp -r ${pkgs.novnc.src}/{app,core,po,vendor,vnc.html,vnc_lite.html} "$out/"
   '';
 
-  # South Plus is a Chinese board and Baidu Pan is a Chinese SPA; without CJK
-  # coverage Chromium renders both as boxes and the operator cannot read the
-  # CAPTCHA they are meant to type. Same font set hermes.nix gives its browsers.
+  # CJK fonts keep Chinese login prompts and CAPTCHAs readable.
   browserFontConfig = pkgs.makeFontsConf {
     fontDirectories = with pkgs; [
       noto-fonts
@@ -47,14 +34,10 @@ let
     ];
   };
 
-  # Container-internal ports. Every instance gets its own network namespace, so
-  # these are identical in all of them and only the published host ports differ.
   cdpPort = 9222;
   vncPort = 5900;
   novncPort = 6080;
 
-  # x11vnc accepts WebSockets on its VNC port, so the web server only needs
-  # to serve noVNC and forward the upgraded connection.
   novncConfig = pkgs.writeText "browser-agent-Caddyfile" ''
     {
       admin off
@@ -77,16 +60,10 @@ let
     }
   '';
 
-  # Chromium ignores --remote-debugging-address and binds DevTools to loopback
-  # only, so Docker's port forwarder finds nothing on the container IP. socat
-  # bridges the container interface to that loopback listener; the Host header
-  # passes through untouched, which keeps Chromium's DNS-rebinding check happy.
+  # Chromium ignores --remote-debugging-address and binds DevTools to loopback.
+  # Keep socat to make that listener reachable from Docker's port forwarding.
   cdpBridgePort = 9223;
 
-  # One long-lived headed Chromium: hermes drives it over CDP while a human can
-  # watch and type into the same window over noVNC. That shared window is the
-  # requirement CAPTCHA and QR logins impose — a headless browser cannot be
-  # handed to a person mid-flow.
   mkEntrypoint =
     {
       site,
@@ -113,12 +90,8 @@ let
         export FONTCONFIG_FILE=${browserFontConfig}
         mkdir -p "$HOME"
 
-        # Chromium stamps SingletonLock with "<hostname>-<pid>" and refuses to
-        # start when it does not recognise both. A replaced container has a new
-        # hostname and its Chromium is pid 1 again, so the stale lock always
-        # looks live and every restart would fail. Clearing it is safe because
-        # this container is the only writer of the profile and nothing is
-        # running yet at this point in the entrypoint.
+        # A replaced container has a different hostname, invalidating Chromium locks.
+        # Only this container may write the profile when these are removed.
         rm -f ${profileDir}/Singleton{Lock,Socket,Cookie}
 
         Xvfb "$DISPLAY" -screen 0 1280x900x24 -nolisten tcp &
@@ -128,13 +101,8 @@ let
         done
         xdpyinfo >/dev/null 2>&1 || { echo "Xvfb failed to become ready" >&2; exit 1; }
 
-        # The VNC port itself is not published, but Caddy below exposes it
-        # to the LAN, so this session needs a password: without one, anyone on
-        # the network can drive a browser that is logged into these sites.
-        #
-        # VNC's classic auth truncates the secret to 8 characters, so a longer
-        # one buys nothing. It is regenerated on every container start and handed
-        # over through a 0600 file rather than the command line or the log.
+        # LAN users can control logged-in sessions, so VNC requires authentication.
+        # Classic VNC uses only eight password characters; keep the secret out of logs.
         vnc_password=$(head -c 6 /dev/urandom | base64 | cut -c1-8)
         x11vnc -storepasswd "$vnc_password" /tmp/vncpasswd >/dev/null 2>&1
         printf '%s\n' "$vnc_password" > ${runtimeDir}/vnc-password
@@ -147,25 +115,11 @@ let
 
         caddy run --config ${novncConfig} --adapter caddyfile &
 
-        # Reaches Chromium's loopback-only DevTools listener from the container
-        # interface. Started before Chromium so no connection races the exec;
-        # early connections just fail until Chromium is up, which is what the
-        # health check's start period covers.
         socat "TCP-LISTEN:${toString cdpBridgePort},fork,reuseaddr" \
           "TCP:127.0.0.1:${toString cdpPort}" &
 
-        # No --remote-debugging-address: Chromium ignores it and binds loopback
-        # regardless, so asking for 0.0.0.0 only misleads the next reader.
-        # CDP has no authentication — anything reaching the bridged port owns
-        # this browser and every session in the profile. That is the reason the
-        # two sites get separate instances rather than separate tabs.
-        # hermes-agent reaches the outside through host networking; a bridged
-        # container has no such path on this host — direct egress fails for every
-        # docker bridge, not just this one. The proxy is the only way out, and
-        # Chromium ignores http_proxy in the environment, so it has to be a flag.
-        # Baidu still leaves through the host's own address: xray routes
-        # geosite:cn direct, so the proxy does not change the egress IP the
-        # account is used to.
+        # Keep a headed browser so noVNC can complete logins in the same session.
+        # Chromium ignores http_proxy; configure its proxy explicitly.
         exec chromium \
           --user-data-dir=${profileDir} \
           --proxy-server=${egressProxy} \
@@ -180,98 +134,22 @@ let
       '';
     };
 
-  # One instance per browser profile, because one Chromium process owns exactly
-  # one user-data-dir and CDP exposes a single persistent context (contexts[0]);
-  # new_context() is incognito and carries no login. "Several profiles in one
-  # container" is therefore not expressible — a profile boundary is a container
-  # boundary here.
-  #
-  # This does NOT mean one instance per site. A single contexts[0] holds any
-  # number of site logins at once — its cookie jar is per-origin — so `general`
-  # below is the default home for new logins and costs nothing to extend: log in
-  # through its noVNC desktop and the cookies persist in its profile. Splitting a
-  # site out is a Nix change plus a rebuild, so only do it for one of the three
-  # reasons the two named instances exist.
-  #
-  # The split is by trust domain, not by convenience:
-  #   - the CDP port has no authentication, so whoever reaches one owns every
-  #     origin in that browser. Merged, one unauthenticated port would hold the
-  #     forum and a cloud drive with delete authority at the same time;
-  #   - the sandbox is what stands between an attacker-controlled forum page and
-  #     the profile's cookie database. A renderer escape reads whatever shares
-  #     the profile;
-  #   - one Chromium per user-data-dir also means one sibling flock. Merged, a
-  #     multi-hour South Plus batch serialises every Baidu transfer behind it,
-  #     and restarting one site's browser kills the other site's session.
-  #
-  # Sharing a profile buys exactly one saved QR scan; a dedicated profile
-  # persists across container restarts just as well.
-  #
-  # Names are deliberately asymmetric: the South Plus container keeps the bare
-  # `browser-agent` it was created with, because ~38 places across the Hermes
-  # skills name that container, its `docker-browser-agent` unit and its runtime
-  # directory. Renaming it buys symmetry and risks a stale reference in a skill
-  # that decides purchases and deletions. Do not "fix" this without also
-  # rewriting those skills.
-  instances = {
-    southplus = {
-      containerName = "browser-agent";
-      profileDir = "/var/lib/hermes/workspace/southplus_browser_profile";
-      runtimeDir = "/var/lib/hermes/workspace/browser-agent-runtime";
-      hostCdpPort = 9222;
-      hostNovncPort = 6080;
-    };
-
-    baidu = {
-      containerName = "browser-agent-baidu";
-      # Sibling of the canonical Baidu profile lock,
-      # /home/hermes/baidu-share-transfer/.baidu-profile.lock as hermes sees it.
-      profileDir = "/var/lib/hermes/home/baidu-share-transfer/.baidu-profile";
-      runtimeDir = "/var/lib/hermes/home/baidu-share-transfer/browser-agent-runtime";
-      hostCdpPort = 9322;
-      hostNovncPort = 6081;
-    };
-
-    # Default home for everything that is neither of the above: any other site
-    # login goes in contexts[0] alongside the rest, and throwaway scraping uses
-    # new_context(), which is incognito and cannot see those logins. Both fit in
-    # one instance precisely because the isolation is per-context, not per
-    # container. A new service belongs here unless it can destroy something,
-    # runs batches long enough to block others on the profile lock, or renders
-    # attacker-controlled pages.
-    general = {
-      containerName = "browser-agent-general";
-      profileDir = "/var/lib/hermes/workspace/general_browser_profile";
-      runtimeDir = "/var/lib/hermes/workspace/browser-agent-general-runtime";
-      hostCdpPort = 9422;
-      hostNovncPort = 6082;
-    };
-  };
-
   mkInstance =
-    site:
-    {
-      containerName,
-      profileDir,
-      runtimeDir,
-      hostCdpPort,
-      hostNovncPort,
-    }:
+    site: instance:
     let
+      inherit (instance) containerName profileDir runtimeDir;
+      hostCdpPort = instance.cdpPort;
+      hostNovncPort = instance.novncPort;
       networkName = containerName;
+      cdpChain = "cdp-${containerName}";
       entrypoint = mkEntrypoint { inherit site profileDir runtimeDir; };
     in
     {
-      # noVNC only. The CDP port is deliberately absent: it is published to
-      # 127.0.0.1 and must never be reachable from the LAN.
       networking.firewall.allowedTCPPorts = [ hostNovncPort ];
 
       virtualisation.oci-containers.containers.${containerName} = {
         image = "ubuntu:24.04";
 
-        # Every binary comes from the host's Nix store, same as hermes-agent, so
-        # the base image only supplies a filesystem layout and never needs
-        # rebuilding when the browser is updated.
         entrypoint = "${entrypoint}/bin/browser-agent-${site}-entrypoint";
 
         volumes = [
@@ -281,26 +159,25 @@ let
         ];
 
         ports = [
-          # South Plus keeps the conventional 9222; inside, it lands on socat.
           "127.0.0.1:${toString hostCdpPort}:${toString cdpBridgePort}/tcp"
           "${lanAddress}:${toString hostNovncPort}:${toString novncPort}/tcp"
-        ];
+        ]
+        ++ lib.optional (
+          instance.cdpAllowedSource != null
+        ) "${lanAddress}:${toString hostCdpPort}:${toString cdpBridgePort}/tcp";
 
         log-driver = "journald";
 
         extraOptions = [
-          # Its own network, not the default bridge: flaresolverr sits on that
-          # one and Chromium's CDP endpoint accepts any IP-literal Host header,
-          # so a shared bridge would let a neighbouring container — including
-          # the other browser-agent — drive this browser.
+          # Separate bridges prevent other containers from reaching unauthenticated CDP.
+          # Host networking would also expose host-local services and sibling CDP ports
+          # to the browser, so it must not be used to work around egress problems.
           "--network=${networkName}"
-          "--user=${toString hermesUid}:${toString hermesUid}"
+          "--user=${toString browserUid}:${toString browserUid}"
           "--security-opt=seccomp=${chromiumSeccomp}"
-          # Chromium's renderers use POSIX shared memory heavily; the 64M default
-          # is what forces --disable-dev-shm-usage elsewhere in this config.
+          # Docker's default 64 MiB is too small for Chromium renderer shared memory.
           "--shm-size=1g"
-          # Probes through the socat bridge, not Chromium directly, so the check
-          # covers the whole path hermes actually connects over.
+          # Probe through socat so readiness covers the path used by CDP clients.
           "--health-cmd=${pkgs.curl}/bin/curl -fsS --max-time 3 http://127.0.0.1:${toString cdpBridgePort}/json/version || exit 1"
           "--health-interval=30s"
           "--health-timeout=5s"
@@ -309,13 +186,10 @@ let
         ];
       };
 
-      # Both must exist and belong to hermesUid before the container starts:
-      # Docker would otherwise create the bind-mount sources as root, and a
-      # container running as 987 cannot write its own profile. Existing
-      # profiles are already 0700 hermes:hermes, so this is a no-op for them.
+      # Create these before Docker can create root-owned bind-mount directories.
       systemd.tmpfiles.rules = [
-        "d ${profileDir} 0700 ${toString hermesUid} ${toString hermesUid} -"
-        "d ${runtimeDir} 0700 ${toString hermesUid} ${toString hermesUid} -"
+        "d ${profileDir} 0700 ${toString browserUid} ${toString browserUid} -"
+        "d ${runtimeDir} 0700 ${toString browserUid} ${toString browserUid} -"
       ];
 
       systemd.services."docker-network-${networkName}" = {
@@ -336,24 +210,96 @@ let
         after = [ "docker-network-${networkName}.service" ];
         requires = [ "docker-network-${networkName}.service" ];
         unitConfig.RequiresMountsFor = [ profileDir ];
+        # Filter before Docker's DNAT, which bypasses the host INPUT firewall.
+        # Restore replaces this chain atomically when the allowed source changes;
+        # retaining it on stop protects CDP if container cleanup fails.
+        preStart = ''
+          ${pkgs.iptables}/bin/iptables-restore -w --noflush <<'RULES'
+          *raw
+          :${cdpChain} - [0:0]
+          -A ${cdpChain} -d ${lanAddress} -p tcp --dport ${toString hostCdpPort} ${
+            lib.optionalString (instance.cdpAllowedSource != null) "! -s ${instance.cdpAllowedSource}"
+          } -j DROP
+          COMMIT
+          RULES
+          ${pkgs.iptables}/bin/iptables -w -t raw -C PREROUTING -j ${cdpChain} 2>/dev/null || \
+            ${pkgs.iptables}/bin/iptables -w -t raw -I PREROUTING -j ${cdpChain}
+        '';
         serviceConfig = {
           Restart = lib.mkOverride 90 "on-failure";
           RestartSec = "10s";
         };
       };
     };
+  instanceConfigs = lib.mapAttrsToList mkInstance cfg.instances;
 in
-lib.mkMerge (
-  [
-    {
-      virtualisation.docker.enable = lib.mkDefault true;
-      virtualisation.oci-containers.backend = lib.mkDefault "docker";
-    }
-  ]
-  ++ lib.mapAttrsToList mkInstance instances
-)
+{
+  options.services.browser-agent = {
+    enable = lib.mkEnableOption "persistent browsers with CDP and noVNC access";
+    listenAddress = lib.mkOption {
+      type = lib.types.str;
+      description = "Host IPv4 address for noVNC and source-restricted LAN CDP access.";
+    };
+    uid = lib.mkOption {
+      type = lib.types.ints.positive;
+      description = "Non-root UID and GID that own the browser profiles and runtime directories.";
+    };
+    proxy = lib.mkOption {
+      type = lib.types.str;
+      description = "Outbound proxy passed to Chromium.";
+    };
+    instances = lib.mkOption {
+      default = { };
+      type = lib.types.attrsOf (
+        lib.types.submodule {
+          options = {
+            containerName = lib.mkOption {
+              type = lib.types.str;
+              description = "Docker container name, also used for its network and systemd unit.";
+            };
+            profileDir = lib.mkOption {
+              type = lib.types.str;
+              description = "Persistent Chromium profile directory on the host.";
+            };
+            runtimeDir = lib.mkOption {
+              type = lib.types.str;
+              description = "Host directory containing the generated vnc-password file.";
+            };
+            cdpPort = lib.mkOption {
+              type = lib.types.port;
+              description = "Host CDP port, always available on IPv4 localhost.";
+            };
+            novncPort = lib.mkOption {
+              type = lib.types.port;
+              description = "Host noVNC port on listenAddress.";
+            };
+            cdpAllowedSource = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Remote IPv4 address allowed to use LAN CDP. Null keeps CDP on localhost only.";
+            };
+          };
+        }
+      );
+      description = "Browsers with separate persistent profiles and isolated Docker networks.";
+    };
+  };
 
-# Bridge networking, not host: these containers render untrusted pages, and on
-# host networking they would also reach every host-local service (LANraragi,
-# jellyfin, the hermes gateway) — and each other's CDP port. Published ports are
-# the only way in, and NAT still gives each browser its egress.
+  config = lib.mkIf cfg.enable {
+    assertions = lib.mapAttrsToList (name: instance: {
+      assertion = builtins.stringLength "cdp-${instance.containerName}" <= 28;
+      message = "browser-agent instance ${name}: containerName must be at most 24 characters so its CDP firewall chain fits iptables' 28-character limit.";
+    }) cfg.instances;
+
+    virtualisation.docker.enable = lib.mkDefault true;
+    virtualisation.oci-containers.backend = lib.mkDefault "docker";
+    virtualisation.oci-containers.containers = lib.mkMerge (
+      map (c: c.virtualisation.oci-containers.containers) instanceConfigs
+    );
+    networking.firewall.allowedTCPPorts = lib.concatMap (
+      c: c.networking.firewall.allowedTCPPorts
+    ) instanceConfigs;
+    systemd.services = lib.mkMerge (map (c: c.systemd.services) instanceConfigs);
+    systemd.tmpfiles.rules = lib.concatMap (c: c.systemd.tmpfiles.rules) instanceConfigs;
+  };
+}
