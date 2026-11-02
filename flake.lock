@@ -524,11 +524,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1793635052,
-        "narHash": "sha256-3/hZY92jAugOg1z+p9Avk5QMqs3HigOxjmZc7ZYwgVU=",
+        "lastModified": 1793645808,
+        "narHash": "sha256-Fpx1/ACcQ7BufzTYNYMj7B6fUs+kKnWXVgZx2Hl3a+I=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "f0d94882e89ab8d4098b5bb2f166adfb9ee0a0ab",
+        "rev": "5e7c2b254d414e4e25105231f818f385fee67469",
         "type": "github"
       },
       "original": {
@@ -832,11 +832,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1793634599,
-        "narHash": "sha256-nAOpTPTIQ8UsV8knXGlDNt+JimSXXP0WE1xdoZbOVt0=",
+        "lastModified": 1793645418,
+        "narHash": "sha256-ei2dd/CIl1clxOUWsivxIYaOPYSRg4g4TKSrw5p/0Ok=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "ea069cc0202f14a8672e777dd80f0004a1fbf74c",
+        "rev": "d53fcb06548b21b497c5ea70c66970fa8ae59fdb",
         "type": "github"
       },
       "original": {
@@ -981,11 +981,11 @@
     "oh-my-opencode-slim": {
       "flake": false,
       "locked": {
-        "lastModified": 1793624321,
-        "narHash": "sha256-13wU5VHZhpcMxImht2HfYpW6VFVpRlu0GoOGhZmYdd8=",
+        "lastModified": 1793645667,
+        "narHash": "sha256-U5Me3qlts+7a1EApMVy35waybN+SJsm90N1lseGMwWQ=",
         "owner": "alvinunreal",
         "repo": "oh-my-opencode-slim",
-        "rev": "ac92d9ef0815c43b5573beeb6467ec937b2d475e",
+        "rev": "35d9f3c2062619c9952c7e191eaa99f17fe78ca0",
         "type": "github"
       },
       "original": {
