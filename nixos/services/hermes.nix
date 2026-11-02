@@ -83,20 +83,6 @@ let
     ];
   };
 
-  # LCM owns summary escalation; auxiliary retries must not bypass its chain.
-  lcmSummaryRoutes = {
-    primary = commandcodeFlashTarget // {
-      reasoning_effort = "high";
-      timeout = summaryTimeoutSeconds;
-      fallback_chain = [ ];
-    };
-    # LCM's route parser only splits named custom providers, so a
-    # `deepseek/...` entry would stay on Command Code instead of reaching
-    # DeepSeek's API. No second 1M-context route exists until DeepSeek is
-    # registered as a custom provider.
-    fallbackModels = [ ];
-  };
-
   venvPython = "/home/hermes/.venv/bin/python3";
   organizeCmd = "${venvPython} /data/workspace/media-organize/organize.py";
   bangumiCmd = "${venvPython} /data/workspace/media-organize/bangumi.py";
@@ -139,7 +125,7 @@ let
     target_ratio = 0.20;
     protect_last_n = 20;
 
-    # Budget for serial leaf-summary and condensation calls.
+    # Allow time for the primary summary route and its fallback.
     context_total_ceiling_seconds = 900;
 
     # Bulky tool output can fill the whole tail budget; keep the last 3
@@ -309,23 +295,6 @@ let
       platform_toolsets.cli = toolsets;
     };
 
-  # Everything hermes-lcm (container env, config leaves, plugin install)
-  # lives in a separate declarative file, same pattern as the profile
-  # definitions below; this module splices its three exports into place.
-  hermesLcm = import ./hermes-lcm.nix {
-    inherit
-      pkgs
-      lib
-      inputs
-      ;
-    summaryModel = lcmSummaryRoutes.primary.model;
-    summaryFallbackModels = lcmSummaryRoutes.fallbackModels;
-    inherit summaryTimeoutSeconds;
-    user = config.services.hermes-agent.user;
-    group = config.services.hermes-agent.group;
-    hermesPython = config.services.hermes-agent.package.python;
-  };
-
   # Profile-specific model/effort/toolsets, descriptions, and SOULs live in
   # a separate declarative file. Generic Hermes/Kanban/runtime settings remain
   # in this service module.
@@ -461,14 +430,9 @@ in
         "--env"
         "FONTCONFIG_FILE=${browserFontConfig}"
 
-        # Inject FastEmbed dependencies.
-        "--env"
-        "PYTHONPATH=${hermesLcm.pythonPath}"
         "--env"
         "PATH=${containerPath}"
-      ]
-      # LCM summarizer/behaviour env — see hermes-lcm.nix for the rationale.
-      ++ hermesLcm.containerEnvOptions;
+      ];
     };
 
     environmentFiles = [
@@ -540,13 +504,16 @@ in
         goal_judge = (codexAuxTarget codexSol) // {
           reasoning_effort = "high";
         };
-        compression = lcmSummaryRoutes.primary;
+        compression = compressionAux;
       };
 
-      # hermes-lcm context engine for default-profile/gateway sessions —
-      # scope, interplay with native compaction, and all rationale live in
-      # hermes-lcm.nix. Specialist profiles keep the built-in compressor.
-      inherit (hermesLcm.settings) context plugins;
+      context.engine = "compressor";
+      # Clear the previous opt-in list during additive config merge. Keep LCM
+      # disabled if an old plugin directory is restored from backup.
+      plugins = {
+        enabled = [ ];
+        disabled = [ "hermes-lcm" ];
+      };
 
       # Named custom providers exposed to the `/model` picker: the local
       # llama.cpp router on the Windows box.
@@ -724,7 +691,7 @@ in
   # Reconcile named profiles before Gateway startup.
   # A separate unit keeps failures local to Hermes instead of aborting activation.
   systemd.services.hermes-agent-profile-settings = {
-    description = "Nix-managed Hermes Profile settings, SOULs, and plugin links";
+    description = "Nix-managed Hermes Profile settings and SOULs";
     wantedBy = [ "multi-user.target" ];
     before = [ "hermes-agent.service" ];
     requiredBy = [ "hermes-agent.service" ];
@@ -737,10 +704,6 @@ in
 
     script = ''
       hermes_home=${config.services.hermes-agent.stateDir}/.hermes
-
-      # hermes-lcm plugin install (flake-pinned, materialized copy) — the
-      # why-not-a-symlink story is in hermes-lcm.nix.
-      ${hermesLcm.installScript}
 
       profiles_root=$hermes_home/profiles
 
