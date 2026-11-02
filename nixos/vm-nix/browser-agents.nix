@@ -33,7 +33,11 @@
         runtimeDir = "/var/lib/hermes/workspace/browser-agent-general-runtime";
         cdpPort = 9422;
         novncPort = 6082;
-        cdpAllowedSource = "192.168.0.231";
+        cdpAllowedSources = [
+          "192.168.0.231"
+          "192.168.0.242"
+        ];
+        proxyBypass = [ "192.168.0.242" ];
       };
     };
   };

@@ -69,6 +69,7 @@ let
       site,
       profileDir,
       runtimeDir,
+      proxyBypass,
     }:
     pkgs.writeShellApplication {
       name = "browser-agent-${site}-entrypoint";
@@ -123,7 +124,15 @@ let
         exec chromium \
           --user-data-dir=${profileDir} \
           --proxy-server=${egressProxy} \
-          --proxy-bypass-list="127.0.0.1;localhost" \
+          --proxy-bypass-list="${
+            lib.concatStringsSep ";" (
+              [
+                "127.0.0.1"
+                "localhost"
+              ]
+              ++ proxyBypass
+            )
+          }" \
           --remote-debugging-port=${toString cdpPort} \
           --disable-blink-features=AutomationControlled \
           --window-size=1280,900 \
@@ -142,7 +151,10 @@ let
       hostNovncPort = instance.novncPort;
       networkName = containerName;
       cdpChain = "cdp-${containerName}";
-      entrypoint = mkEntrypoint { inherit site profileDir runtimeDir; };
+      entrypoint = mkEntrypoint {
+        inherit site profileDir runtimeDir;
+        inherit (instance) proxyBypass;
+      };
     in
     {
       networking.firewall.allowedTCPPorts = [ hostNovncPort ];
@@ -163,7 +175,7 @@ let
           "${lanAddress}:${toString hostNovncPort}:${toString novncPort}/tcp"
         ]
         ++ lib.optional (
-          instance.cdpAllowedSource != null
+          instance.cdpAllowedSources != [ ]
         ) "${lanAddress}:${toString hostCdpPort}:${toString cdpBridgePort}/tcp";
 
         log-driver = "journald";
@@ -193,6 +205,10 @@ let
       ];
 
       systemd.services."docker-network-${networkName}" = {
+        # Container ordering does not order this prerequisite; wait for Docker's
+        # readiness notification before inspecting or creating its network.
+        after = [ "docker.service" ];
+        requires = [ "docker.service" ];
         path = [ pkgs.docker ];
         serviceConfig = {
           Type = "oneshot";
@@ -211,15 +227,17 @@ let
         requires = [ "docker-network-${networkName}.service" ];
         unitConfig.RequiresMountsFor = [ profileDir ];
         # Filter before Docker's DNAT, which bypasses the host INPUT firewall.
-        # Restore replaces this chain atomically when the allowed source changes;
+        # Restore replaces this chain atomically when the allowed sources change;
         # retaining it on stop protects CDP if container cleanup fails.
+        # Allowed sources RETURN so Docker's remaining raw-table checks still run.
         preStart = ''
           ${pkgs.iptables}/bin/iptables-restore -w --noflush <<'RULES'
           *raw
           :${cdpChain} - [0:0]
-          -A ${cdpChain} -d ${lanAddress} -p tcp --dport ${toString hostCdpPort} ${
-            lib.optionalString (instance.cdpAllowedSource != null) "! -s ${instance.cdpAllowedSource}"
-          } -j DROP
+          ${lib.concatMapStringsSep "\n" (
+            source: "-A ${cdpChain} -s ${source} -j RETURN"
+          ) instance.cdpAllowedSources}
+          -A ${cdpChain} -d ${lanAddress} -p tcp --dport ${toString hostCdpPort} -j DROP
           COMMIT
           RULES
           ${pkgs.iptables}/bin/iptables -w -t raw -C PREROUTING -j ${cdpChain} 2>/dev/null || \
@@ -273,10 +291,15 @@ in
               type = lib.types.port;
               description = "Host noVNC port on listenAddress.";
             };
-            cdpAllowedSource = lib.mkOption {
-              type = lib.types.nullOr lib.types.str;
-              default = null;
-              description = "Remote IPv4 address allowed to use LAN CDP. Null keeps CDP on localhost only.";
+            cdpAllowedSources = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = "Remote IPv4 addresses allowed to use LAN CDP. An empty list keeps CDP on localhost only.";
+            };
+            proxyBypass = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = "Additional Chromium proxy bypass rules, such as an IP address and port.";
             };
           };
         }
