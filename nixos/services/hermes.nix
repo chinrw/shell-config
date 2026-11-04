@@ -6,6 +6,8 @@
   ...
 }:
 let
+  videoMountParent = "/home/chin39/mounts/hermes-video";
+
   # DeepSeek's own API ID for V4.1 Flash; Command Code namespaces it below.
   deepseekFlash = "deepseek-flash";
 
@@ -382,6 +384,10 @@ in
     '';
   };
 
+  # Browser profiles and host ACLs depend on Hermes' numeric identity.
+  users.users.hermes.uid = 987;
+  users.groups.hermes.gid = 985;
+
   # ── Service ─────────────────────────────────────────────────────
   services.hermes-agent = {
     enable = true;
@@ -398,6 +404,7 @@ in
       # Host ACLs grant gid 985 access; setpriv --init-groups discards --group-add.
       extraVolumes = mediaVolumes ++ [
         "/var/lib/rclone-progress/view:/run/rclone-progress:ro"
+        "${videoMountParent}:/home/chin39/mounts/alist/115-open/bk_plain:rw,rslave"
       ];
 
       # docker create --env reaches provisioning, wrappers, and Python with -E.
@@ -683,10 +690,46 @@ in
 
   };
 
+  systemd.services.hermes-video-mount-parent = {
+    description = "Shared mount parent for the Hermes video view";
+    wantedBy = [ "multi-user.target" ];
+    before = [
+      "user@1000.service"
+      "hermes-agent.service"
+    ];
+    unitConfig.RequiresMountsFor = [ "/home/chin39" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = pkgs.writeShellScript "prepare-hermes-video-mount-parent" ''
+        set -eu
+        ${pkgs.coreutils}/bin/install -d -m 0755 -o chin39 -g users ${videoMountParent}
+        if ! ${pkgs.util-linux}/bin/mountpoint -q ${videoMountParent}; then
+          ${pkgs.util-linux}/bin/mount --bind ${videoMountParent} ${videoMountParent}
+          # A self-bind inherits /home's peer group; detach it before sharing this subtree.
+          ${pkgs.util-linux}/bin/mount --make-private ${videoMountParent}
+        fi
+        ${pkgs.util-linux}/bin/mount --make-rshared ${videoMountParent}
+        # Keep the unmounted child non-writable to Hermes; only the FUSE view grants access.
+        if ! ${pkgs.util-linux}/bin/mountpoint -q ${videoMountParent}/video; then
+          ${pkgs.coreutils}/bin/install -d -m 0755 -o chin39 -g users ${videoMountParent}/video
+        fi
+      '';
+      ExecStop = "${pkgs.util-linux}/bin/umount ${videoMountParent}";
+    };
+  };
+
   # A bind taken before /mnt/data is up captures the empty mountpoint instead
   # of the virtiofs share. RequiresMountsFor implies Requires/After on
   # mnt-data.mount.
-  systemd.services.hermes-agent.unitConfig.RequiresMountsFor = [ mediaRoot ];
+  systemd.services.hermes-agent = {
+    requires = [ "hermes-video-mount-parent.service" ];
+    after = [
+      "hermes-video-mount-parent.service"
+      "user@1000.service"
+    ];
+    unitConfig.RequiresMountsFor = [ mediaRoot ];
+  };
 
   # Reconcile named profiles before Gateway startup.
   # A separate unit keeps failures local to Hermes instead of aborting activation.

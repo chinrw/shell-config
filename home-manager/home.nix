@@ -65,6 +65,9 @@ in
       downloaderEnabled = hasFeature "rclone-downloader";
     })
   ]
+  ++ lib.optionals (hostname == "vm-nix") [
+    ./programs/hermes-media-view.nix
+  ]
   ++ lib.optionals (hasFeature "restic") [
     ./programs/restic.nix
   ]

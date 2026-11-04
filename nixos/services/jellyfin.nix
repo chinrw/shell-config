@@ -5,6 +5,8 @@
 let
   mountsDir = "/home/chin39/mounts";
   mediaDir = "/mnt/data/Video/jellyfin";
+  # Hermes writes STRM files here on the shared disk.
+  strmDir = "/mnt/data/Video/strm_mounts";
   jellyfinCjkFonts = pkgs.symlinkJoin {
     name = "jellyfin-cjk-fonts";
     paths = [
@@ -33,12 +35,14 @@ in
     ];
     # The library is on the rclone FUSE mount. The check runs inside the
     # service's mount namespace, so it sees the binds jellyfin will read, and
-    # an empty mount point does not count as ready.
+    # an empty mount point does not count as ready. A scan of an empty STRM
+    # tree would drop those library items, so it must be populated too.
     preStart = ''
       for _ in $(seq 30); do
         if mountpoint -q /mounts/alist \
           && [ -n "$(ls -A /mounts/alist | head -n1)" ] \
-          && [ -n "$(ls -A /jellyfin-media | head -n1)" ]; then
+          && [ -n "$(ls -A /jellyfin-media | head -n1)" ] \
+          && [ -n "$(ls -A /mounts/strm_mounts | head -n1)" ]; then
           exit 0
         fi
         sleep 2
@@ -49,6 +53,7 @@ in
     unitConfig = {
       RequiresMountsFor = [
         mediaDir
+        strmDir
         stateDir
       ];
       # Keep retrying while rclone is down. The next start re-runs the check.
@@ -69,6 +74,8 @@ in
         "${stateDir}/cache:/cache"
         "${mediaDir}:/jellyfin-media"
         "${mountsDir}:/mounts"
+        # Stored STRM paths stay under /mounts/strm_mounts after the tree moved to the shared disk.
+        "${strmDir}:/mounts/strm_mounts"
       ];
       # encoding.xml points FallbackFontPath at /config/fonts.
       BindReadOnlyPaths = [ "${jellyfinCjkFonts}/share/fonts/opentype/noto-cjk:/config/fonts" ];
