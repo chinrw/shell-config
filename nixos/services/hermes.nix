@@ -357,6 +357,19 @@ in
     owner = "hermes";
     mode = "0400";
   };
+  sops.secrets."commandcode-api-key" = {
+    sopsFile = ../../secrets/commandcode.yaml;
+    key = "api_key";
+    owner = "hermes";
+    mode = "0400";
+  };
+  sops.templates."hermes-commandcode.env" = {
+    owner = "hermes";
+    mode = "0400";
+    content = ''
+      COMMAND_CODE_API=${config.sops.placeholder.commandcode-api-key}
+    '';
+  };
 
   # Dashboard credentials are kept separately from hermes-env. Hermes hashes
   # the plaintext login password in memory when loading the basic-auth plugin;
@@ -444,6 +457,7 @@ in
 
     environmentFiles = [
       config.sops.secrets."hermes-env".path
+      config.sops.templates."hermes-commandcode.env".path
       config.sops.templates."hermes-dashboard.env".path
     ];
 

@@ -1,7 +1,5 @@
 { lib, ... }:
 {
-  # A work host for agents. It runs no shared services, so rebooting it or
-  # running it out of memory affects nothing else.
   imports = [ ../proxmox-lxc.nix ];
 
   # One of the subnet routers for the home LAN, so tailnet clients keep a way
@@ -27,6 +25,8 @@
   systemd.tmpfiles.rules = [ "a+ /dev/kvm - - - - g:nixbld:rw" ];
 
   networking.firewall.allowedTCPPorts = [ 8888 ];
+  # LAN clients use TCP 3081 to access dsh Web directly.
+  networking.firewall.interfaces.eth0.allowedTCPPorts = [ 3081 ];
 
   networking.nameservers = [ "192.168.0.1" ];
   networking.proxy = {

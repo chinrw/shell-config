@@ -536,6 +536,7 @@
             "restic"
           ];
           extraModules = [
+            ./home-manager/services/dsh-web.nix
             { services.restic.backups.nixos-lxc.timerConfig.OnCalendar = "*-*-* 02:00:00"; }
           ];
         };

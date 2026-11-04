@@ -3,6 +3,7 @@
   lib,
   isServer,
   isPublic,
+  hostname,
   ...
 }:
 {
@@ -28,6 +29,12 @@
     }
     // lib.optionalAttrs (!isServer) {
       "proxy/clash_mini" = { };
+    }
+    // lib.optionalAttrs (hostname == "nixos-lxc") {
+      "commandcode-api-key" = {
+        sopsFile = ../../secrets/commandcode.yaml;
+        key = "api_key";
+      };
     };
   };
 }
