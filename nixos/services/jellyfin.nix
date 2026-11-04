@@ -35,14 +35,12 @@ in
     ];
     # The library is on the rclone FUSE mount. The check runs inside the
     # service's mount namespace, so it sees the binds jellyfin will read, and
-    # an empty mount point does not count as ready. A scan of an empty STRM
-    # tree would drop those library items, so it must be populated too.
+    # an empty rclone mount point does not count as ready.
     preStart = ''
       for _ in $(seq 30); do
         if mountpoint -q /mounts/alist \
           && [ -n "$(ls -A /mounts/alist | head -n1)" ] \
-          && [ -n "$(ls -A /jellyfin-media | head -n1)" ] \
-          && [ -n "$(ls -A /mounts/strm_mounts | head -n1)" ]; then
+          && [ -n "$(ls -A /jellyfin-media | head -n1)" ]; then
           exit 0
         fi
         sleep 2
