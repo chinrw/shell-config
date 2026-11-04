@@ -184,6 +184,7 @@ in
 {
   programs.opencode = {
     enable = true;
+    mutableSettings = true;
     cli.plugins = [
       ohMyOpenCodeSlimTuiPluginSpec
       goalTuiPluginSpec
