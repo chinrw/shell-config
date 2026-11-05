@@ -1,9 +1,4 @@
 { config, pkgs, ... }:
-let
-  xray = pkgs.xray.overrideAttrs (old: {
-    patches = (old.patches or [ ]) ++ [ ../../patches/xray/9d9eaf3-close-xhttp-body.patch ];
-  });
-in
 {
   imports = [ ../services/adguardhome.nix ];
 
@@ -57,7 +52,7 @@ in
 
   services.xray = {
     enable = true;
-    package = xray;
+    package = pkgs.xray;
     settingsFile = config.sops.secrets.xray.path;
   };
   systemd.services.docker = {

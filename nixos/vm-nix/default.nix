@@ -7,15 +7,6 @@
   username,
   ...
 }:
-let
-  # Backport Xray #6095; drop when stable Nixpkgs includes it.
-  xrayPatched = pkgs.xray.overrideAttrs (old: {
-    patches = (old.patches or [ ]) ++ [
-      ../../patches/xray/9d9eaf3-close-xhttp-body.patch
-    ];
-  });
-
-in
 {
   imports = [
     ../services/adguardhome.nix
@@ -220,7 +211,7 @@ in
 
   services.xray = {
     enable = true;
-    package = xrayPatched;
+    package = pkgs.xray;
     settingsFile = "/etc/xray/xray_client.conf";
   };
 

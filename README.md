@@ -207,7 +207,6 @@ upstream sources.
 ```sh
 nix fmt                        # nixfmt-tree, the flake's formatter
 nix develop .#rust             # Rust dev shell
-nix run .#check-xray-version   # is the pinned xray override in overlays/ still needed?
 git submodule update --init --recursive   # tmux, qemu-script, yazi plugins
 ```
 

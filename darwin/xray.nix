@@ -7,6 +7,13 @@
 }:
 let
   xrayConfig = config.sops.secrets.xray.path;
+  xray = (pkgs.xray.override { assets = [ pkgs.v2ray-rules-dat ]; }).overrideAttrs (_: {
+    postFixup = ''
+      wrapProgram $out/bin/xray \
+        --set-default V2RAY_LOCATION_ASSET $assetsDrv/share/v2ray \
+        --set-default XRAY_LOCATION_ASSET $assetsDrv/share/v2ray
+    '';
+  });
 
   physicalNetworkServices = [
     "Thunderbolt Ethernet Slot 0"
@@ -17,13 +24,6 @@ let
     "iPhone USB"
   ];
 
-  # Backport Xray #6095; drop when stable Nixpkgs includes it.
-  xrayPatched = pkgs.xray.overrideAttrs (old: {
-    patches = (old.patches or [ ]) ++ [
-      ../patches/xray/9d9eaf3-close-xhttp-body.patch
-    ];
-  });
-
   # sops-install-secrets and Xray are independent launchd daemons. Waiting in
   # the process avoids a boot race without making DNS depend on a GUI login.
   xrayLauncher = pkgs.writeShellScript "xray-wait-config" ''
@@ -31,7 +31,7 @@ let
     until [ -r "$cfg" ]; do
       sleep 1
     done
-    exec ${xrayPatched}/bin/xray run -config "$cfg" -format json
+    exec ${xray}/bin/xray run -config "$cfg" -format json
   '';
 
   # macOS reserves port 53 for privileged processes. dnsmasq binds only the
@@ -95,13 +95,15 @@ in
     secrets.xray = {
       format = "binary";
       sopsFile = ../secrets/mac_xray.conf;
+      # Xray validates the filename extension even with -format json.
+      name = "xray.json";
       owner = username;
       mode = "0400";
     };
   };
 
   environment.systemPackages = [
-    xrayPatched
+    xray
     pkgs.dnsmasq
   ];
 

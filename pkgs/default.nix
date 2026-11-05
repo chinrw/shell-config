@@ -3,7 +3,6 @@
   pkgs,
 }:
 {
-  check-xray-version = pkgs.callPackage ./check-xray-version { };
   deploy-rs-ci =
     (pkgs.writeShellScriptBin "deploy-rs-ci" ''
       # Nix's daemon needs an explicit identity and host key for the shared builder.
