@@ -25,9 +25,6 @@ let
          Edits here are lost on the next switch. Host-local rules go in
          ~/.codex/AGENTS.local.md. -->
   '';
-  baseFile = pkgs.writeText "codex-agents-base" (
-    banner + "\n# User-scope Codex Configuration\n\n" + sharedAgentInstructions.text
-  );
   renameHook = pkgs.writeShellApplication {
     name = "codex-rename-first-turn";
     runtimeInputs = [
@@ -109,45 +106,15 @@ in
     };
   };
 
-  home.activation.codexAgentsMd = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    CODEX="${config.home.homeDirectory}/.codex"
-    LOCAL_MD="$CODEX/AGENTS.local.md"
-    FINAL_MD="$CODEX/AGENTS.md"
-
-    run ${pkgs.coreutils}/bin/mkdir -p "$CODEX"
-
-    # Seed AGENTS.local.md on first run only — never touch existing content.
-    if [ ! -e "$LOCAL_MD" ] && [ ! -L "$LOCAL_MD" ]; then
-      ${pkgs.coreutils}/bin/cat > "$LOCAL_MD" <<'EOF'
-    <!--
-    This file is local to this host and not tracked by Nix.
-    Edits land in ~/.codex/AGENTS.md after the next `home-manager switch`,
-    appended below the Nix-managed base content.
-
-    Use it for host-specific shortcuts, side-project context, or anything you
-    want Codex to see at user scope but don't want to commit to the
-    shell-config flake.
-
-    Replace this comment with your host-local instructions.
-    -->
-    EOF
-    fi
-
-    # Strip a previous Nix symlink at ~/.codex/AGENTS.md if present, then rebuild.
-    if [ -L "$FINAL_MD" ]; then
-      case "$(${pkgs.coreutils}/bin/readlink "$FINAL_MD")" in
-        /nix/store/*) run rm "$FINAL_MD" ;;
-      esac
-    fi
-
-    TMP_MD="$(${pkgs.coreutils}/bin/mktemp -p "$CODEX")"
-    {
-      ${pkgs.coreutils}/bin/cat "${baseFile}"
-      if [ -s "$LOCAL_MD" ]; then
-        printf '\n\n## Local additions (%s)\n\n' "${hostname}"
-        ${pkgs.coreutils}/bin/cat "$LOCAL_MD"
-      fi
-    } > "$TMP_MD"
-    run ${pkgs.coreutils}/bin/mv "$TMP_MD" "$FINAL_MD"
-  '';
+  home.activation.codexAgentsMd = lib.hm.dag.entryAfter [ "sharedAgentInstructions" ] (
+    sharedAgentInstructions.assemble {
+      tool = "Codex";
+      directory = "${config.home.homeDirectory}/.codex";
+      filename = "AGENTS.md";
+      localFilename = "AGENTS.local.md";
+      inherit hostname;
+      sharedFile = "${config.home.homeDirectory}/.agents/AGENTS.md";
+      baseText = banner + "\n# User-scope Codex Configuration\n\n";
+    }
+  );
 }

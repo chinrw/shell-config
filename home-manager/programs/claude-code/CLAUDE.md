@@ -1,8 +1,7 @@
 # User-scope Claude Configuration
 
-Rules shared with agents are appended below from
-`home-manager/programs/agent-instructions/`. Only Claude-specific rules
-belong in this section.
+The shared rules published at `~/.agents/AGENTS.md` are appended below.
+Only Claude-specific rules belong in this section.
 
 ## Questionnaires
 
