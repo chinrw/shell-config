@@ -76,7 +76,6 @@ in
     ./programs/chatgpt-linker.nix
   ]
   ++ lib.optionals (!smallNode) [
-    ./programs/opencode.nix
     ./programs/pi
     ./programs/dsh.nix
     (import ./programs/codex {

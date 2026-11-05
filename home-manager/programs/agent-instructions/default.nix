@@ -1,8 +1,8 @@
-# Instruction text shared by every coding agent: Claude (~/.claude/CLAUDE.md),
-# Codex (~/.codex/AGENTS.md) and opencode (`instructions` in opencode.jsonc).
+# Instruction text shared by every coding agent: Claude (~/.claude/CLAUDE.md)
+# and Codex (~/.codex/AGENTS.md).
 #
-# Keep the parts tool-agnostic. Anything naming a Claude-only tool or an
-# opencode-only agent belongs in that tool's own instruction file instead.
+# Keep the parts tool-agnostic. Anything naming a Claude-only tool belongs in
+# that tool's own instruction file instead.
 #
 # Exposes both forms on purpose: `text` so a caller can splice it into a larger
 # document without triggering IFD, `file` for callers that just need a path.

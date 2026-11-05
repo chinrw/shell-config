@@ -97,7 +97,7 @@
     # Mandates `<type>: <description>` unconditionally, which contradicts the
     # repo-adaptive prefix rule in agent-instructions/git-commits.md. Both load
     # as always-on memory, so Claude would get two opposing commit rules —
-    # and only Claude, since Codex and opencode never see the ECC bundle.
+    # and only Claude, since Codex never sees the ECC bundle.
     "common/git-workflow.md"
   ],
   ...
@@ -190,7 +190,7 @@ let
     register_agent_skill ${lib.escapeShellArg skill.name} ${lib.escapeShellArg skill.source}
   '') agentSkillSources;
 
-  # Claude-specific rules first, then the rules Codex and opencode also get.
+  # Claude-specific rules first, then the rules Codex also gets.
   sharedAgentInstructions = import ../agent-instructions { inherit lib pkgs; };
   # The activation below rewrites CLAUDE.md on every switch. Say so in the file
   # itself: the pointer to CLAUDE.local.md otherwise lives only in that file,
