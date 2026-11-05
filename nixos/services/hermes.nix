@@ -465,7 +465,7 @@ in
       # Main-loop effort overrides follow model switches and delegation.
       # Auxiliary tasks carry their own reasoning effort.
       model = {
-        default = commandcodeFlashFast;
+        default = commandcodeFlash;
         provider = "commandcode-api";
         base_url = commandcodeEndpoint;
         key_env = "COMMAND_CODE_API";
