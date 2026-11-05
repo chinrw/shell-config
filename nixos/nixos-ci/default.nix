@@ -24,6 +24,7 @@
     MemoryHigh = "12G";
     MemoryMax = "14G";
     MemorySwapMax = "24G";
+    CPUQuota = "1200%";
   };
   systemd.services.nix-daemon.serviceConfig.Slice = "nix-build.slice";
   systemd.services.shell-config-updater.serviceConfig.Slice = "nix-build.slice";
@@ -47,7 +48,7 @@
   # three at a time, and three busy runners can reach nine builds.
   nix.settings = {
     max-jobs = 3;
-    cores = 4;
+    cores = 12;
   };
 
   users.groups.ci.gid = 1001;
