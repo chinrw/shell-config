@@ -1,8 +1,8 @@
-# Coding agents (claude, codex) run whatever -j their tools pick;
+# Coding agents run whatever -j their tools pick;
 # several compiling at once put the VM into oomd's kill on 2026-08-14 and
 # 2026-09-04. One slice caps how much swap all of them together may take, entered
 # through `agentsh`: everything started from that shell inherits the cgroup,
-# the `claude agents` daemon and nested codex included. A zellij or
+# the agent daemons and nested agents included. A zellij or
 # tmux server already running outside stays outside; start a new one inside.
 { pkgs, ... }:
 let

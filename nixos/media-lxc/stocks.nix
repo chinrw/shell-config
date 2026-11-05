@@ -36,7 +36,7 @@
     allowedOrigins = [ "https://stocks.home.midashood.top" ];
     deployKeyFile = config.sops.secrets.stocks-deploy-key.path;
     environmentFile = config.sops.secrets.stocks-environment.path;
-    # claude and codex come from the user's Home Manager profile.
+    # The coding-agent CLIs come from the user's Home Manager profile.
     path = [
       "/home/${username}/.nix-profile"
       "/run/current-system/sw"

@@ -1,6 +1,6 @@
 # User-scope Claude Configuration
 
-Rules shared with Codex are appended below from
+Rules shared with agents are appended below from
 `home-manager/programs/agent-instructions/`. Only Claude-specific rules
 belong in this section.
 

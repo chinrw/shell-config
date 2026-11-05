@@ -217,7 +217,7 @@ let
     };
   };
 
-  # Same codex/claude builds home-manager installs — nix-provided so they
+  # Same agent CLI builds home-manager installs — nix-provided so they
   # survive container recreation (replacing the npm-global copies).
   codexPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
   claudePackage = inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;

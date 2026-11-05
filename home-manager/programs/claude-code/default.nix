@@ -97,7 +97,7 @@
     # Mandates `<type>: <description>` unconditionally, which contradicts the
     # repo-adaptive prefix rule in agent-instructions/git-commits.md. Both load
     # as always-on memory, so Claude would get two opposing commit rules —
-    # and only Claude, since Codex never sees the ECC bundle.
+    # and only Claude, since the ECC bundle never reaches the other agents.
     "common/git-workflow.md"
   ],
   ...
@@ -133,8 +133,8 @@ let
     in
     skillsIn "engineering" ++ skillsIn "productivity";
 
-  # ~/.agents/skills is the Agent-Skills convention shared by Codex and other
-  # harnesses (upstream's own scripts/link-skills.sh links the same two promoted
+  # ~/.agents/skills is the Agent-Skills convention shared across harnesses
+  # (upstream's own scripts/link-skills.sh links the same two promoted
   # buckets there). Unlike ~/.claude/skills it has no allowlist, so this is the
   # one place to drop a skill that should not be resident in every harness.
   # Whether a skill is model- or user-invocable is settled by its own
@@ -190,7 +190,7 @@ let
     register_agent_skill ${lib.escapeShellArg skill.name} ${lib.escapeShellArg skill.source}
   '') agentSkillSources;
 
-  # Claude-specific rules first, then the rules Codex also gets.
+  # Claude-specific rules first, then the shared rules.
   sharedAgentInstructions = import ../agent-instructions { inherit lib pkgs; };
   # The activation below rewrites CLAUDE.md on every switch. Say so in the file
   # itself: the pointer to CLAUDE.local.md otherwise lives only in that file,
