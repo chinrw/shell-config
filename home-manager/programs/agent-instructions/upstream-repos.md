@@ -10,6 +10,8 @@
   If explicit permission is missing, ask the user directly.
 - When an issue or PR seems warranted but submission is not yet authorized,
   prepare its title and body for the user to review before asking for approval.
+- When a background job needs permission under these rules, write
+  `needs input:` with the drafted issue or PR title and body.
 - Pushing to a fork and opening a fork PR also require user authorization.
   Once authorized, run CI for upstream changes in the user's own fork.
   If a PR is needed to trigger CI, keep both its base and head in the fork.

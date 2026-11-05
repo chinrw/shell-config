@@ -29,6 +29,8 @@
   using existing patterns and judgment within the agreed scope.
 - Offer concrete options with trade-offs when useful, and group related
   questions so they can be answered in one pass.
+- When available, present those options with the agent's user-question tool
+  (`AskUserQuestion` in Claude).
 - Follow preferences and authorizations already given in this session
   without re-asking. Ask again only if the proposed action exceeds their
   scope.

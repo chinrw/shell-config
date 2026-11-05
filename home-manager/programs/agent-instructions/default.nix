@@ -1,7 +1,7 @@
 # Instruction text shared by every coding agent.
 #
-# Keep the parts tool-agnostic. Anything naming a tool that only one agent
-# has belongs in that agent's own instruction file instead.
+# Keep shared behavior independent of the agent. Name a tool only as an
+# example of how that agent follows the shared rule.
 { lib, pkgs }:
 let
   text = lib.concatMapStringsSep "\n" builtins.readFile [

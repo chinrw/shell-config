@@ -190,7 +190,6 @@ let
     register_agent_skill ${lib.escapeShellArg skill.name} ${lib.escapeShellArg skill.source}
   '') agentSkillSources;
 
-  # Claude-specific rules first, then the shared rules.
   sharedAgentInstructions = import ../agent-instructions { inherit lib pkgs; };
   # The activation below rewrites CLAUDE.md on every switch. Say so in the file
   # itself: the pointer to CLAUDE.local.md otherwise lives only in that file,
@@ -207,7 +206,7 @@ let
     localFilename = "CLAUDE.local.md";
     inherit hostname;
     sharedFile = "${config.home.homeDirectory}/.agents/AGENTS.md";
-    baseText = claudeMdBanner + "\n" + builtins.readFile ./CLAUDE.md + "\n";
+    baseText = claudeMdBanner + "\n# User-scope Claude Configuration\n\n";
     extraText = lib.optionalString (extraInstructions != "") (
       "\n\n## Host-specific (${hostname})\n\n" + extraInstructions
     );
