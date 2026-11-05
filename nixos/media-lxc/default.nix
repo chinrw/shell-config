@@ -16,6 +16,7 @@ in
     ./web.nix
     ./ntfy.nix
     ./postgresql.nix
+    ../services/atuin.nix
     ./openlist.nix
     ./kikoeru-neo.nix
     ./lanraragi.nix

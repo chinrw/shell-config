@@ -399,7 +399,7 @@ in
 
       }
       // lib.optionalAttrs (hasFeature "atuin-sync") {
-        sync_address = "http://10.0.0.242:8881";
+        sync_address = "http://192.168.0.241:8881";
         key_path = config.sops.secrets.atuin_key.path;
         auto_sync = true;
         sync_frequency = "1h";
