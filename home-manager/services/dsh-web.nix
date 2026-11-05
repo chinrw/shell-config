@@ -1,5 +1,7 @@
+{ listenAddress }:
 {
   config,
+  hostname,
   inputs,
   lib,
   pkgs,
@@ -14,7 +16,7 @@ in
     Unit.After = [ "sops-nix.service" ];
     Install.WantedBy = [ "default.target" ];
     Service = {
-      ExecStart = "${package}/bin/dsh web --no-open --host 192.168.0.242 --port 3081 --public-url http://192.168.0.242:3081/ --trusted-host nixos-lxc:3081";
+      ExecStart = "${package}/bin/dsh web --no-open --host ${listenAddress} --port 3081 --public-url http://${listenAddress}:3081/ --trusted-host ${hostname}:3081";
       WorkingDirectory = config.home.homeDirectory;
       # Agent tools need the user's installed programs without an interactive shell.
       Environment = [

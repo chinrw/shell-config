@@ -111,6 +111,7 @@
 
   networking.firewall = {
     enable = true;
+    interfaces.ens18.allowedTCPPorts = [ 3081 ];
     allowedTCPPorts = [
       5432
 

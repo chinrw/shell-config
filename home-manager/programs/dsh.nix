@@ -55,11 +55,13 @@ let
   ];
   profiles = {
     web = {
+      dependencies.dsh-ops = "0.4.4";
       bundles = commonBundles ++ [
         "@deepseek-ai/dsh-web-app"
         "@deepseek-ai/dsh-experimental-inspector-profile"
         "@deepseek-ai/dsh-experimental-session-titles-bundle"
         "@deepseek-ai/dsh-experimental-plugin-market-bundle"
+        "dsh-ops"
       ];
       preferences = commonPreferences ++ [
         {
@@ -76,6 +78,23 @@ let
           id = "plugin-market";
           name = "@deepseek-ai/dsh-plugin-market";
           config.indexes = [ "https://cdn.jsdelivr.net/npm/dsh-plugin-catalog/index.json" ];
+        }
+        {
+          id = "agent-default-model";
+          name = "@deepseek-ai/dsh-agent-default-model";
+          config = {
+            provider = "commandcode";
+            model = "deepseek/deepseek-v4.1-flash";
+            reasoningEffort = "max";
+          };
+        }
+        {
+          id = "subagent";
+          name = "@deepseek-ai/dsh-subagent";
+          config = {
+            maxDepth = 2;
+            maxActiveSubagents = 30;
+          };
         }
       ];
     };
@@ -106,7 +125,7 @@ let
       manifest = {
         name = "dsh-profile-${name}";
         private = true;
-        dependencies = commonDependencies;
+        dependencies = commonDependencies // (profile.dependencies or { });
         dsh.profile.bundles = profile.bundles;
       };
     in

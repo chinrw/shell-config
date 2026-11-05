@@ -210,6 +210,28 @@ nix develop .#rust             # Rust dev shell
 git submodule update --init --recursive   # tmux, qemu-script, yazi plugins
 ```
 
+### dsh profiles
+
+Home Manager writes the dsh profile manifests and default preferences. Web
+preferences remain writable: activation adds missing defaults and preserves
+existing settings and locally added bundles. To restore the saved defaults for
+a setting, remove its row from `~/.dsh/profiles/web/cordis.patch.yml` before the
+next activation.
+
+Plugin installation stays explicit. After the first activation or a change to
+the declared dependencies, install the packages for each profile:
+
+```sh
+dsh plugin --profile web install
+dsh plugin --profile headless install
+```
+
+If the host runs the Web user service, restart it after installing packages:
+
+```sh
+systemctl --user restart dsh-web
+```
+
 ## zsh / powerlevel10k configuration
 
 The live shell config is generated from `home-manager/programs/zsh/` on every

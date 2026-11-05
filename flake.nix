@@ -521,7 +521,7 @@
             "restic"
           ];
           extraModules = [
-            ./home-manager/services/dsh-web.nix
+            (import ./home-manager/services/dsh-web.nix { listenAddress = "192.168.0.242"; })
             { services.restic.backups.nixos-lxc.timerConfig.OnCalendar = "*-*-* 02:00:00"; }
           ];
         };
@@ -588,6 +588,7 @@
             "syncthing"
           ];
           extraModules = [
+            (import ./home-manager/services/dsh-web.nix { listenAddress = "192.168.0.240"; })
             ./home-manager/programs/restic-upload.nix
             { services.restic.backups.vm-nix.paths = [ "/mnt/data/Documents/onedrive" ]; }
           ];
