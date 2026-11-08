@@ -76,6 +76,7 @@ in
     ./programs/chatgpt-linker.nix
   ]
   ++ lib.optionals (!smallNode) [
+    ./programs/agent-skills.nix
     ./programs/agent-instructions/module.nix
     ./programs/pi
     ./programs/dsh.nix

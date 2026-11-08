@@ -22,7 +22,6 @@
       }
     },
     "agent-skills": {
-      "flake": false,
       "locked": {
         "lastModified": 1794155908,
         "narHash": "sha256-91Vt8KUHEP5infO4GxwPDXN1Zs+f18b2WPKFUn2tjdU=",

@@ -168,17 +168,6 @@ let
             name = "neat-freak";
             source = "${inputs.khazix-skills}/neat-freak";
           }
-          {
-            name = "context-bundle";
-            source = "${inputs.agent-skills}/codex-skills/context-bundle";
-          }
-          # Codex CLI port of babysit-prs (github:chinrw/agent-skills). Lives in
-          # ~/.agents/skills only — the Claude Code variant of the same repo is
-          # linked into ~/.claude/skills by the activation below.
-          {
-            name = "babysit-prs-codex";
-            source = "${inputs.agent-skills}/codex-skills/babysit-prs-codex";
-          }
         ]
         ++ mattSkillSources
       );
@@ -765,18 +754,7 @@ in
     force = true;
   };
 
-  # User-authored skills kept in this repo (not from the ECC source flake).
-  # link_children only sweeps symlinks pointing at $REPO/*, so a Nix-managed
-  # skill directory here coexists with the allowlisted ECC skill symlinks.
-  home.file.".claude/skills/fable-writing" = {
-    source = ./skills/fable-writing;
-    recursive = true;
-  };
-
   home.file.".claude/skills/humanizer".source = inputs.humanizer;
-
-  home.file.".claude/skills/context-bundle".source =
-    "${inputs.agent-skills}/codex-skills/context-bundle";
 
   # User-authored slash command kept in this repo. Maps to user scope so `/ship`
   # is available in every repo. link_children only sweeps symlinks into $REPO
@@ -944,18 +922,6 @@ in
           link_children "$REPO/commands" "$CLAUDE/commands" "" "${commandDenylistShell}"
           link_children "$REPO/skills"   "$CLAUDE/skills"   "${skillAllowlistShell}"
           link_children "$REPO/rules"    "$CLAUDE/rules"   "" "${ruleDenylistShell}"
-
-          # agent-skills (github:chinrw/agent-skills): the user's own
-          # version-controlled Claude Code skills and companion agents.
-          # Linked with the same helper; $REPO is swapped so the stale-link
-          # sweep matches this input's store path instead of the ECC source.
-          # ln -sfn deliberately overwrites any working-copy links left by the
-          # repository's own install.sh — Nix owns these paths now.
-          ECC_REPO="$REPO"
-          REPO="${inputs.agent-skills}"
-          link_children "${inputs.agent-skills}/skills" "$CLAUDE/skills"
-          link_children "${inputs.agent-skills}/agents" "$CLAUDE/agents"
-          REPO="$ECC_REPO"
 
       ${claudeInstructionsActivation}
     ''

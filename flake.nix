@@ -164,10 +164,7 @@
       flake = false;
     };
 
-    agent-skills = {
-      url = "github:chinrw/agent-skills?ref=main";
-      flake = false;
-    };
+    agent-skills.url = "github:chinrw/agent-skills?ref=main";
 
     humanizer = {
       url = "github:blader/humanizer";
