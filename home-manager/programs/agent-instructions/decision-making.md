@@ -1,5 +1,7 @@
 # Proportionate implementation
 
+- Delete any sentence or block of code whose only purpose is to preempt
+  criticism rather than advance the argument or solve the task.
 - Make the smallest coherent change that fully satisfies the task and
   established contract. Reuse existing mechanisms; avoid unrelated edits
   and speculative abstractions, configuration, or compatibility paths.
