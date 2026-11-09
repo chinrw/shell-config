@@ -897,6 +897,22 @@
     },
     "nixpkgs_5": {
       "locked": {
+        "lastModified": 1793110635,
+        "narHash": "sha256-dhoW6VgFWlaodSY5jrBn+CF2FLmaUvDVgM7+C7T2+NM=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "31ecbaca1bdefa45dffc409f0250bd8039ea0010",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_6": {
+      "locked": {
         "lastModified": 1791637130,
         "narHash": "sha256-TuvwvSjJrpqyIYdjhQ7Wu+ADVfeOpO2Um21/V7TOubw=",
         "owner": "NixOS",
@@ -1068,6 +1084,7 @@
         "pwndbg": "pwndbg",
         "rust-overlay": "rust-overlay",
         "rustowl-overlay": "rustowl-overlay",
+        "shuku": "shuku",
         "sops-nix": "sops-nix",
         "telegram-reader": "telegram-reader",
         "yazi": "yazi",
@@ -1158,6 +1175,24 @@
       "original": {
         "owner": "nix-community",
         "repo": "rustowl-flake",
+        "type": "github"
+      }
+    },
+    "shuku": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_5"
+      },
+      "locked": {
+        "lastModified": 1793612044,
+        "narHash": "sha256-raQzm1/J7bsN/TGKi5+gPQkP7v9zjt9wvQ9CJleKD7Y=",
+        "owner": "chinrw",
+        "repo": "shuku",
+        "rev": "0aac61338f5c732592096766f8028b680a2cf941",
+        "type": "github"
+      },
+      "original": {
+        "owner": "chinrw",
+        "repo": "shuku",
         "type": "github"
       }
     },
@@ -1288,7 +1323,7 @@
     },
     "telegram-reader": {
       "inputs": {
-        "nixpkgs": "nixpkgs_5"
+        "nixpkgs": "nixpkgs_6"
       },
       "locked": {
         "lastModified": 1793262763,

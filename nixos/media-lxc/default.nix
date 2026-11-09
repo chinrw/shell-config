@@ -20,6 +20,7 @@ in
     ./openlist.nix
     ./kikoeru-neo.nix
     ./lanraragi.nix
+    ./shuku.nix
     ./stocks.nix
     (import ../services/aria2.nix {
       inherit

@@ -145,6 +145,9 @@
     # build CI tested are only valid with the nixpkgs it locks.
     kikoeru-neo.url = "github:QWERChin/kikoeru-neo";
 
+    # Keep Shuku's tested nixpkgs pin because pnpm affects the web dependency hash.
+    shuku.url = "github:chinrw/shuku";
+
     zj-sysinfo.url = "github:chinrw/zj-sysinfo";
     zj-sysinfo.inputs.nixpkgs.follows = "nixpkgs-unstable";
     zj-sysinfo.inputs.rust-overlay.follows = "rust-overlay";
