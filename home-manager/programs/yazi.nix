@@ -1,7 +1,5 @@
 {
-  config,
   inputs,
-  lib,
   pkgs,
   ...
 }:
@@ -24,34 +22,13 @@ in
     # Silences home-manager's 26.05 rename warning; unused while integrations are off.
     shellWrapperName = "yy";
 
-    # The plugin's main module no longer exposes setup; config.lua owns it.
-    initLua = ''
-      require("augment-command.config").setup(${
-        lib.generators.toLua { } config.programs.yazi.plugins.augment-command.settings
-      })
-    '';
-
     plugins = {
       git = {
         package = gitPlugin;
         setup = true;
       };
 
-      augment-command = {
-        package = inputs.yazi-plugin-augment-command;
-        settings = {
-          prompt = false;
-          default_item_group_for_prompt = "hovered";
-          smart_enter = true;
-          smart_paste = false;
-          enter_archives = true;
-          extract_retries = 1;
-          must_have_hovered_item = true;
-          skip_single_subdirectory_on_enter = true;
-          skip_single_subdirectory_on_leave = true;
-          wraparound_file_navigation = false;
-        };
-      };
+      chmod.package = "${inputs.yazi-plugin-git}/chmod.yazi";
 
       # Only invoked from keymap.toml; it needs no setup call.
       time-travel.package = inputs.yazi-plugin-time-travel;

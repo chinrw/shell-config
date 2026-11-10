@@ -1072,7 +1072,6 @@
         "sops-nix": "sops-nix",
         "telegram-reader": "telegram-reader",
         "yazi": "yazi",
-        "yazi-plugin-augment-command": "yazi-plugin-augment-command",
         "yazi-plugin-git": "yazi-plugin-git",
         "yazi-plugin-time-travel": "yazi-plugin-time-travel",
         "zj-sysinfo": "zj-sysinfo",
@@ -1431,23 +1430,6 @@
       "original": {
         "owner": "sxyazi",
         "repo": "yazi",
-        "type": "github"
-      }
-    },
-    "yazi-plugin-augment-command": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1793932648,
-        "narHash": "sha256-IHkkNlsK7mrQNGhzYq7N9VHuyIGALVIDuNnOUpZ8pKE=",
-        "owner": "hankertrix",
-        "repo": "augment-command.yazi",
-        "rev": "6e840cfd53e95ba30a35ae2c98131eb1db9a04f8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hankertrix",
-        "ref": "main",
-        "repo": "augment-command.yazi",
         "type": "github"
       }
     },

@@ -94,10 +94,6 @@
       url = "github:yazi-rs/plugins?ref=main";
       flake = false;
     };
-    yazi-plugin-augment-command = {
-      url = "github:hankertrix/augment-command.yazi?ref=main";
-      flake = false;
-    };
     yazi-plugin-time-travel = {
       url = "github:iynaix/time-travel.yazi?ref=main";
       flake = false;

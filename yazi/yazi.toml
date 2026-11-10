@@ -2,39 +2,14 @@
 ratio = [1, 4, 4]
 sort_by = "natural"
 linemode = "size"
-show_hidden = false
-scrolloff = 5
 
 [preview]
 wrap = "yes"
-tab_size = 2
 max_width = 3000
 max_height = 4000
 
 [opener]
 # Only `%` placeholders are substituted; `$@` and `$1` pass through literally.
-edit = [
-	{ run = '${EDITOR:=vi} %s', desc = "$EDITOR", block = true, for = "unix" },
-	{ run = 'code %s', orphan = true, desc = "code", for = "windows" },
-	{ run = 'code -w %s', block = true, desc = "code (block)", for = "windows" },
-]
-open = [
-	{ run = 'xdg-open %s1', desc = "Open", for = "linux" },
-	{ run = 'open %s', desc = "Open", for = "macos" },
-	{ run = 'start "" %s1', orphan = true, desc = "Open", for = "windows" },
-]
-reveal = [
-	{ run = 'open -R %s1', desc = "Reveal", for = "macos" },
-	{ run = 'explorer /select,%s1', orphan = true, desc = "Reveal", for = "windows" },
-	{ run = '''exiftool %s1; echo "Press enter to exit"; read _''', block = true, desc = "Show EXIF", for = "unix" },
-]
-image = [
-	{ run = '/home/chin39/.local/share/flatpak/exports/bin/com.xnview.XnViewMP %s', orphan = true, desc = "Xnviewmp", for = "linux" },
-]
-extract = [
-	{ run = 'ya pub extract --list %s', desc = "Extract here", for = "unix" },
-	{ run = 'ya pub extract --list %s', desc = "Extract here", for = "windows" },
-]
 play = [
 	{ run = 'mpv %s', orphan = true, for = "unix" },
 	{ run = '/mnt/d/tools/mpv-lazy/mpv.exe %s1', desc = "WSL mpv", orphan = true, for = "linux" },
@@ -42,28 +17,13 @@ play = [
 	{ run = 'mpv %s1', orphan = true, for = "windows" },
 	{ run = '''mediainfo %s1; echo "Press enter to exit"; read _''', block = true, desc = "Show media info", for = "unix" },
 ]
-view = [
-	{ run = 'bat --pager "less -XR" %s', desc = "bat", block = true, for = "unix" },
-]
 
 [open]
-rules = [
-	# Folder
-	{ url = "*/", use = [ "edit", "open", "reveal" ] },
-	# Text
-	{ mime = "text/*", use = [ "edit", "reveal" ] },
-	# Image
-	{ mime = "image/*", use = [ "open", "reveal" ] },
-	# Media
-	{ mime = "{audio,video}/*", use = [ "play", "reveal" ] },
-	# Archive
+prepend_rules = [
 	{ mime = "application/{001,zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", use = [ "extract", "reveal" ] },
-	# JSON
-	{ mime = "application/{json,ndjson}", use = [ "edit", "reveal" ] },
 	{ mime = "*/javascript", use = [ "edit", "reveal" ] },
-	# Empty file
-	{ mime = "inode/empty", use = [ "edit", "reveal" ] },
-	# Fallback
+]
+append_rules = [
 	{ url = "*", use = [ "open", "reveal", "edit" ] },
 ]
 
