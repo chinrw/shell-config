@@ -301,6 +301,10 @@
           "StrictHostKeyChecking=yes"
           "-o"
           "ConnectTimeout=10"
+          "-o"
+          "ServerAliveInterval=15"
+          "-o"
+          "ServerAliveCountMax=3"
         ];
         nodes = {
           aliyun = {
