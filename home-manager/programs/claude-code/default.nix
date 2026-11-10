@@ -123,7 +123,7 @@ let
         map
           (name: {
             inherit name;
-            source = "${root}/${name}";
+            source = if name == "research" then ../agent-skills/research else "${root}/${name}";
           })
           (
             lib.filter (
