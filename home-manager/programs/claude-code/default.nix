@@ -123,7 +123,7 @@ let
         map
           (name: {
             inherit name;
-            source = if name == "research" then ../agent-skills/research else "${root}/${name}";
+            source = "${root}/${name}";
           })
           (
             lib.filter (
@@ -152,28 +152,45 @@ let
     "setup-matt-pocock-skills"
   ];
 
+  agentSkillSourceOverrides = {
+    research = ../agent-skills/research;
+  };
+
   agentSkillSources =
     let
-      sources = lib.filter (skill: !(lib.elem skill.name agentSkillDenylist)) (
-        [
-          {
-            name = "humanizer";
-            source = inputs.humanizer;
-          }
-          {
-            name = "aihot";
-            source = "${inputs.khazix-skills}/aihot";
-          }
-          {
-            name = "neat-freak";
-            source = "${inputs.khazix-skills}/neat-freak";
-          }
-        ]
-        ++ mattSkillSources
-      );
+      upstreamSources = [
+        {
+          name = "humanizer";
+          source = inputs.humanizer;
+        }
+        {
+          name = "aihot";
+          source = "${inputs.khazix-skills}/aihot";
+        }
+        {
+          name = "neat-freak";
+          source = "${inputs.khazix-skills}/neat-freak";
+        }
+      ]
+      ++ mattSkillSources;
+      upstreamNames = map (skill: skill.name) upstreamSources;
+      sources =
+        builtins.listToAttrs (
+          map (skill: {
+            inherit (skill) name;
+            value = skill.source;
+          }) upstreamSources
+        )
+        // agentSkillSourceOverrides;
+      # Preserve registration order so source overrides do not reorder activation output.
+      names =
+        upstreamNames ++ lib.subtractLists upstreamNames (builtins.attrNames agentSkillSourceOverrides);
     in
-    assert lib.length sources == lib.length (lib.unique (map (skill: skill.name) sources));
-    sources;
+    assert lib.length upstreamNames == lib.length (lib.unique upstreamNames);
+    map (name: {
+      inherit name;
+      source = sources.${name};
+    }) (lib.filter (name: !(lib.elem name agentSkillDenylist)) names);
 
   agentSkillLinkCommands = lib.concatMapStrings (skill: ''
     register_agent_skill ${lib.escapeShellArg skill.name} ${lib.escapeShellArg skill.source}
