@@ -478,11 +478,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1794283122,
-        "narHash": "sha256-bap70RIbR5xVq00XjWh3yTAkWD6Q49za23g4IXScQcA=",
+        "lastModified": 1794293382,
+        "narHash": "sha256-Hg/zEG6mL2laeJwGMEtWF6uCz2YAhKLzBMxXB9VEggI=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "4ba8bcc613f0b2824714b0676e8bcb045c91833c",
+        "rev": "67fc279c909861d83200d01ca055015931b4ff1f",
         "type": "github"
       },
       "original": {
@@ -571,11 +571,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1794281060,
-        "narHash": "sha256-4T0KnLuGlMvuHKm3jMYRBsDoe0vYB0EZZi68FM3HLks=",
+        "lastModified": 1794285443,
+        "narHash": "sha256-DbuhJv0Ca5m13lfmTC5fM6MDBxpcnduMGDlntUeCVok=",
         "owner": "QWERChin",
         "repo": "kikoeru-neo",
-        "rev": "2aeffa09453d1fb952a90e1ae313f1f2c4842792",
+        "rev": "d54f5b4ecaed29e8c033f0579e888ac1cd0e2281",
         "type": "github"
       },
       "original": {
@@ -645,11 +645,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794261875,
-        "narHash": "sha256-N7to/CVhl4GWdqtzZkxx2571v087UFn33UUZDb8Ta7Q=",
+        "lastModified": 1794290553,
+        "narHash": "sha256-y+xmHogCL0tsxL85LC/NVdW57D1hN6xAJxidV1QjYGQ=",
         "owner": "chinrw",
         "repo": "neovim-nightly-overlay",
-        "rev": "842e030efceffeb22e3e4aebf68048c322145508",
+        "rev": "2a725b9508b15f6f3a2b107311bf4a443e259a8f",
         "type": "github"
       },
       "original": {
@@ -661,11 +661,11 @@
     "neovim-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1794257791,
-        "narHash": "sha256-7s8aMPHBZHqImfmy0HRQFf1JzyklydrqHub9Vniuzv8=",
+        "lastModified": 1794275963,
+        "narHash": "sha256-PISjOs4QekGUweHKKXRjyLKhE5q9q+XEFf2OqkAVxno=",
         "owner": "neovim",
         "repo": "neovim",
-        "rev": "d175a05e0d24b2796f9624f8b6965d690394116e",
+        "rev": "0c4b90023dac24f42ef24278b22fa357b39d38c6",
         "type": "github"
       },
       "original": {
@@ -786,11 +786,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1794282607,
-        "narHash": "sha256-SD5msUCg+PfC+YGDz3My8jH3XH1ySzBmNOrPn+chh8g=",
+        "lastModified": 1794293618,
+        "narHash": "sha256-mQVIq5vQuk3Vb+VIPoBx02CAswSoHoUUH+mSGuTmi74=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "4f4741d6c4955c59f2e731ffab1dd72ba9bd4097",
+        "rev": "e49e66345c5130ab9050a53ec7531fde35f70357",
         "type": "github"
       },
       "original": {
@@ -1149,11 +1149,11 @@
         "rustowl": "rustowl"
       },
       "locked": {
-        "lastModified": 1794198444,
-        "narHash": "sha256-3WI7qIdc+9gvGg00dHcqzkWvAmUT5Ah9+WzzDnqWrjM=",
+        "lastModified": 1794289498,
+        "narHash": "sha256-1vxQlkzxvIveYApIJiDiMv9RaJ2t1tNRjWO4y5ef0rY=",
         "owner": "nix-community",
         "repo": "rustowl-flake",
-        "rev": "20cc139accd287d067dc74242d1b8b82db6520eb",
+        "rev": "bee4488c047c66c4471a395c15610cfe4d967f51",
         "type": "github"
       },
       "original": {
@@ -1421,11 +1421,11 @@
         "rust-overlay": "rust-overlay_2"
       },
       "locked": {
-        "lastModified": 1794242157,
-        "narHash": "sha256-Gfdh7yVB/9pGYFL6HU0437y/rMF5gkhgoiYR5Q5iB0A=",
+        "lastModified": 1794292790,
+        "narHash": "sha256-ue5WAbCgFG2ZwsCDK6pX0WmAHcFGyDRHlLqMHdMqRrI=",
         "owner": "sxyazi",
         "repo": "yazi",
-        "rev": "3ba88877f39282a0b1cb912787d7293cf82c718c",
+        "rev": "805579e9832e315134da551bda2705c83e3c75d7",
         "type": "github"
       },
       "original": {
@@ -1454,11 +1454,11 @@
     "yazi-plugin-git": {
       "flake": false,
       "locked": {
-        "lastModified": 1794242476,
-        "narHash": "sha256-a4oddfENYnRD1AhDSBPBRMHgl+MPFnWELuO5uepOsqA=",
+        "lastModified": 1794293599,
+        "narHash": "sha256-Nz6AvWAiwdmH2HJ2vA3rMfbDDHSkXG20Ml6vc5yrjRM=",
         "owner": "yazi-rs",
         "repo": "plugins",
-        "rev": "70e03737ef91546e33114f94eabaad90d3b75c5f",
+        "rev": "1ef5fe02a6122f8f3bb47a41056aab3f4b8598bf",
         "type": "github"
       },
       "original": {
