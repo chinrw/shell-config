@@ -1,5 +1,7 @@
 {
+  config,
   inputs,
+  lib,
   pkgs,
   ...
 }:
@@ -22,6 +24,13 @@ in
     # Silences home-manager's 26.05 rename warning; unused while integrations are off.
     shellWrapperName = "yy";
 
+    # The plugin's main module no longer exposes setup; config.lua owns it.
+    initLua = ''
+      require("augment-command.config").setup(${
+        lib.generators.toLua { } config.programs.yazi.plugins.augment-command.settings
+      })
+    '';
+
     plugins = {
       git = {
         package = gitPlugin;
@@ -30,7 +39,6 @@ in
 
       augment-command = {
         package = inputs.yazi-plugin-augment-command;
-        setup = true;
         settings = {
           prompt = false;
           default_item_group_for_prompt = "hovered";
