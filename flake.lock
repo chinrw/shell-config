@@ -478,11 +478,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1794325730,
-        "narHash": "sha256-wtow/jzlAChs2vmttSzJfJA29rjwAhv2PR+9HKwJyGA=",
+        "lastModified": 1794337128,
+        "narHash": "sha256-0Iz/yweav5+/GifmzslISJVB58BOAIWNUxGLzC1YrNg=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "ec3249919accf7bc51f780dcff663e8f19a0e176",
+        "rev": "95fc3e668fc1e13ad05d22a4f02fccc6a6d6ce02",
         "type": "github"
       },
       "original": {
@@ -587,10 +587,10 @@
     "linux-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1793989110,
-        "narHash": "sha256-P+bNjwB204gzpltpfbI6PvV2uxPagElQIKVJopjhx/8=",
+        "lastModified": 1794334210,
+        "narHash": "sha256-2q+CPRxgupua+EC7Smr0EUQCS2AFyZWGBd7oDM/vjmM=",
         "ref": "linux-rolling-stable",
-        "rev": "4e458d53b79c0f223b52efff6fd1e63c9eb28942",
+        "rev": "cff26be72d9449de7a77823de37a36c1111bccde",
         "shallow": true,
         "type": "git",
         "url": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git"
@@ -786,11 +786,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1794324800,
-        "narHash": "sha256-aULAlqfGCsQ6tfV4Y8OTE5o6qSDGS8tRLseWOw3H0xc=",
+        "lastModified": 1794336635,
+        "narHash": "sha256-Co6U5u09h+yMn9x8B54K89Z3ytstaOFPpmzfAhVARU0=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "9d4e4d20bb5a226c36f7ae6d037f0d6665cb52ca",
+        "rev": "a8e5f71da6c568ce14d0b51475435461a4e54cb1",
         "type": "github"
       },
       "original": {
