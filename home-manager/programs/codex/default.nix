@@ -52,6 +52,8 @@ in
     package = codexPackage;
     mutableSettings = true;
     settings = {
+      model_context_window = 1000000;
+      model_auto_compact_token_limit = 700000;
       personality = "none";
       approvals_reviewer = "auto_review";
       features.memories = true;
