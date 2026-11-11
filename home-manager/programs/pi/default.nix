@@ -77,7 +77,6 @@ in
       "npm:pi-zentui"
       "npm:@gamaraan/next-prompt"
       "npm:@czottmann/pi-automode"
-      "npm:context-mode"
       "npm:@quintinshaw/pi-dynamic-workflows"
       "npm:pi-commandcode-provider"
     ];
