@@ -27,6 +27,21 @@ let
     fullscreenScrollbar = "auto";
     tuiMode = "regular";
   };
+  modelSettings.providers.openai-codex.modelOverrides =
+    lib.genAttrs
+      [
+        "gpt-5.6-luna"
+        "gpt-5.6-sol"
+        "gpt-5.6-terra"
+        "gpt-6-astra"
+        "gpt-6-luna"
+        "gpt-6-sol"
+        "gpt-6.1-sol"
+        "gpt-6.1-terra"
+      ]
+      (_: {
+        contextWindow = 1000000;
+      });
   extensionSettings = import ./extension-settings.nix;
   sharedAgentInstructions = import ../agent-instructions { inherit lib pkgs; };
   banner = ''
@@ -46,7 +61,7 @@ in
       "npm:pi-claude-cli"
       "npm:@plannotator/pi-extension"
       "npm:pi-slopchop"
-      "npm:@tmustier/pi-usage-extension"
+      "npm:@narumitw/pi-usage"
       "npm:pi-btw"
       "npm:pi-interactive-shell"
       "git:github.com/davebcn87/pi-autoresearch"
@@ -58,16 +73,13 @@ in
       "npm:@ff-labs/pi-fff"
       "npm:@gotgenes/pi-permission-system"
       "npm:@ayulab/pi-rewind"
-      "npm:@narumitw/pi-retry"
       "npm:@narumitw/pi-lsp"
-      "npm:pi-background-tasks"
       "npm:pi-zentui"
       "npm:@gamaraan/next-prompt"
       "npm:@czottmann/pi-automode"
       "npm:context-mode"
       "npm:@quintinshaw/pi-dynamic-workflows"
       "npm:pi-commandcode-provider"
-      "npm:@diegopetrucci/pi-fast"
     ];
     extraPackages = with pkgs; [
       nodejs
@@ -122,21 +134,29 @@ in
         }
       );
 
-  # Seed preferences without resetting choices saved by Pi or its extensions.
+  # Keep local preferences and providers, but enforce declared model limits.
   home.activation.piPreferences = lib.hm.dag.entryAfter [ "piCodingAgentMutableSettings" ] (
     lib.concatStringsSep "\n" (
-      lib.mapAttrsToList (
-        name: defaults:
-        lib.hm.generators.mkImpureConfigMerger {
-          inherit pkgs;
-          format = "json";
-          empty = "{}";
-          mode = "600";
-          path = "${config.programs.pi-coding-agent.configDir}/${name}";
-          staticSettings = pkgs.writeText "pi-${builtins.baseNameOf name}" (builtins.toJSON defaults);
-          jqOperation = "$static * $dynamic";
-        }
-      ) (extensionSettings // { "settings.json" = seedSettings; })
+      lib.mapAttrsToList
+        (
+          name: defaults:
+          lib.hm.generators.mkImpureConfigMerger {
+            inherit pkgs;
+            format = "json";
+            empty = "{}";
+            mode = "600";
+            path = "${config.programs.pi-coding-agent.configDir}/${name}";
+            staticSettings = pkgs.writeText "pi-${builtins.baseNameOf name}" (builtins.toJSON defaults);
+            jqOperation = if name == "models.json" then "$dynamic * $static" else "$static * $dynamic";
+          }
+        )
+        (
+          extensionSettings
+          // {
+            "settings.json" = seedSettings;
+            "models.json" = modelSettings;
+          }
+        )
     )
   );
 

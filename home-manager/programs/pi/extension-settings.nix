@@ -1,4 +1,7 @@
 {
+  "pi-fff.json" = {
+    mode = "override";
+  };
   "pi-cc-extensions.json" = {
     mode = "on";
     excludeRenderers = [ ];
@@ -24,7 +27,8 @@
     enableAgentSummary = true;
     enableWorkingMessage = true;
     enableAliases = true;
-    enableCustomFooter = true;
+    enableEditorPrefix = false;
+    enableCustomFooter = false;
     footerNerdIcons = true;
     footerHiddenKeys = [ ];
     footerLine1Keys = [ "pi-usage" ];
@@ -133,12 +137,12 @@
               defaultPlacement = "right";
               placements = {
                 pi-permission-system = "left";
-                background-tasks = "middle";
+                usage = "middle";
               };
               colorModes = {
                 pi-permission-system = "zentui";
                 pi-automode = "zentui";
-                background-tasks = "zentui";
+                usage = "zentui";
               };
             };
           };
