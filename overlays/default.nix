@@ -175,6 +175,13 @@ in
       yazi =
         (inputs.yazi.packages.${prev.stdenv.hostPlatform.system}.default.override {
           _7zz = final._7zz;
+          # The Cargo setup hook requires system Oniguruma for onig_sys.
+          yazi-unwrapped =
+            inputs.yazi.packages.${prev.stdenv.hostPlatform.system}.yazi-unwrapped.overrideAttrs
+              (old: {
+                nativeBuildInputs = old.nativeBuildInputs ++ [ prev.pkg-config ];
+                buildInputs = old.buildInputs ++ [ prev.oniguruma ];
+              });
         }).overrideAttrs
           (old: {
             extraRustcOpts = optimizedRustFlags;
