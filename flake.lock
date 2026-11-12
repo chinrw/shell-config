@@ -918,11 +918,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794449424,
-        "narHash": "sha256-ZNR2j1re1MqsnNA8b+NWDJIRRDAvuWnBK1TWO+gGizA=",
+        "lastModified": 1794450114,
+        "narHash": "sha256-LMQM2f14QIUF3uBs8v8OcA5RjRFPjtQ+JJibA2Awx1g=",
         "owner": "chinrw",
         "repo": "oracle-nix",
-        "rev": "ccec37b3cf1966bce76024a196f96672e8fa6568",
+        "rev": "0749c06915376c0186801ecadee2b9a4b415301e",
         "type": "github"
       },
       "original": {
