@@ -139,6 +139,26 @@ in
       # hard error when Go 1.25 hit EOL (2026-09-15).
       buildGo125Module = prev.buildGoModule;
 
+      # Glances 4.5.7 depends on python-jose, blocked for CVE-2026-120459.
+      glances = prev.glances.overridePythonAttrs (old: rec {
+        version = "4.5.9";
+        src = prev.fetchFromGitHub {
+          owner = "nicolargo";
+          repo = "glances";
+          tag = "v${version}";
+          hash = "sha256-CvT9GQ29xXTVxC7V2nGmfDhHLsAtF61+XMMLG8cmHww=";
+        };
+        dependencies = builtins.filter (dep: (dep.pname or "") != "python-jose") old.dependencies ++ [
+          prev.python3Packages.pyjwt
+        ];
+        nativeCheckInputs = old.nativeCheckInputs ++ [
+          # The master recipe fixes pySMART's compatibility with chardet 6.
+          (prev.python3Packages.callPackage "${inputs.nixpkgs-master}/pkgs/development/python-modules/pysmart"
+            { }
+          )
+        ];
+      });
+
       dstask = prev.dstask.overrideAttrs (old: {
         meta = old.meta // {
           platforms = final.lib.platforms.unix;
