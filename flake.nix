@@ -183,6 +183,11 @@
       flake = false;
     };
 
+    oracle-nix = {
+      url = "github:chinrw/oracle-nix";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     claude-code-nix = {
       url = "github:chinrw/claude-code-nix";
       inputs.nixpkgs.follows = "nixpkgs-unstable";

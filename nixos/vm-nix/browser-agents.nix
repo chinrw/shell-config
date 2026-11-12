@@ -39,6 +39,14 @@
         ];
         proxyBypass = [ "192.168.0.242" ];
       };
+      oracle = {
+        containerName = "browser-agent-oracle";
+        profileDir = "/var/lib/hermes/workspace/oracle_browser_profile";
+        runtimeDir = "/var/lib/hermes/workspace/browser-agent-oracle-runtime";
+        cdpPort = 9522;
+        novncPort = 6083;
+        cdpAllowedSources = [ "192.168.0.242" ];
+      };
     };
   };
 }

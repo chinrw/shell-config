@@ -3,6 +3,8 @@
   pkgs,
 }:
 {
+  oracle = inputs.oracle-nix.packages.${pkgs.stdenv.hostPlatform.system}.oracle;
+
   deploy-rs-ci =
     (pkgs.writeShellScriptBin "deploy-rs-ci" ''
       # Nix's daemon needs an explicit identity and host key for the shared builder.

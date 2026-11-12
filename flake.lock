@@ -911,6 +911,26 @@
         "type": "github"
       }
     },
+    "oracle-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794393372,
+        "narHash": "sha256-rVabswbXoPMJ28J8jpvPgvmfo1U3ON6cPn2t0c5JmlY=",
+        "owner": "chinrw",
+        "repo": "oracle-nix",
+        "rev": "e7e4a525b10888f8319b84816a41354d4c1a95dc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "chinrw",
+        "repo": "oracle-nix",
+        "type": "github"
+      }
+    },
     "pwndbg": {
       "inputs": {
         "nixpkgs": [
@@ -1065,6 +1085,7 @@
         "nixpkgs-master": "nixpkgs-master",
         "nixpkgs-stable": "nixpkgs-stable",
         "nixpkgs-unstable": "nixpkgs-unstable",
+        "oracle-nix": "oracle-nix",
         "pwndbg": "pwndbg",
         "rust-overlay": "rust-overlay",
         "rustowl-overlay": "rustowl-overlay",

@@ -68,6 +68,9 @@ in
   ++ lib.optionals (hostname == "vm-nix") [
     ./programs/hermes-media-view.nix
   ]
+  ++ lib.optionals (hostname == "nixos-lxc") [
+    ./programs/oracle.nix
+  ]
   ++ lib.optionals (hasFeature "restic") [
     ./programs/restic.nix
   ]

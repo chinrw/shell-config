@@ -10,6 +10,11 @@ keys:
   - &archlinux age1rryykhdtzeauum5vf29fvx2hpcsf73ug7v4n2zwn6z934avaqugqulyd2e
   - &linode age1hzqarxnqyhp69gxxddm7rpfqpkr2u2654t226z984ug3rappxenqze6dz0
 creation_rules:
+  - path_regex: secrets/openai\.yaml$
+    key_groups:
+      - age:
+          - *admin
+          - *nixos-lxc
   - path_regex: secrets/commandcode\.yaml$
     key_groups:
       - age:
