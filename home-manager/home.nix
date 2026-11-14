@@ -296,7 +296,7 @@ in
         devenv # Fast, Declarative, Reproducible, and Composable Developer Environments
         restic # Fast, secure, efficient backup program
         unar
-        inputs.rustowl-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
+        rustowl
         inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
         antigravity-cli
         codexZshCompletion

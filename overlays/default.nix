@@ -171,6 +171,16 @@ in
         useUasm = isX86;
       };
 
+      # RustOwl replaces the allocator, so jemalloc must use unprefixed symbols.
+      rustowl =
+        inputs.rustowl-overlay.packages.${prev.stdenv.hostPlatform.system}.default.overrideAttrs
+          (old: {
+            buildInputs = old.buildInputs ++ [
+              prev.aws-lc
+              prev.rust-jemalloc-sys-unprefixed
+            ];
+          });
+
       # yazi: from flake input, uses shared Rust flags + optimized _7zz
       yazi =
         (inputs.yazi.packages.${prev.stdenv.hostPlatform.system}.default.override {
