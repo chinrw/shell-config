@@ -90,11 +90,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794448943,
-        "narHash": "sha256-lWIjEG7P/X/KPg0GeNU8T8ockr9YF/o5rFXIvi0HHyA=",
+        "lastModified": 1794559985,
+        "narHash": "sha256-I0ddo3WEVW6a9nYTldu5nUrJ4Eo4mSfh4h6cum8nQ8M=",
         "owner": "chinrw",
         "repo": "codex-cli-nix",
-        "rev": "28259f40353e2673c94876d0b0266d43ff564420",
+        "rev": "cd00c966f8a3d55c0fb75899e7b4473f27f3660d",
         "type": "github"
       },
       "original": {
