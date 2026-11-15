@@ -404,7 +404,10 @@ in
   # ── Service ─────────────────────────────────────────────────────
   services.hermes-agent = {
     enable = true;
-    package = inputs.hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    package = import ./hermes-package.nix {
+      inherit lib;
+      package = inputs.hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    };
     addToSystemPackages = true;
 
     # The upstream CLI router runs Hermes as the service user inside this container.
