@@ -2,7 +2,7 @@
 
 Home Manager publishes the rules in this directory at `~/.agents/AGENTS.md`,
 together with local additions from `~/.agents/AGENTS.local.md`.
-Edit the Markdown sources here to change the rules for Codex, Claude and Pi:
+Edit the Markdown sources here to change the rules shared by all configured coding agents:
 
 - `writing-style.md` defines how to write comments, documentation and tracker text.
 - `git-commits.md` defines commit messages and Git identity requirements.
@@ -20,6 +20,7 @@ The tools load their own entry files; they do not need to discover
 | Codex | `~/.codex/AGENTS.md` | `~/.codex/AGENTS.local.md` |
 | Claude | `~/.claude/CLAUDE.md` | `~/.claude/CLAUDE.local.md` |
 | Pi | `~/.pi/agent/AGENTS.md` | `~/.pi/agent/AGENTS.local.md` |
+| Antigravity | `~/.gemini/config/AGENTS.md` | `~/.gemini/config/AGENTS.local.md` |
 
 Edit a local additions file for rules that apply only to that tool on that
 host. Home Manager creates missing local files and preserves existing ones.

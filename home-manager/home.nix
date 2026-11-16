@@ -81,6 +81,7 @@ in
   ++ lib.optionals (!smallNode) [
     ./programs/agent-skills.nix
     ./programs/agent-instructions/module.nix
+    ./programs/antigravity.nix
     ./programs/pi
     ./programs/dsh.nix
     (import ./programs/codex {
