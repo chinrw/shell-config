@@ -1091,6 +1091,7 @@
         "rustowl-overlay": "rustowl-overlay",
         "shuku": "shuku",
         "sops-nix": "sops-nix",
+        "stop-that-shit": "stop-that-shit",
         "telegram-reader": "telegram-reader",
         "yazi": "yazi",
         "yazi-plugin-git": "yazi-plugin-git",
@@ -1219,6 +1220,23 @@
       "original": {
         "owner": "Mic92",
         "repo": "sops-nix",
+        "type": "github"
+      }
+    },
+    "stop-that-shit": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794290132,
+        "narHash": "sha256-qf4tGmUsbHlIJlICUcLjcjH20lZeyTXdZdSi3XtNszo=",
+        "owner": "lennney",
+        "repo": "stop-that-shit",
+        "rev": "32fff44ecea4754e1579be8fa56aca57a76b391a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lennney",
+        "ref": "main",
+        "repo": "stop-that-shit",
         "type": "github"
       }
     },

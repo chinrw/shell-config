@@ -172,6 +172,11 @@
       flake = false;
     };
 
+    stop-that-shit = {
+      url = "github:lennney/stop-that-shit?ref=main";
+      flake = false;
+    };
+
     chatgpt-linker = {
       url = "github:chinrw/chatgpt-linker";
       inputs.nixpkgs.follows = "nixpkgs-unstable";

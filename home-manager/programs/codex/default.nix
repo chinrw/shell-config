@@ -10,6 +10,7 @@
 # into a writable file rather than linked from the Nix store.
 {
   config,
+  inputs,
   lib,
   pkgs,
   hostname,
@@ -43,6 +44,7 @@ in
     enable = true;
     package = codexPackage;
     mutableSettings = true;
+    skills.stop-that-shit = "${inputs.stop-that-shit}/skills/stop-that-shit";
     settings = {
       model_context_window = 1000000;
       model_auto_compact_token_limit = 700000;

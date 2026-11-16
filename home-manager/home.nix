@@ -87,6 +87,7 @@ in
     (import ./programs/codex {
       inherit
         codexPackage
+        inputs
         lib
         pkgs
         config
