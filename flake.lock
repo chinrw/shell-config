@@ -8,11 +8,11 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1794608248,
-        "narHash": "sha256-UsNKCCXU0313JSr3UgF1PGK1BlEiERPvrvivnbY2y+w=",
+        "lastModified": 1794807509,
+        "narHash": "sha256-7iQTeMhiItMVSxrAYxwjwI3fR/v/kqHec52A6b7J1xk=",
         "owner": "1Password",
         "repo": "shell-plugins",
-        "rev": "f820066cf18e19ccb02ae0ecf2a9ac68ac8d4bac",
+        "rev": "cd1c333c368901d4c4f5364bbab5ffc3e2bf7cd5",
         "type": "github"
       },
       "original": {
@@ -478,11 +478,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1794793480,
-        "narHash": "sha256-tasvYtCmnvjcoGaEYg9Jj1DahBVMWrDNQVZP9VOi72w=",
+        "lastModified": 1794810164,
+        "narHash": "sha256-u1Z1FUPl8yJM7X4JYQHKJiLnMTdFRptpNkXtF85H304=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "e96221fa73d2dac7ba9f3bc5a8b866b3d0fc188e",
+        "rev": "aa6d201dfdd530b4bcc4df377181b6e7170e17eb",
         "type": "github"
       },
       "original": {
@@ -786,11 +786,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1794800212,
-        "narHash": "sha256-DWV7RstnmyLQaAE4SgEC7wl9xWUjA5o503tjv1cmJD4=",
+        "lastModified": 1794811722,
+        "narHash": "sha256-c8jVzQpg2Um8KbEIDHsP9tsyRQ/0KPOZkbRIWQY9Pyw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "07b383c9d5f02bf2406bc98099c6aec83089621e",
+        "rev": "9be2459ebae051fa1be7cc748d036b852ba6d357",
         "type": "github"
       },
       "original": {
