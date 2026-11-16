@@ -53,7 +53,6 @@ in
       "npm:pi-ask-user"
       "npm:pi-web-access"
       "npm:pi-add-dir"
-      "npm:pi-claude-cli"
       "npm:@plannotator/pi-extension"
       "npm:pi-slopchop"
       "npm:@narumitw/pi-usage"
