@@ -1,6 +1,7 @@
 { lib, pkgs, ... }:
 let
   stateDir = "/var/lib/openlist";
+  openlist = import ./openlist-package.nix { inherit pkgs; };
 in
 {
   systemd.services.openlist = {
@@ -23,7 +24,7 @@ in
       # config.json still holds the container's relative paths such as
       # data/temp, and they resolve against the working directory.
       WorkingDirectory = stateDir;
-      ExecStart = "${lib.getExe pkgs.openlist} server --data ${stateDir}/data --no-prefix";
+      ExecStart = "${lib.getExe openlist} server --data ${stateDir}/data --no-prefix";
       Restart = "on-failure";
       RestartSec = "5s";
       NoNewPrivileges = true;
