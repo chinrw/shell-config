@@ -1,6 +1,6 @@
 # Automatic task titles
 
-This module names eligible new Codex tasks as `project | summary` after a
+This module names eligible new Codex tasks as `summary | project` after a
 completed answer. The project is the main Git worktree's directory name, or
 the current directory name outside Git. An independent GPT-6 Luna call
 generates the Chinese summary at high reasoning effort.

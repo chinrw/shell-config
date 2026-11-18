@@ -223,7 +223,8 @@ def name_task(session_id, project, prompt, answer):
         request(1, "initialize", {"clientInfo": {"name": "task-title", "version": "1"}})
         send({"method": "initialized", "params": {}})
         before = request(2, "thread/read", {"threadId": session_id})
-        title = project + " | " + summarize(project, prompt, answer, deadline)
+        summary = summarize(project, prompt, answer, deadline)
+        title = f"{summary} | {project}"
         after = request(3, "thread/read", {"threadId": session_id})
         # This detects edits during generation, but name/set is not conditional.
         if before["thread"].get("name") != after["thread"].get("name"):
