@@ -68,7 +68,6 @@ in
         "mediainfo"
         "iperf3"
         "par2cmdline"
-        "neovim"
         "zsh-fzf-tab"
       ];
       clangOptimized =
