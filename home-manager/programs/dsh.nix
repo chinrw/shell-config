@@ -14,7 +14,6 @@ let
     autoInstallPeers: false
   '';
   commonDependencies = {
-    "@deepseek-ai/dsh-subagent-claude-code" = package.version;
     "@deepseek-ai/dsh-subagent-codex" = package.version;
     "@mars-sea/dsh-commandcode-provider" = "0.17.0";
   };
@@ -28,7 +27,6 @@ let
     "@deepseek-ai/dsh-experimental-session-search"
     "@deepseek-ai/dsh-experimental-ralph-bundle"
     "@deepseek-ai/dsh-subagent-codex"
-    "@deepseek-ai/dsh-subagent-claude-code"
   ];
   commonPreferences = [
     {
@@ -55,13 +53,11 @@ let
   ];
   profiles = {
     web = {
-      dependencies.dsh-ops = "0.4.4";
       bundles = commonBundles ++ [
         "@deepseek-ai/dsh-web-app"
         "@deepseek-ai/dsh-experimental-inspector-profile"
         "@deepseek-ai/dsh-experimental-session-titles-bundle"
         "@deepseek-ai/dsh-experimental-plugin-market-bundle"
-        "dsh-ops"
       ];
       preferences = commonPreferences ++ [
         {
@@ -125,7 +121,7 @@ let
       manifest = {
         name = "dsh-profile-${name}";
         private = true;
-        dependencies = commonDependencies // (profile.dependencies or { });
+        dependencies = commonDependencies;
         dsh.profile.bundles = profile.bundles;
       };
     in
