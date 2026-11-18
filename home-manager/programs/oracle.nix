@@ -13,6 +13,8 @@
     apiKeyFile = config.sops.secrets.openai-api-key.path;
     settings = {
       model = "gpt-6-astra";
+      # Oracle 0.23.1 only knows GPT-6 Astra, and Chat still uses its picker entry.
+      modelOverrides.gpt-6-astra.apiModel = "gpt-6.2-astra";
       reasoningMode = "pro";
       reasoningEffort = "high";
       browser = {
