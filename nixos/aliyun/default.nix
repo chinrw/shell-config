@@ -35,16 +35,43 @@
     };
   };
 
-  services.openssh.settings = {
-    PermitRootLogin = "prohibit-password";
-    KbdInteractiveAuthentication = false;
-    X11Forwarding = false;
+  services.openssh = {
+    settings = {
+      PermitRootLogin = "prohibit-password";
+      KbdInteractiveAuthentication = false;
+      X11Forwarding = false;
+    };
+    extraConfig = ''
+      Match User tunnel-internal
+          AuthenticationMethods publickey
+          PasswordAuthentication no
+          KbdInteractiveAuthentication no
+          AllowTcpForwarding remote
+          PermitListen 127.0.0.1:22022
+          GatewayPorts no
+          # Deny shell, command and SFTP sessions while keeping forwarding available.
+          MaxSessions 0
+          AllowStreamLocalForwarding no
+          PermitTunnel no
+          AllowAgentForwarding no
+          X11Forwarding no
+      Match all
+    '';
   };
   users.users.root.openssh.authorizedKeys.keys =
     config.users.users.${username}.openssh.authorizedKeys.keys;
   users.users.${username} = {
     extraGroups = [ "wheel" ];
     shell = pkgs.zsh;
+  };
+  users.groups.tunnel-internal = { };
+  users.users.tunnel-internal = {
+    isSystemUser = true;
+    group = "tunnel-internal";
+    description = "Reverse SSH tunnel";
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG7luDlJ1tZKPydiigtPlsNHrJh7zULqCorRftpJP/I5 aliyun-tunnel"
+    ];
   };
   security.sudo.wheelNeedsPassword = false;
 
@@ -66,6 +93,7 @@
 
   # The tailnet disables the CGNAT drop rule for this host. Reject sources whose
   # return route uses another interface while allowing Alibaba's internal services.
+  networking.firewall.checkReversePath = "strict";
   boot.kernel.sysctl."net.ipv4.conf.eth0.rp_filter" = 1;
 
   nix.settings = {
