@@ -23,11 +23,11 @@
     },
     "agent-skills": {
       "locked": {
-        "lastModified": 1794968342,
-        "narHash": "sha256-pMYaV4tsB6H+/GROwObsGIQFP1Ar3mxmSsvonPNlH4w=",
+        "lastModified": 1795057233,
+        "narHash": "sha256-eda8g356fBKAF6eR6zOXZdplTCXD0aid1FdOaOfACRY=",
         "owner": "chinrw",
         "repo": "agent-skills",
-        "rev": "d906d64ec2e602eaa302459a1783a65293cb42fc",
+        "rev": "699444a73746990d7c31a1c2758a7bf76d3d221f",
         "type": "github"
       },
       "original": {
