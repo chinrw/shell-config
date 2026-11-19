@@ -478,11 +478,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1795082016,
-        "narHash": "sha256-g2HD/5QEzIcTiUMjwUqvv84UDkA1UySocLkwSr/HUCQ=",
+        "lastModified": 1795103930,
+        "narHash": "sha256-3GS1zfVGZsvzI4SVVHOX/Apzb9w6I7qvJ5tjlQ4hcG4=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "0d5fdd60da58153b07f6197d95664389a28e4cb5",
+        "rev": "364aded7ee2a2888421fc7aec96adbe6c07748a5",
         "type": "github"
       },
       "original": {
@@ -535,11 +535,11 @@
     "humanizer": {
       "flake": false,
       "locked": {
-        "lastModified": 1795082444,
-        "narHash": "sha256-Kycs5dVymioNsAcqo8PhK8ljD+R/rqFlbL/1iAtwqik=",
+        "lastModified": 1795082863,
+        "narHash": "sha256-ql6zyupIPJaGtzHrVwGe7iqZKfdg/4YItv3FaDeYVe4=",
         "owner": "blader",
         "repo": "humanizer",
-        "rev": "732e48abbe80850a74d0a1e2c4b9b6c926213161",
+        "rev": "a48c60c2a3f7a0f6ecc8f9b8d2b1ef71c7927155",
         "type": "github"
       },
       "original": {
@@ -605,11 +605,11 @@
     "mattpocock-skills": {
       "flake": false,
       "locked": {
-        "lastModified": 1794472958,
-        "narHash": "sha256-AYSRCvBL8TDDdW3rgKu2T7gl4YYDoDId0jYbabEFyfs=",
+        "lastModified": 1795095298,
+        "narHash": "sha256-fc5+qmchp1IQ/rQP1olWKC1eC4VdYhaB7YYzC3+JBe0=",
         "owner": "mattpocock",
         "repo": "skills",
-        "rev": "5863806dd4e15c63174bee4e7515a4256792ecfa",
+        "rev": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
         "type": "github"
       },
       "original": {
@@ -645,11 +645,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795032461,
-        "narHash": "sha256-F23oy9OBOe25fLRrE8krx/F5B6AdlM2ynG5GrhfVxz4=",
+        "lastModified": 1795086758,
+        "narHash": "sha256-nRBfrZghqWJdl05dOgZ5w11fVLBsBOhGr2uqgBgD11A=",
         "owner": "chinrw",
         "repo": "neovim-nightly-overlay",
-        "rev": "dd4f527785d6e85fcdc48f8642aa77afd0841339",
+        "rev": "dcc176d77dc98ae817aa4989e841adc0ba56bf42",
         "type": "github"
       },
       "original": {
@@ -661,11 +661,11 @@
     "neovim-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1795030039,
-        "narHash": "sha256-Yn4v5GqZubIGGLVRupm1H2GcJvRYDvJDdm6hp78BQ4c=",
+        "lastModified": 1795082216,
+        "narHash": "sha256-v7S8jpoZ6u9LZMaCHYqBnK+m8aNbsx+HHGWpKJ0p9iY=",
         "owner": "neovim",
         "repo": "neovim",
-        "rev": "d9a842e291ae481a0fc281aaac08e89aaba432d4",
+        "rev": "2843068c7a9c78c206189c37b53cdb6f464e57ae",
         "type": "github"
       },
       "original": {
@@ -786,11 +786,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1795081731,
-        "narHash": "sha256-07kVARpqZAVhYPH0QeQT+3oCM797B3FYdXPo1HV868s=",
+        "lastModified": 1795103217,
+        "narHash": "sha256-ojxcijDHpzRoM3lDIxUVAOdtBnf3uYeXleAy//9pFGc=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "1370bb357dec5432203efbd7683306628eb34fdb",
+        "rev": "4ec3ca5ef34433e4c3b71a0a4488160c82ebe494",
         "type": "github"
       },
       "original": {
@@ -1107,11 +1107,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794995857,
-        "narHash": "sha256-XWidHsxcg0iQuGea4URxcPV3rY+dB595L3Xs2xFrsPo=",
+        "lastModified": 1795082704,
+        "narHash": "sha256-YK+6Nl8oR2Fhh3YO3DhBNCN7TmIGWw3tLhk25kfiWw4=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "6b05b928a40211beecaaa294e6f719aa2145a2a8",
+        "rev": "85d4adbbd952fcaf89fed3cb4ba540a4770d6e64",
         "type": "github"
       },
       "original": {
@@ -1226,11 +1226,11 @@
     "stop-that-shit": {
       "flake": false,
       "locked": {
-        "lastModified": 1794290132,
-        "narHash": "sha256-qf4tGmUsbHlIJlICUcLjcjH20lZeyTXdZdSi3XtNszo=",
+        "lastModified": 1795099966,
+        "narHash": "sha256-Q8FGYSfOS0/tUoZvhdcschVR2ifFu18zEmgco0peQ/8=",
         "owner": "lennney",
         "repo": "stop-that-shit",
-        "rev": "32fff44ecea4754e1579be8fa56aca57a76b391a",
+        "rev": "1ee118ffb8345d8dc133874eb75b80c3ec8c38d9",
         "type": "github"
       },
       "original": {
