@@ -139,11 +139,7 @@ in
         };
       });
 
-      # 7-Zip: unfree + uasm on x86_64 (uses GCC — its Makefile has GCC-specific flags)
-      _7zz = prev._7zz.override {
-        enableUnfree = true;
-        useUasm = isX86;
-      };
+      _7zz = prev._7zz.override { enableUnfree = true; };
 
       rustowl = inputs.rustowl-overlay.packages.${prev.stdenv.hostPlatform.system}.default;
 

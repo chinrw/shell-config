@@ -7,13 +7,7 @@
 }:
 let
   xrayConfig = config.sops.secrets.xray.path;
-  xray = (pkgs.xray.override { assets = [ pkgs.v2ray-rules-dat ]; }).overrideAttrs (_: {
-    postFixup = ''
-      wrapProgram $out/bin/xray \
-        --set-default V2RAY_LOCATION_ASSET $assetsDrv/share/v2ray \
-        --set-default XRAY_LOCATION_ASSET $assetsDrv/share/v2ray
-    '';
-  });
+  xray = pkgs.xray.override { assets = [ pkgs.v2ray-rules-dat ]; };
 
   physicalNetworkServices = [
     "Thunderbolt Ethernet Slot 0"
