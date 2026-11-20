@@ -9,7 +9,7 @@ not repeat them.
 - Commit on local `main`. Do not open pull requests and do not push. The owner
   reviews and pushes batches. Fetch and rebase onto `origin/main` before
   committing, because the updater on nixos-ci pushes `flake.lock` updates to
-  `main` every three hours.
+  `main` every eight hours.
 - Commit as the repository's configured git user. Do not pass `--author`.
 - Subjects use `<area>: <imperative description>`, where the area is the part
   of the tree that changed: `nixos`, `home-manager`, `deploy-rs`, `docs`, or a

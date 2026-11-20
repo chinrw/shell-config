@@ -194,7 +194,7 @@ mirror, a host can use LAN caches by naming them in `localCaches`. An unknown
 name fails the build and prints the known ones, which are listed in
 `lib/caches.nix`.
 
-Every three hours `nixos-ci` runs `nixos/services/shell-config-updater.nix`. It
+Every eight hours `nixos-ci` runs `nixos/services/shell-config-updater.nix`. It
 clones this repo and runs `nix flake update`. It builds the deployment CLI,
 checks and profiles, along with the additional Linux system and home outputs,
 and archives the flake's input sources. It retains and uploads these paths to

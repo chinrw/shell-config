@@ -325,10 +325,10 @@ in
     };
 
     systemd.timers.${serviceName} = {
-      description = "Update shell-config every three hours";
+      description = "Update shell-config every eight hours";
       wantedBy = [ "timers.target" ];
       timerConfig = {
-        OnCalendar = "*-*-* 00/3:00:00";
+        OnCalendar = "*-*-* 00/8:00:00";
         Persistent = true;
         AccuracySec = "1min";
       };
