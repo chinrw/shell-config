@@ -300,7 +300,7 @@ in
         unar
         rustowl
         inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
-        antigravity-cli
+        master.antigravity-cli
         codexZshCompletion
         abtop # Monitor local AI coding agent sessions
         rustscan # modern scanner
