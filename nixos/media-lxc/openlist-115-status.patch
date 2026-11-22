@@ -1,47 +1,121 @@
 --- a/drivers/115_open/driver.go
 +++ b/drivers/115_open/driver.go
-@@ -442,12 +442,28 @@
- 	return d.client.DeleteOfflineTask(ctx, infoHash, deleteFiles)
+@@ -9,6 +9,7 @@
+ 	"slices"
+ 	"strconv"
+ 	"strings"
++	"sync/atomic"
+ 	"time"
+ 
+ 	sdk "github.com/OpenListTeam/115-sdk-go"
+@@ -28,6 +29,7 @@
+ 	model.Storage
+ 	Addition
+ 	client     *sdk.Client
++	offline    atomic.Pointer[offlineLookup]
+ 	limiter    *rate.Limiter
+ 	parentPath string
+ }
+@@ -63,6 +65,7 @@
+ }
+ 
+ func (d *Open115) Init(ctx context.Context) error {
++	d.offline.Store(nil)
+ 	if d.Addition.AccessToken == "" && d.Addition.RefreshToken == "" {
+ 		return errors.New("access token or refresh token is required")
+ 	}
+@@ -114,6 +117,7 @@
+ 			}
+ 		}
+ 	}
++	d.offline.Store(storageOfflineLookup(d.client, d.limiter))
+ 	return nil
+ }
+ 
+@@ -125,6 +129,7 @@
+ }
+ 
+ func (d *Open115) Drop(ctx context.Context) error {
++	d.offline.Store(nil)
+ 	return nil
+ }
+ 
+@@ -435,19 +440,44 @@
+ }
+ 
+ func (d *Open115) OfflineDownload(ctx context.Context, uris []string, dstDir model.Obj) ([]string, error) {
+-	return d.client.AddOfflineTaskURIs(ctx, uris, dstDir.GetID())
++	l, err := d.offlineTasks()
++	if err != nil {
++		return nil, err
++	}
++	hashes, err := l.client.AddOfflineTaskURIs(ctx, uris, dstDir.GetID())
++	if err == nil {
++		l.invalidate(hashes)
++	}
++	return hashes, err
+ }
+ 
+ func (d *Open115) DeleteOfflineTask(ctx context.Context, infoHash string, deleteFiles bool) error {
+-	return d.client.DeleteOfflineTask(ctx, infoHash, deleteFiles)
++	l, err := d.offlineTasks()
++	if err != nil {
++		return err
++	}
++	err = l.client.DeleteOfflineTask(ctx, infoHash, deleteFiles)
++	if err == nil {
++		l.invalidate([]string{infoHash})
++	}
++	return err
++}
++
++func (d *Open115) offlineTasks() (*offlineLookup, error) {
++	// An unsuccessful Init is still registered at the mount path.
++	l := d.offline.Load()
++	if l == nil {
++		return nil, errors.New("115 Open offline client is not initialized")
++	}
++	return l, nil
  }
  
 -func (d *Open115) OfflineList(ctx context.Context) (*sdk.OfflineTaskListResp, error) {
 -	resp, err := d.client.OfflineTaskList(ctx, 1)
--	if err != nil {
--		return nil, err
 +func (d *Open115) OfflineTask(ctx context.Context, infoHash string) (*sdk.OfflineTask, error) {
-+	for page, last := 1, 1; page <= last; page++ {
-+		if err := d.WaitLimit(ctx); err != nil {
-+			return nil, err
-+		}
-+		resp, err := d.client.OfflineTaskList(ctx, int64(page))
-+		if err != nil {
-+			return nil, err
-+		}
-+		if resp.Page != page {
-+			return nil, fmt.Errorf("115 returned offline task page %d for page %d", resp.Page, page)
-+		}
-+		for i := range resp.Tasks {
-+			if strings.EqualFold(resp.Tasks[i].InfoHash, infoHash) {
-+				return &resp.Tasks[i], nil
-+			}
-+		}
-+		if page == 1 || resp.PageCount < last {
-+			last = resp.PageCount
-+		}
++	l, err := d.offlineTasks()
+ 	if err != nil {
+ 		return nil, err
  	}
 -	return resp, nil
-+	return nil, fmt.Errorf("115 offline task %s not found", infoHash)
++	return l.lookup(ctx, infoHash)
  }
  
  func (d *Open115) GetDetails(ctx context.Context) (*model.StorageDetails, error) {
 --- a/internal/offline_download/115_open/client.go
 +++ b/internal/offline_download/115_open/client.go
-@@ -102,33 +102,21 @@
+@@ -2,8 +2,10 @@
+ 
+ import (
+ 	"context"
++	"errors"
+ 	"fmt"
+ 
++	sdk "github.com/OpenListTeam/115-sdk-go"
+ 	_115_open "github.com/OpenListTeam/OpenList/v4/drivers/115_open"
+ 	"github.com/OpenListTeam/OpenList/v4/internal/conf"
+ 	"github.com/OpenListTeam/OpenList/v4/internal/setting"
+@@ -102,33 +104,28 @@
  		return nil, fmt.Errorf("unsupported storage driver for offline download, only 115 Open is supported")
  	}
  
 -	tasks, err := driver115Open.OfflineList(context.Background())
 +	t, err := driver115Open.OfflineTask(task.Ctx(), task.GID)
++	return offlineStatus(task, t, err)
++}
++
++func offlineStatus(task *tool.DownloadTask, t *sdk.OfflineTask, err error) (*tool.Status, error) {
++	if errors.Is(err, _115_open.ErrOfflineTaskNotVisible) {
++		return &tool.Status{Progress: task.GetProgress(), TotalBytes: task.GetTotalBytes(), Status: err.Error()}, nil
++	}
  	if err != nil {
  		return nil, err
  	}
@@ -52,11 +126,7 @@
 -		Completed: false,
 -		Status:    "the task has been deleted",
 -		Err:       nil,
-+		Progress:   float64(t.PercentDone),
-+		Status:     t.GetStatus(),
-+		Completed:  t.IsDone(),
-+		TotalBytes: t.Size,
- 	}
+-	}
 -
 -	for _, t := range tasks.Tasks {
 -		if t.InfoHash == task.GID {
@@ -69,6 +139,11 @@
 -			}
 -			return s, nil
 -		}
++		Progress:   float64(t.PercentDone),
++		Status:     t.GetStatus(),
++		Completed:  t.IsDone(),
++		TotalBytes: t.Size,
++	}
 +	if t.IsFailed() {
 +		s.Err = fmt.Errorf("%s", s.Status)
  	}
@@ -169,7 +244,14 @@
  	var ok bool
  outer:
  	for {
-@@ -152,7 +192,7 @@
+@@ -148,11 +188,14 @@
+ // Update download status, return true if download completed
+ func (t *DownloadTask) Update() (bool, error) {
+ 	info, err := t.tool.Status(t)
++	if err == nil && info == nil {
++		err = errors.Errorf("%s returned no task status", t.tool.Name())
++	}
+ 	if err != nil {
  		t.callStatusRetried++
  		log.Errorf("failed to get status of %s, retried %d times", t.ID, t.callStatusRetried)
  		if t.callStatusRetried > 5 {
@@ -178,3 +260,246 @@
  		}
  		return false, nil
  	}
+--- a/internal/offline_download/115/client.go
++++ b/internal/offline_download/115/client.go
+@@ -3,6 +3,7 @@
+ import (
+ 	"context"
+ 	"fmt"
++	"strings"
+ 
+ 	"github.com/OpenListTeam/OpenList/v4/internal/conf"
+ 	"github.com/OpenListTeam/OpenList/v4/internal/setting"
+@@ -106,20 +107,14 @@
+ 		return nil, fmt.Errorf("unsupported storage driver for offline download, only 115 Cloud is supported")
+ 	}
+ 
+-	tasks, err := driver115.OfflineList(context.Background())
++	tasks, err := driver115.OfflineList(task.Ctx())
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 
+-	s := &tool.Status{
+-		Progress:  0,
+-		NewGID:    "",
+-		Completed: false,
+-		Status:    "the task has been deleted",
+-		Err:       nil,
+-	}
++	s := &tool.Status{}
+ 	for _, t := range tasks {
+-		if t.InfoHash == task.GID {
++		if t != nil && strings.EqualFold(t.InfoHash, task.GID) {
+ 			s.Progress = t.Percent
+ 			s.Status = t.GetStatus()
+ 			s.Completed = t.IsDone()
+@@ -130,8 +125,7 @@
+ 			return s, nil
+ 		}
+ 	}
+-	s.Err = fmt.Errorf("the task has been deleted")
+-	return nil, nil
++	return &tool.Status{Progress: task.GetProgress(), TotalBytes: task.GetTotalBytes(), Status: "115 offline task is not currently visible"}, nil
+ }
+ 
+ var _ tool.Tool = (*Cloud115)(nil)
+--- /dev/null
++++ b/drivers/115_open/offline_lookup.go
+@@ -0,0 +1,196 @@
++package _115_open
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"strings"
++	"time"
++
++	sdk "github.com/OpenListTeam/115-sdk-go"
++	"golang.org/x/time/rate"
++)
++
++// Absence from a changing page list does not establish a terminal state.
++var ErrOfflineTaskNotVisible = errors.New("115 offline task is not currently visible")
++
++const offlinePollInterval = 3 * time.Second
++
++type offlinePage struct {
++	response *sdk.OfflineTaskListResp
++	err      error
++	expires  time.Time
++}
++
++// One cursor and page index per storage. Poll known hashes on their last page.
++// Unknown hashes share page 1 and at most one additional discovery page per interval.
++type offlineLookup struct {
++	client        *sdk.Client
++	gate          chan struct{}
++	fetch         func(context.Context, int64) (*sdk.OfflineTaskListResp, error)
++	now           func() time.Time
++	pages         map[int]offlinePage
++	pageOf        map[string]int
++	next          int
++	discoverAfter time.Time
++	discoveryErr  error
++}
++
++// Keep the page cache and its requests on the same account when a mount is reinitialized.
++func storageOfflineLookup(client *sdk.Client, limiter *rate.Limiter) *offlineLookup {
++	l := newOfflineLookup(func(ctx context.Context, page int64) (*sdk.OfflineTaskListResp, error) {
++		if limiter != nil {
++			if err := limiter.Wait(ctx); err != nil {
++				return nil, err
++			}
++		}
++		return client.OfflineTaskList(ctx, page)
++	})
++	l.client = client
++	return l
++}
++
++func newOfflineLookup(fetch func(context.Context, int64) (*sdk.OfflineTaskListResp, error)) *offlineLookup {
++	return &offlineLookup{
++		gate: make(chan struct{}, 1), fetch: fetch, now: time.Now,
++		pages: make(map[int]offlinePage), pageOf: make(map[string]int), next: 2,
++	}
++}
++
++func (l *offlineLookup) discard(page int) {
++	if old := l.pages[page].response; old != nil {
++		for _, task := range old.Tasks {
++			key := strings.ToLower(task.InfoHash)
++			if l.pageOf[key] == page {
++				delete(l.pageOf, key)
++			}
++		}
++	}
++	delete(l.pages, page)
++}
++
++func validOfflinePage(p *sdk.OfflineTaskListResp, page int) bool {
++	if p == nil || p.Page != page {
++		return false
++	}
++	if len(p.Tasks) == 0 {
++		return page == 1 && p.Count == 0 && (p.PageCount == 0 || p.PageCount == 1)
++	}
++	return page <= p.PageCount
++}
++
++func (l *offlineLookup) load(ctx context.Context, page int) (*sdk.OfflineTaskListResp, error) {
++	cached := l.pages[page]
++	if l.now().Before(cached.expires) {
++		if cached.err != nil {
++			return nil, cached.err
++		}
++		return cached.response, nil
++	}
++	response, err := l.fetch(ctx, int64(page))
++	if ctx.Err() != nil {
++		return nil, ctx.Err()
++	}
++	if err == nil && !validOfflinePage(response, page) {
++		err = fmt.Errorf("115 returned an incomplete offline task page %d", page)
++	}
++	expires := l.now().Add(offlinePollInterval)
++	if err != nil {
++		// Keep the last page hint for retries, but never serve its stale task on error.
++		cached.err, cached.expires = err, expires
++		l.pages[page] = cached
++		return nil, err
++	}
++	if page == 1 && cached.response != nil && response.PageCount < cached.response.PageCount {
++		for old := range l.pages {
++			if old > response.PageCount {
++				l.discard(old)
++			}
++		}
++	}
++	l.discard(page)
++	l.pages[page] = offlinePage{response: response, expires: expires}
++	for _, task := range response.Tasks {
++		l.pageOf[strings.ToLower(task.InfoHash)] = page
++	}
++	return response, nil
++}
++
++func findOfflineTask(response *sdk.OfflineTaskListResp, hash string) *sdk.OfflineTask {
++	for i := range response.Tasks {
++		if strings.EqualFold(response.Tasks[i].InfoHash, hash) {
++			return &response.Tasks[i]
++		}
++	}
++	return nil
++}
++
++func (l *offlineLookup) lookup(ctx context.Context, hash string) (*sdk.OfflineTask, error) {
++	select {
++	case <-ctx.Done():
++		return nil, ctx.Err()
++	case l.gate <- struct{}{}:
++	}
++	defer func() { <-l.gate }()
++	if err := ctx.Err(); err != nil {
++		return nil, err
++	}
++	key := strings.ToLower(hash)
++	first, err := l.load(ctx, 1)
++	if err != nil {
++		return nil, err
++	}
++	if task := findOfflineTask(first, key); task != nil {
++		return task, nil
++	}
++	if page := l.pageOf[key]; page > 1 && page <= first.PageCount {
++		response, err := l.load(ctx, page)
++		if err != nil {
++			return nil, err
++		}
++		if task := findOfflineTask(response, key); task != nil {
++			return task, nil
++		}
++	}
++	if first.PageCount < 2 {
++		return nil, ErrOfflineTaskNotVisible
++	}
++	if l.now().Before(l.discoverAfter) {
++		if l.discoveryErr != nil {
++			return nil, l.discoveryErr
++		}
++		return nil, ErrOfflineTaskNotVisible
++	}
++	if l.next > first.PageCount {
++		l.next = 2
++	}
++	page := l.next
++	response, err := l.load(ctx, page)
++	if ctx.Err() != nil {
++		return nil, ctx.Err()
++	}
++	l.discoverAfter = l.now().Add(offlinePollInterval)
++	l.discoveryErr = err
++	if err != nil {
++		return nil, err
++	}
++	l.next++
++	if l.pageOf[key] == page {
++		if task := findOfflineTask(response, key); task != nil {
++			return task, nil
++		}
++	}
++	return nil, ErrOfflineTaskNotVisible
++}
++
++// A new submission of the same hash must not inherit a cached completion.
++func (l *offlineLookup) invalidate(hashes []string) {
++	l.gate <- struct{}{}
++	defer func() { <-l.gate }()
++	for _, hash := range hashes {
++		if page := l.pageOf[strings.ToLower(hash)]; page != 0 {
++			l.discard(page)
++		}
++	}
++	l.discard(1)
++}
