@@ -2,6 +2,8 @@
 {
   imports = [ ../proxmox-lxc.nix ];
 
+  hardware.graphics.enable = true;
+
   # One of the subnet routers for the home LAN, so tailnet clients keep a way
   # in while another router is offline.
   services.tailscale = {

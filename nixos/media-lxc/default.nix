@@ -53,6 +53,8 @@ in
   # refuses unless user_allow_other is set. proxmox-lxc.nix turns it off.
   programs.fuse.userAllowOther = lib.mkForce true;
 
+  hardware.graphics.enable = true;
+
   # Jellyfin clients use caddy on this host. 8096 stays open for LAN players
   # that connect directly, and 7359 and 1900 are LAN discovery.
   networking.firewall.allowedTCPPorts = [ 8096 ];
