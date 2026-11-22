@@ -37,6 +37,26 @@
         "type": "github"
       }
     },
+    "agy-cli-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795344400,
+        "narHash": "sha256-MAklS8GtGE0h7tM931m75AxzCVYuQWWRPHmSbIA8uWo=",
+        "owner": "chinrw",
+        "repo": "agy-cli-nix",
+        "rev": "aa1d4892d117c967599abdbaea97d70013cba024",
+        "type": "github"
+      },
+      "original": {
+        "owner": "chinrw",
+        "repo": "agy-cli-nix",
+        "type": "github"
+      }
+    },
     "chatgpt-linker": {
       "inputs": {
         "home-manager": [
@@ -1059,6 +1079,7 @@
       "inputs": {
         "_1password-shell-plugins": "_1password-shell-plugins",
         "agent-skills": "agent-skills",
+        "agy-cli-nix": "agy-cli-nix",
         "chatgpt-linker": "chatgpt-linker",
         "claude-code-nix": "claude-code-nix",
         "codex-cli-nix": "codex-cli-nix",

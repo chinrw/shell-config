@@ -208,6 +208,11 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    agy-cli-nix = {
+      url = "github:chinrw/agy-cli-nix";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     pwndbg = {
       url = "github:pwndbg/pwndbg";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
