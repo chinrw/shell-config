@@ -1,0 +1,180 @@
+--- a/drivers/115_open/driver.go
++++ b/drivers/115_open/driver.go
+@@ -442,12 +442,28 @@
+ 	return d.client.DeleteOfflineTask(ctx, infoHash, deleteFiles)
+ }
+ 
+-func (d *Open115) OfflineList(ctx context.Context) (*sdk.OfflineTaskListResp, error) {
+-	resp, err := d.client.OfflineTaskList(ctx, 1)
+-	if err != nil {
+-		return nil, err
++func (d *Open115) OfflineTask(ctx context.Context, infoHash string) (*sdk.OfflineTask, error) {
++	for page, last := 1, 1; page <= last; page++ {
++		if err := d.WaitLimit(ctx); err != nil {
++			return nil, err
++		}
++		resp, err := d.client.OfflineTaskList(ctx, int64(page))
++		if err != nil {
++			return nil, err
++		}
++		if resp.Page != page {
++			return nil, fmt.Errorf("115 returned offline task page %d for page %d", resp.Page, page)
++		}
++		for i := range resp.Tasks {
++			if strings.EqualFold(resp.Tasks[i].InfoHash, infoHash) {
++				return &resp.Tasks[i], nil
++			}
++		}
++		if page == 1 || resp.PageCount < last {
++			last = resp.PageCount
++		}
+ 	}
+-	return resp, nil
++	return nil, fmt.Errorf("115 offline task %s not found", infoHash)
+ }
+ 
+ func (d *Open115) GetDetails(ctx context.Context) (*model.StorageDetails, error) {
+--- a/internal/offline_download/115_open/client.go
++++ b/internal/offline_download/115_open/client.go
+@@ -102,33 +102,21 @@
+ 		return nil, fmt.Errorf("unsupported storage driver for offline download, only 115 Open is supported")
+ 	}
+ 
+-	tasks, err := driver115Open.OfflineList(context.Background())
++	t, err := driver115Open.OfflineTask(task.Ctx(), task.GID)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 
+ 	s := &tool.Status{
+-		Progress:  0,
+-		NewGID:    "",
+-		Completed: false,
+-		Status:    "the task has been deleted",
+-		Err:       nil,
++		Progress:   float64(t.PercentDone),
++		Status:     t.GetStatus(),
++		Completed:  t.IsDone(),
++		TotalBytes: t.Size,
+ 	}
+-
+-	for _, t := range tasks.Tasks {
+-		if t.InfoHash == task.GID {
+-			s.Progress = float64(t.PercentDone)
+-			s.Status = t.GetStatus()
+-			s.Completed = t.IsDone()
+-			s.TotalBytes = t.Size
+-			if t.IsFailed() {
+-				s.Err = fmt.Errorf("%s", t.GetStatus())
+-			}
+-			return s, nil
+-		}
++	if t.IsFailed() {
++		s.Err = fmt.Errorf("%s", s.Status)
+ 	}
+-	s.Err = fmt.Errorf("the task has been deleted")
+-	return nil, nil
++	return s, nil
+ }
+ 
+ var _ tool.Tool = (*Open115)(nil)
+--- a/internal/offline_download/tool/download.go
++++ b/internal/offline_download/tool/download.go
+@@ -1,8 +1,12 @@
+ package tool
+ 
+ import (
++	"encoding/base32"
++	"encoding/hex"
+ 	"fmt"
++	"net/url"
+ 	"path"
++	"strings"
+ 	"time"
+ 
+ 	"github.com/OpenListTeam/OpenList/v4/internal/conf"
+@@ -27,11 +31,39 @@
+ 	Toolname          string       `json:"toolname"`
+ 	Status            string       `json:"-"`
+ 	Signal            chan int     `json:"-"`
++	Open115GID        string       `json:"open115_gid,omitempty"`
+ 	GID               string       `json:"-"`
+ 	tool              Tool
+ 	callStatusRetried int
+ }
+ 
++// Recoverable runs before the manager resets a running task to pending.
++// Older 115 Open receipts kept the magnet but not the accepted infohash.
++func (t *DownloadTask) Recoverable() bool {
++	if t.Toolname != "115 Open" || t.GetState() != tache.StateRunning || t.Open115GID != "" {
++		return true
++	}
++	magnet, err := url.Parse(t.Url)
++	if err != nil || magnet.Scheme != "magnet" {
++		return false
++	}
++	for _, xt := range magnet.Query()["xt"] {
++		hash, ok := strings.CutPrefix(strings.ToLower(xt), "urn:btih:")
++		if !ok {
++			continue
++		}
++		if raw, err := hex.DecodeString(hash); err == nil && len(raw) == 20 {
++			t.Open115GID = hash
++			return true
++		}
++		if raw, err := base32.StdEncoding.DecodeString(strings.ToUpper(hash)); err == nil && len(raw) == 20 {
++			t.Open115GID = hex.EncodeToString(raw)
++			return true
++		}
++	}
++	return false
++}
++
+ func (t *DownloadTask) Run() error {
+ 	t.ClearEndTime()
+ 	t.SetStartTime(time.Now())
+@@ -53,17 +85,25 @@
+ 	defer func() {
+ 		t.Signal = nil
+ 	}()
+-	gid, err := t.tool.AddURL(&AddUrlArgs{
+-		Ctx:     t.Ctx(),
+-		Url:     t.Url,
+-		UID:     t.ID,
+-		TempDir: t.TempDir,
+-		Signal:  t.Signal,
+-	})
+-	if err != nil {
+-		return err
++	var err error
++	if t.Toolname == "115 Open" && t.Open115GID != "" {
++		t.GID = t.Open115GID
++	} else {
++		t.GID, err = t.tool.AddURL(&AddUrlArgs{
++			Ctx:     t.Ctx(),
++			Url:     t.Url,
++			UID:     t.ID,
++			TempDir: t.TempDir,
++			Signal:  t.Signal,
++		})
++		if err != nil {
++			return err
++		}
++		if t.Toolname == "115 Open" {
++			t.Open115GID = t.GID
++			t.Persist()
++		}
+ 	}
+-	t.GID = gid
+ 	var ok bool
+ outer:
+ 	for {
+@@ -152,7 +192,7 @@
+ 		t.callStatusRetried++
+ 		log.Errorf("failed to get status of %s, retried %d times", t.ID, t.callStatusRetried)
+ 		if t.callStatusRetried > 5 {
+-			return true, errors.Errorf("failed to get status of %s, retried %d times", t.ID, t.callStatusRetried)
++			return true, errors.Wrapf(err, "failed to get status of %s, retried %d times", t.ID, t.callStatusRetried)
+ 		}
+ 		return false, nil
+ 	}

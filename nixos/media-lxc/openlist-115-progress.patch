@@ -9,3 +9,12 @@
  	Size         int64  `json:"size"`           // 总大小（字节）
  	Name         string `json:"name"`           // 任务名
  	LastUpdate   int64  `json:"last_update"`    // 最后更新时间戳
+@@ -119,7 +119,7 @@
+ func (c *Client) OfflineTaskList(ctx context.Context, page int64) (*OfflineTaskListResp, error) {
+ 	var resp OfflineTaskListResp
+ 
+-	_, err := c.AuthRequest(ctx, ApiOfflineList, http.MethodGet, &resp, ReqWithForm(Form{
++	_, err := c.AuthRequest(ctx, ApiOfflineList, http.MethodGet, &resp, ReqWithQuery(Form{
+ 		"page": strconv.FormatInt(page, 10),
+ 	}))
+ 	return &resp, err
