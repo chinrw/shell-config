@@ -1211,11 +1211,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795362135,
-        "narHash": "sha256-Ldzfz93mKDRtyeFScE7vl3XYHun9zgX1TJ4N0Pq3BVQ=",
+        "lastModified": 1795485393,
+        "narHash": "sha256-kI5YZIc1yAae8HLFwJbvuW8sc4iPqFz6nSCsBaGAvGA=",
         "owner": "chinrw",
         "repo": "shuku",
-        "rev": "6f8b05bd52ddab057f9eea12144598994972fb88",
+        "rev": "00544bc11b6e23d52b0b8954f30a5c7aaf78af40",
         "type": "github"
       },
       "original": {
