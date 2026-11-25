@@ -4,7 +4,6 @@ Home Manager publishes the rules in this directory at `~/.agents/AGENTS.md`,
 together with local additions from `~/.agents/AGENTS.local.md`.
 Edit the Markdown sources here to change the rules shared by all configured coding agents:
 
-- `writing-style.md` defines how to write comments, documentation and tracker text.
 - `git-commits.md` defines commit messages and Git identity requirements.
 - `decision-making.md` defines implementation scope and when to ask the user.
 - `upstream-repos.md` defines authorization for issues, pull requests and pushes.

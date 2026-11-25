@@ -5,7 +5,6 @@
 { lib, pkgs }:
 let
   text = lib.concatMapStringsSep "\n" builtins.readFile [
-    ./writing-style.md
     ./git-commits.md
     ./decision-making.md
     ./upstream-repos.md
