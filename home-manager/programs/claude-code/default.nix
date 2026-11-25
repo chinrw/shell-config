@@ -154,6 +154,7 @@ let
 
   agentSkillSourceOverrides = {
     research = ../agent-skills/research;
+    agent-browser = ../agent-skills/agent-browser;
   };
 
   agentSkillSources =
@@ -767,6 +768,8 @@ in
   };
 
   home.file.".claude/skills/humanizer".source = inputs.humanizer;
+
+  home.file.".claude/skills/agent-browser".source = ../agent-skills/agent-browser;
 
   # mtg-agent-skill repo contains two sibling skills at its root.
   # Map each subfolder into its own ~/.claude/skills/<name> location so the
