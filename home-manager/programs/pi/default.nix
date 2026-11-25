@@ -143,6 +143,26 @@ in
     )
   );
 
+  # The extension resolves the last matching rule. Use raw JSON so Nix does
+  # not sort the patterns, and replace the managed policy without merging it.
+  home.activation.piPermissions = lib.hm.dag.entryAfter [ "piCodingAgentMutableSettings" ] (
+    lib.hm.generators.mkImpureConfigMerger {
+      inherit pkgs;
+      format = "json";
+      empty = "{}";
+      mode = "600";
+      path = "${config.programs.pi-coding-agent.configDir}/extensions/pi-permission-system/config.json";
+      staticSettings = ./pi-permission-system.json;
+      jqOperation = ''
+        $dynamic
+        | ."$schema" = $static."$schema"
+        | .yoloMode = $static.yoloMode
+        | .commandEffects.git = ((.commandEffects.git // {}) * $static.commandEffects.git)
+        | .permission = $static.permission
+      '';
+    }
+  );
+
   # Server catalog for @narumitw/pi-lsp. Replaces the built-in catalog
   home.file.".pi/agent/pi-lsp.json".source = ./pi-lsp.json;
 
