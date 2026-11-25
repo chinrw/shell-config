@@ -70,6 +70,7 @@ in
   ]
   ++ lib.optionals (hostname == "nixos-lxc") [
     ./programs/oracle.nix
+    ./services/git-signing-agent.nix
   ]
   ++ lib.optionals (hasFeature "restic") [
     ./programs/restic.nix
