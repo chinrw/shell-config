@@ -22,7 +22,6 @@
   "permission": {
     "*": "allow",
     "path": {
-      "*": "allow",
       "*.env": "deny",
       "*.env.*": "deny",
       "*.env.example": "allow",
@@ -78,7 +77,6 @@
       "~/Library/Keychains": "deny",
       "~/Library/Keychains/*": "deny"
     },
-    "external_directory_read": "allow",
     "external_directory_write": {
       "*": "ask",
       "/tmp/*": "allow",
