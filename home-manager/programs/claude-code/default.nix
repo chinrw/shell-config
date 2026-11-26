@@ -141,14 +141,16 @@ let
   # frontmatter (`disable-model-invocation`) plus agents/openai.yaml, so this
   # list is only for skills that do not belong here at all.
   #
-  # setup-matt-pocock-skills scaffolds per-repo configuration for the other
-  # engineering skills. It is run once per repository, so a permanent global
-  # link is noise.
+  # pr enforces a fixed Summary/Evidence/Merge-Danger template that conflicts
+  # with per-repository PR guidelines. setup-matt-pocock-skills scaffolds
+  # per-repo configuration once per repository, so a permanent global link is
+  # noise.
   #
   # Not excluded, but worth knowing about: grill-me and grill-with-docs are
   # narrower siblings of grilling, and aihot is also linked into
   # ~/.claude/skills below.
   agentSkillDenylist = [
+    "pr"
     "setup-matt-pocock-skills"
   ];
 
