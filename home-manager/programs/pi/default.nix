@@ -153,11 +153,15 @@ in
       mode = "600";
       path = "${config.programs.pi-coding-agent.configDir}/extensions/pi-permission-system/config.json";
       staticSettings = ./pi-permission-system.json;
+      # jaq does not auto-vivify missing parent objects on nested field assignment.
       jqOperation = ''
         $dynamic
         | ."$schema" = $static."$schema"
         | .yoloMode = $static.yoloMode
-        | .commandEffects.git = ((.commandEffects.git // {}) * $static.commandEffects.git)
+        | .commandEffects |= (
+            (if . == null then {} else . end)
+            | .git = ((.git // {}) * $static.commandEffects.git)
+          )
         | .permission = $static.permission
       '';
     }

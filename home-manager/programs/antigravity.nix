@@ -129,6 +129,7 @@ in
         export SHELL_CONFIG_AGY_RUNTIME_DENIES SHELL_CONFIG_AGY_PREVIOUS="$previous"
       fi
 
+      # jaq does not auto-vivify null on field assignment.
       ${mergeCliSettings settingsPath ''
         if ($dynamic | type) != "object" then error("expected a settings object") else $dynamic end
         | (${managedPermissions}) as $managed
@@ -137,7 +138,17 @@ in
             $managed[$kind] + ((.[$kind] // []) - ($previous[$kind] // []))
             | reduce .[] as $rule ([]; if index($rule) then . else . + [$rule] end);
         .allowNonWorkspaceAccess = $static.allowNonWorkspaceAccess
-        | .permissions |= (.allow = keep_local("allow") | .deny = keep_local("deny"))
+        | .permissions |= (
+            if . == null then
+              {}
+            elif type != "object" then
+              error("expected a permissions object")
+            else
+              .
+            end
+            | .allow = keep_local("allow")
+            | .deny = keep_local("deny")
+          )
       ''}
       ${mergeCliSettings manifestPath managedPermissions}
     )
