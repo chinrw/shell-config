@@ -438,11 +438,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793686154,
-        "narHash": "sha256-Zb/0L3soxrkfcrywpfp0J++0WFLB3tzh0Xtx9up+VNc=",
+        "lastModified": 1795608474,
+        "narHash": "sha256-CwC7f1DripMBQjB7BozobprSYiA8Cn9rz8vsBthWJwk=",
         "owner": "cachix",
         "repo": "git-hooks.nix",
-        "rev": "204b6977e00caac19e2313015a598543ca7be150",
+        "rev": "5c6bf7c418b4abf003e6d00d231e87f5e6ad5230",
         "type": "github"
       },
       "original": {
@@ -498,11 +498,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1795648614,
-        "narHash": "sha256-qjPIJTeNEH6tIrdcP7WhoekJWaZYqyijMttcZTwFpSo=",
+        "lastModified": 1795672685,
+        "narHash": "sha256-2RztQ2swP3kx5F7HWCB6Pw0lSuidmN9EnIdTNIcQfoA=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "6e447b2c2f01c12c4a6544e2e92c5de4944743f1",
+        "rev": "93dd2a4efb0709ceac09969b85d306e768b53815",
         "type": "github"
       },
       "original": {
@@ -665,11 +665,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795625767,
-        "narHash": "sha256-qpInNHbx5dSpIhKBqjixhHTINN5v328+HxrldHTturk=",
+        "lastModified": 1795657159,
+        "narHash": "sha256-aIGyR/TMXTbhYNf0kqum+cZ4/Jj7S3suQQ0u/98LQG8=",
         "owner": "chinrw",
         "repo": "neovim-nightly-overlay",
-        "rev": "60279655aefb0855a6df6bee063ade1460ea2ee7",
+        "rev": "4c428fd119607ed0fe5fb4a788f06c6dfb296805",
         "type": "github"
       },
       "original": {
@@ -681,11 +681,11 @@
     "neovim-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1795622888,
-        "narHash": "sha256-K7a4ndVGfSUWHv+MA5E5XXPv6JT/4ffigPuUbPpATgc=",
+        "lastModified": 1795641530,
+        "narHash": "sha256-UuDgoW8jlgqTH/zvu+MrlCojqQAybOVEIBTlUudGZ7U=",
         "owner": "neovim",
         "repo": "neovim",
-        "rev": "a8d90c09db34858d37b4d6a5bca3ce09554d0c49",
+        "rev": "ffbd283ed50a733f1180eafa249f66387f8ddab8",
         "type": "github"
       },
       "original": {
@@ -806,11 +806,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1795650119,
-        "narHash": "sha256-RvoRl9xUYbh0zITKpe4Qhb3qgzYiSoBqRFeppMRcPyI=",
+        "lastModified": 1795679211,
+        "narHash": "sha256-47EniiXMYYuDdSyvL/fQ1KfFSrZMUmWkt27irnoudlE=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "6ec9db9521f91751158f8c1620fde94cd0be7837",
+        "rev": "dc02017791744b2aad67e02d1c638b16545cae4e",
         "type": "github"
       },
       "original": {
@@ -962,11 +962,11 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1795637217,
-        "narHash": "sha256-Jh8gqWCVZMXAD9PKcjOBMZODhHNyfn9uSpcR5yW0Zcw=",
+        "lastModified": 1795656725,
+        "narHash": "sha256-237CcvWkwTUiUsVPR5JUa9NX+Ts0urM4h7bLQIbNWAw=",
         "owner": "pwndbg",
         "repo": "pwndbg",
-        "rev": "60c68bb35f4c660b88c46e1c13711f3319325b40",
+        "rev": "ee28120f6b02d73d0eed701ca224ed6e7aa02a26",
         "type": "github"
       },
       "original": {
@@ -1191,11 +1191,11 @@
         "rustowl": "rustowl"
       },
       "locked": {
-        "lastModified": 1795589218,
-        "narHash": "sha256-pOhCDDjb69Z95buDi3w472pRiGFq+U/t5fjilpq8qbY=",
+        "lastModified": 1795674790,
+        "narHash": "sha256-i9umcEftOvJe0sNhIYCEHKHkUB4IGsdmrHMrVrKYV04=",
         "owner": "nix-community",
         "repo": "rustowl-flake",
-        "rev": "75f592e68be1cd63aad2123bcbdaad92f59fd8cb",
+        "rev": "4dd7c6de561757f8c75fc3afe971afd7e6d547c3",
         "type": "github"
       },
       "original": {
@@ -1247,11 +1247,11 @@
     "stop-that-shit": {
       "flake": false,
       "locked": {
-        "lastModified": 1795324951,
-        "narHash": "sha256-0zoKM4zH7rNdW+i17uwLvbPUltHJV7LE4xJ1wSSVtAY=",
+        "lastModified": 1795656681,
+        "narHash": "sha256-iKGlyj8AmIMvQ9SW0vVI2J+jlMylOoK1EyeIQXc9P28=",
         "owner": "lennney",
         "repo": "stop-that-shit",
-        "rev": "7fd4056030cb6c573e2fd3f37f58819c3269c922",
+        "rev": "5599eab3789d68da012f922e04b47ef7354e83bb",
         "type": "github"
       },
       "original": {
