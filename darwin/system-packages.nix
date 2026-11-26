@@ -10,7 +10,6 @@ in
   environment.systemPackages = with pkgs; [
     # Shells
     bashInteractive
-    zsh
 
     # Build / toolchain
     cmake
@@ -90,4 +89,10 @@ in
     rename
     rnr
   ];
+
+  # nix-darwin adds zsh to the system profile. Omit its link so Antigravity
+  # finds /bin/zsh, which its sandbox can start.
+  environment.extraSetup = ''
+    rm -f "$out/bin/zsh"
+  '';
 }

@@ -7,10 +7,14 @@
   config,
   ...
 }:
+let
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
+in
 {
-
   programs.zsh = {
     enable = true;
+    # Let macOS supply zsh while Home Manager configures it.
+    package = lib.mkIf isDarwin null;
     dotDir = "${config.xdg.configHome}/zsh";
 
     localVariables = {
@@ -100,7 +104,7 @@ hermes() {
 }
 
 "
-        + lib.optionalString pkgs.stdenv.hostPlatform.isDarwin "
+        + lib.optionalString isDarwin "
 # Fix Time Machine 'backup failed' on the NAS SMB destination. backupd
 # can only enable TM network volume options on an SMB mount it creates
 # itself; a lingering mount (eject blocked after a successful backup,
@@ -169,34 +173,37 @@ fi
       fi
     '';
 
-    profileExtra = ''
-      # Source Nix profile for single user mode
-      if [ -e /home/chin39/.nix-profile/etc/profile.d/nix.sh ]; then
-        . /home/chin39/.nix-profile/etc/profile.d/nix.sh
-      fi
-      # Re-exec into Nix's zsh to avoid glibc mismatch with Nix-built modules.
-      # The exported sentinel caps this at one exec per session lineage: the
-      # /proc-based check alone can stay true forever when /proc is absent
-      # (Darwin) or $$/exe resolves through a wrapper, which would exec-loop.
-      if [[ -z "$_NIX_ZSH_REEXECED" && ! "$(readlink /proc/$$/exe 2>/dev/null)" == /nix/store/* ]]; then
-        _nix_zsh="$(command -v zsh 2>/dev/null)"
-        if [[ "$_nix_zsh" == /nix/store/* ]]; then
-          export _NIX_ZSH_REEXECED=1
-          exec "$_nix_zsh" -l
-        fi
-        unset _nix_zsh
-      fi
-    ''
-    + lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
-      # Homebrew shellenv on macOS — nix-darwin manages the brew manifest
-      # but does not put /opt/homebrew/bin (Apple Silicon) or
-      # /usr/local/bin (Intel) on PATH for us.
-      if [[ -x /opt/homebrew/bin/brew ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-      elif [[ -x /usr/local/bin/brew ]]; then
-        eval "$(/usr/local/bin/brew shellenv)"
-      fi
-    '';
+    profileExtra =
+      if isDarwin then
+        ''
+          # Homebrew shellenv on macOS — nix-darwin manages the brew manifest
+          # but does not put /opt/homebrew/bin (Apple Silicon) or
+          # /usr/local/bin (Intel) on PATH for us.
+          if [[ -x /opt/homebrew/bin/brew ]]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+          elif [[ -x /usr/local/bin/brew ]]; then
+            eval "$(/usr/local/bin/brew shellenv)"
+          fi
+        ''
+      else
+        ''
+          # Source Nix profile for single user mode
+          if [ -e /home/chin39/.nix-profile/etc/profile.d/nix.sh ]; then
+            . /home/chin39/.nix-profile/etc/profile.d/nix.sh
+          fi
+          # Re-exec into Nix's zsh to avoid glibc mismatch with Nix-built modules.
+          # The exported sentinel caps this at one exec per session lineage: the
+          # /proc-based check alone can stay true forever when /proc is absent
+          # or $$/exe resolves through a wrapper, which would exec-loop.
+          if [[ -z "$_NIX_ZSH_REEXECED" && ! "$(readlink /proc/$$/exe 2>/dev/null)" == /nix/store/* ]]; then
+            _nix_zsh="$(command -v zsh 2>/dev/null)"
+            if [[ "$_nix_zsh" == /nix/store/* ]]; then
+              export _NIX_ZSH_REEXECED=1
+              exec "$_nix_zsh" -l
+            fi
+            unset _nix_zsh
+          fi
+        '';
 
     enableCompletion = true;
     autosuggestion.enable = true;
