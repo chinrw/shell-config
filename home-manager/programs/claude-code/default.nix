@@ -167,6 +167,10 @@ let
           source = inputs.humanizer;
         }
         {
+          name = "stop-that-shit";
+          source = "${inputs.stop-that-shit}/skills/stop-that-shit";
+        }
+        {
           name = "aihot";
           source = "${inputs.khazix-skills}/aihot";
         }
@@ -770,6 +774,8 @@ in
   };
 
   home.file.".claude/skills/humanizer".source = inputs.humanizer;
+
+  home.file.".claude/skills/stop-that-shit".source = "${inputs.stop-that-shit}/skills/stop-that-shit";
 
   home.file.".claude/skills/agent-browser".source = ../agent-skills/agent-browser;
 
