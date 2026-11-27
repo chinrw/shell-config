@@ -4,7 +4,11 @@
   Skip unrelated edits, speculative abstractions, and code or prose written
   only to preempt criticism.
 - Validate at the contract boundary for concrete, reachable failure modes.
-  Inside it, trust type and caller invariants without "just in case" checks.
+  Let wrapped commands and callees validate arguments they already check before
+  side effects, adding wrapper checks only when bad input would silently write
+  to the wrong place or cause destructive state changes first. Inside the
+  boundary, trust type, caller, and normal path invariants without "just in
+  case" checks.
 - Preserve error semantics. Return errors through the established path, and
   add retries or fallbacks only when the task or contract defines them.
 - Fix invalid state at its source, keeping valid tests and required safety,
