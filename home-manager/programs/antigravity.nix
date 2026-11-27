@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   hostname,
@@ -82,6 +83,10 @@ let
   '';
 in
 {
+  home.packages = [
+    inputs.agy-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
+  ];
+
   # Point Antigravity CLI's global skill manifest at the shared ~/.agents/skills
   # directory so it discovers the same skills without duplicating symlinks.
   home.file.".gemini/config/skills.json".text = builtins.toJSON {
@@ -153,6 +158,26 @@ in
       ${mergeCliSettings manifestPath managedPermissions}
     )
   '';
+
+  # The Hub sandbox needs the loader at the path nix-ld opens during startup.
+  home.activation.antigravityHubSettings = lib.mkIf (hostname == "nixos-lxc") (
+    lib.hm.dag.entryAfter [ "linkGeneration" ] (
+      lib.hm.generators.mkImpureConfigMerger {
+        inherit pkgs;
+        format = "json";
+        empty = "{}";
+        mode = "600";
+        path = "${home}/.gemini/config/config.json";
+        staticSettings = pkgs.writeText "antigravity-hub-loader-grant.json" (
+          builtins.toJSON [ "read_file(/run/current-system/sw/share/nix-ld/lib/ld.so)" ]
+        );
+        jqOperation = ''
+          ($dynamic.userSettings.globalPermissionGrants.allow // []) as $allow
+          | $dynamic * {userSettings: {globalPermissionGrants: {allow: ($allow + ($static - $allow))}}}
+        '';
+      }
+    )
+  );
 
   home.activation.antigravityAgentsMd = sharedAgentInstructions.mkActivation {
     inherit hostname;

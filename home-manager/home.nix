@@ -25,13 +25,6 @@ let
   isDesktop = hostname == "desktop";
   hasFeature = f: builtins.elem f features;
 
-  codexPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  codexZshCompletion = pkgs.runCommand "codex-zsh-completion" { } ''
-    export HOME="$TMPDIR"
-    mkdir -p "$HOME/.local/bin" "$out/share/zsh/site-functions"
-    ${codexPackage}/bin/codex completion zsh > "$out/share/zsh/site-functions/_codex"
-  '';
-
   proxyUrl =
     if proxy ? secret then
       config.sops.secrets.${proxy.secret}.path
@@ -80,32 +73,7 @@ in
     ./programs/chatgpt-linker.nix
   ]
   ++ lib.optionals (!smallNode) [
-    ./programs/agent-skills.nix
-    ./programs/agent-instructions/module.nix
-    ./programs/antigravity.nix
-    ./programs/pi
-    ./programs/dsh.nix
-    (import ./programs/codex {
-      inherit
-        codexPackage
-        lib
-        pkgs
-        config
-        hostname
-        ;
-    })
-    (import ./programs/claude-code {
-      inherit
-        lib
-        pkgs
-        config
-        hostname
-        inputs
-        ;
-      source = inputs.everything-claude-code;
-      # Per-host CLAUDE.md additions; default empty. Override per host as needed.
-      extraInstructions = "";
-    })
+    ./programs/agents.nix
   ]
   # `imports` cannot read pkgs (that recurses), so test the platform string.
   ++ lib.optionals (lib.hasSuffix "-darwin" platform) [
@@ -299,10 +267,6 @@ in
         restic # Fast, secure, efficient backup program
         unar
         rustowl
-        inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
-        inputs.agy-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
-        codexZshCompletion
-        abtop # Monitor local AI coding agent sessions
         rustscan # modern scanner
         markdown-oxide
         nixd

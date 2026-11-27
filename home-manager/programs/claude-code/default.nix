@@ -1,13 +1,16 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   hostname,
-  source,
-  inputs,
-  mcpServers ? { },
-  extraHooks ? { },
-  extraInstructions ? "",
+  ...
+}:
+let
+  source = inputs.everything-claude-code;
+  mcpServers = { };
+  extraHooks = { };
+  extraInstructions = "";
   # Skill allowlist: names linked into ~/.claude/skills/.
   # null = link every skill from the source flake (legacy behavior).
   # Every entry here stays LINKED and therefore explicitly invocable. Whether
@@ -18,7 +21,7 @@
   # Plugin and built-in skills are unaffected; see commandDenylist below.
   # Skills from other flake inputs (khazix-skills, mtg-agent-skill) are
   # installed by a different mechanism and are NOT filtered by this list.
-  skillAllowlist ? [
+  skillAllowlist = [
     "agent-sort"
     "agentic-engineering"
     "api-connector-builder"
@@ -68,18 +71,18 @@
     "terminal-ops"
     "verification-loop"
     "workspace-surface-audit"
-  ],
+  ];
   # Command denylist: basenames under $REPO/commands/ NOT linked into
   # ~/.claude/commands/. Commands are otherwise linked wholesale (no
   # allowlist). Use this to drop commands that duplicate Claude Code
   # built-ins. Empty list = link every command.
-  commandDenylist ? [
+  commandDenylist = [
     "aside.md"
     "checkpoint.md"
     "code-review.md"
     "plan.md"
     "review-pr.md"
-  ],
+  ];
   # Rule denylist: subdirectory names (or filenames) under $REPO/rules/
   # NOT linked into ~/.claude/rules/. Rules are otherwise linked wholesale
   # (no allowlist). Use this to drop unscoped rule packs (those without
@@ -87,7 +90,7 @@
   # project regardless of stack. Language-specific dirs declare `paths:`
   # and self-gate, so they don't need to be listed here. Empty list =
   # link every entry under $REPO/rules/.
-  ruleDenylist ? [
+  ruleDenylist = [
     "zh"
     # Install documentation for the rule bundle itself (directory tree,
     # install.sh usage, "Adding a New Language"). No behavioural guidance, but
@@ -99,10 +102,7 @@
     # as always-on memory, so Claude would get two opposing commit rules —
     # and only Claude, since the ECC bundle never reaches the other agents.
     "common/git-workflow.md"
-  ],
-  ...
-}:
-let
+  ];
   claudeCodePackage = inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   skillAllowlistShell =
@@ -111,97 +111,6 @@ let
   commandDenylistShell = lib.concatStringsSep " " commandDenylist;
 
   ruleDenylistShell = lib.concatStringsSep " " ruleDenylist;
-
-  mattSkillSources =
-    let
-      skillsIn =
-        category:
-        let
-          root = "${inputs.mattpocock-skills}/skills/${category}";
-          entries = builtins.readDir root;
-        in
-        map
-          (name: {
-            inherit name;
-            source = "${root}/${name}";
-          })
-          (
-            lib.filter (
-              name: builtins.getAttr name entries == "directory" && builtins.pathExists "${root}/${name}/SKILL.md"
-            ) (builtins.attrNames entries)
-          );
-    in
-    skillsIn "engineering" ++ skillsIn "productivity";
-
-  # ~/.agents/skills is the Agent-Skills convention shared across harnesses
-  # (upstream's own scripts/link-skills.sh links the same two promoted
-  # buckets there). Unlike ~/.claude/skills it has no allowlist, so this is the
-  # one place to drop a skill that should not be resident in every harness.
-  # Whether a skill is model- or user-invocable is settled by its own
-  # frontmatter (`disable-model-invocation`) plus agents/openai.yaml, so this
-  # list is only for skills that do not belong here at all.
-  #
-  # pr enforces a fixed Summary/Evidence/Merge-Danger template that conflicts
-  # with per-repository PR guidelines. setup-matt-pocock-skills scaffolds
-  # per-repo configuration once per repository, so a permanent global link is
-  # noise.
-  #
-  # Not excluded, but worth knowing about: grill-me and grill-with-docs are
-  # narrower siblings of grilling, and aihot is also linked into
-  # ~/.claude/skills below.
-  agentSkillDenylist = [
-    "pr"
-    "setup-matt-pocock-skills"
-  ];
-
-  agentSkillSourceOverrides = {
-    research = ../agent-skills/research;
-    agent-browser = ../agent-skills/agent-browser;
-  };
-
-  agentSkillSources =
-    let
-      upstreamSources = [
-        {
-          name = "humanizer";
-          source = inputs.humanizer;
-        }
-        {
-          name = "stop-that-shit";
-          source = "${inputs.stop-that-shit}/skills/stop-that-shit";
-        }
-        {
-          name = "aihot";
-          source = "${inputs.khazix-skills}/aihot";
-        }
-        {
-          name = "neat-freak";
-          source = "${inputs.khazix-skills}/neat-freak";
-        }
-      ]
-      ++ mattSkillSources;
-      upstreamNames = map (skill: skill.name) upstreamSources;
-      sources =
-        builtins.listToAttrs (
-          map (skill: {
-            inherit (skill) name;
-            value = skill.source;
-          }) upstreamSources
-        )
-        // agentSkillSourceOverrides;
-      # Preserve registration order so source overrides do not reorder activation output.
-      names =
-        upstreamNames ++ lib.subtractLists upstreamNames (builtins.attrNames agentSkillSourceOverrides);
-    in
-    assert lib.length upstreamNames == lib.length (lib.unique upstreamNames);
-    map (name: {
-      inherit name;
-      source = sources.${name};
-    }) (lib.filter (name: !(lib.elem name agentSkillDenylist)) names);
-
-  agentSkillLinkCommands = lib.concatMapStrings (skill: ''
-    register_agent_skill ${lib.escapeShellArg skill.name} ${lib.escapeShellArg skill.source}
-  '') agentSkillSources;
 
   sharedAgentInstructions = import ../agent-instructions { inherit lib pkgs; };
   # The activation below rewrites CLAUDE.md on every switch. Say so in the file
@@ -444,7 +353,7 @@ let
     skillOverrides = {
       "hermes-imports" = "name-only";
 
-      # khazix-skills. Installed via home.file (below), NOT via skillAllowlist,
+      # khazix-skills. Installed via home.file, NOT via skillAllowlist,
       # so these keys are deliberately absent from that list. Their descriptions
       # are natural-language trigger text, so hiding them from the model also
       # stops the Chinese-phrase auto-triggering they were written for --
@@ -659,112 +568,14 @@ let
   + ''
     )
   '';
-
-  agentSkillsActivation = ''
-    AGENTS="${config.home.homeDirectory}/.agents"
-    AGENTS_SKILLS="$AGENTS/skills"
-    AGENTS_MANIFEST="$AGENTS/.shell-config-managed-skills"
-
-    run ${pkgs.coreutils}/bin/mkdir -p "$AGENTS_SKILLS"
-
-    declare -A agent_skill_sources=()
-    declare -A managed_agent_skills=()
-    register_agent_skill() {
-      local name="$1"
-      local src="$2"
-      if [ -n "''${agent_skill_sources[$name]+set}" ]; then
-        echo "claude-code activation: duplicate agent skill basename: $name" >&2
-        exit 1
-      fi
-      agent_skill_sources["$name"]="$src"
-    }
-
-    ${agentSkillLinkCommands}
-
-    # The manifest identifies links made by this activation. It lets us prune
-    # stale links after a source revision changes without touching unrelated
-    # symlinks or manually managed non-symlink paths.
-    if [ -f "$AGENTS_MANIFEST" ]; then
-      while IFS="$(printf '\t')" read -r old_name old_src; do
-        [ -n "$old_name" ] || continue
-        if [ -z "$old_src" ]; then
-          echo "claude-code activation: malformed agent skill manifest entry: $old_name" >&2
-          exit 1
-        fi
-        old_target="$AGENTS_SKILLS/$old_name"
-        if [ -L "$old_target" ]; then
-          current_src="$(${pkgs.coreutils}/bin/readlink "$old_target")"
-          if [ -n "''${agent_skill_sources[$old_name]+set}" ]; then
-            expected_src="''${agent_skill_sources[$old_name]}"
-            if [ "$current_src" != "$old_src" ] && [ "$current_src" != "$expected_src" ]; then
-              echo "claude-code activation: managed agent skill target $old_target points elsewhere" >&2
-              exit 1
-            fi
-            if [ "$current_src" = "$old_src" ] && [ "$current_src" != "$expected_src" ]; then
-              run ${pkgs.coreutils}/bin/rm "$old_target"
-            fi
-          elif [ "$current_src" != "$old_src" ]; then
-            echo "claude-code activation: managed agent skill target $old_target points elsewhere" >&2
-            exit 1
-          else
-            run ${pkgs.coreutils}/bin/rm "$old_target"
-          fi
-        fi
-      done < "$AGENTS_MANIFEST"
-    fi
-
-    link_agent_skill() {
-      local name="$1"
-      local src="$2"
-      local target="$AGENTS_SKILLS/$name"
-      [ -d "$src" ] || {
-        echo "claude-code activation: agent skill source is not a directory: $src" >&2
-        exit 1
-      }
-      [ -f "$src/SKILL.md" ] || {
-        echo "claude-code activation: agent skill source has no SKILL.md: $src" >&2
-        exit 1
-      }
-      if [ -L "$target" ]; then
-        current_src="$(${pkgs.coreutils}/bin/readlink "$target")"
-        if [ "$current_src" != "$src" ]; then
-          echo "claude-code activation: agent skill target $target points elsewhere" >&2
-          exit 1
-        fi
-      elif [ -e "$target" ]; then
-        # Preserve manually managed files and directories.
-        return 0
-      else
-        run ${pkgs.coreutils}/bin/ln -s "$src" "$target"
-      fi
-      managed_agent_skills["$name"]="$src"
-    }
-
-    for name in "''${!agent_skill_sources[@]}"; do
-      link_agent_skill "$name" "''${agent_skill_sources[$name]}"
-    done
-
-    # Guard the whole rewrite on a live run rather than wrapping each step in
-    # `run`: mktemp and the redirect below touch the filesystem directly, so
-    # under --dry-run they would leave a stray temp file that the no-op `mv`
-    # never collects -- and would fail outright on a host where ~/.agents does
-    # not exist yet, because the mkdir above is itself a `run`.
-    if [[ -v DRY_RUN ]]; then
-      echo "would write $AGENTS_MANIFEST (''${#managed_agent_skills[@]} entries)"
-    else
-      AGENTS_MANIFEST_TMP="$(${pkgs.coreutils}/bin/mktemp "$AGENTS/.shell-config-managed-skills.XXXXXX")"
-      {
-        for name in "''${!managed_agent_skills[@]}"; do
-          printf '%s\t%s\n' "$name" "''${managed_agent_skills[$name]}"
-        done
-      } | ${pkgs.coreutils}/bin/sort > "$AGENTS_MANIFEST_TMP"
-      ${pkgs.coreutils}/bin/mv "$AGENTS_MANIFEST_TMP" "$AGENTS_MANIFEST"
-    fi
-  '';
 in
 {
   # Claude Code saves runtime preferences in settings.json, so activation keeps
   # it writable.
+
+  home.packages = [
+    claudeCodePackage
+  ];
 
   # claude-hud reads this file at runtime to toggle optional HUD features.
   # The plugin's own state lives in sibling ~/.claude/plugins/claude-hud/config-cache/.
@@ -772,12 +583,6 @@ in
     source = pkgs.writeText "claude-hud-config.json" (builtins.toJSON claudeHudConfig);
     force = true;
   };
-
-  home.file.".claude/skills/humanizer".source = inputs.humanizer;
-
-  home.file.".claude/skills/stop-that-shit".source = "${inputs.stop-that-shit}/skills/stop-that-shit";
-
-  home.file.".claude/skills/agent-browser".source = ../agent-skills/agent-browser;
 
   # mtg-agent-skill repo contains two sibling skills at its root.
   # Map each subfolder into its own ~/.claude/skills/<name> location so the
@@ -792,16 +597,9 @@ in
     recursive = true;
   };
 
-  # khazix-skills repo hosts five sibling skills at its root. Each subfolder
-  # name already matches the `name:` field in its SKILL.md frontmatter, so map
-  # each into its own ~/.claude/skills/<name> location (same pattern as the mtg
-  # skills above). link_children only sweeps symlinks into $REPO (the ECC
-  # source), so these Nix-managed dirs coexist with the allowlisted ECC skills.
-  home.file.".claude/skills/aihot" = {
-    source = "${inputs.khazix-skills}/aihot";
-    recursive = true;
-  };
-
+  # Claude-only khazix-skills subfolders (aihot and neat-freak are shared via
+  # agent-skills.nix). Map each subfolder into ~/.claude/skills/<name> so the
+  # folder name matches the `name:` field in each SKILL.md frontmatter.
   home.file.".claude/skills/hv-analysis" = {
     source = "${inputs.khazix-skills}/hv-analysis";
     recursive = true;
@@ -809,11 +607,6 @@ in
 
   home.file.".claude/skills/khazix-writer" = {
     source = "${inputs.khazix-skills}/khazix-writer";
-    recursive = true;
-  };
-
-  home.file.".claude/skills/neat-freak" = {
-    source = "${inputs.khazix-skills}/neat-freak";
     recursive = true;
   };
 
@@ -949,6 +742,5 @@ in
     # `marketplace add` rewrites its extraKnownMarketplaces entry without
     # autoUpdate, so merge the enforced settings again after the bootstrap.
     + settingsActivation
-    + agentSkillsActivation
   );
 }

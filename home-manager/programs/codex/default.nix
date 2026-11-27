@@ -10,12 +10,19 @@
 # into a writable file rather than linked from the Nix store.
 {
   config,
+  inputs,
   lib,
   pkgs,
   hostname,
-  codexPackage,
+  ...
 }:
 let
+  codexPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  codexZshCompletion = pkgs.runCommand "codex-zsh-completion" { } ''
+    export HOME="$TMPDIR"
+    mkdir -p "$HOME/.local/bin" "$out/share/zsh/site-functions"
+    ${codexPackage}/bin/codex completion zsh > "$out/share/zsh/site-functions/_codex"
+  '';
   sharedAgentInstructions = import ../agent-instructions { inherit lib pkgs; };
   renameHook = pkgs.writeShellApplication {
     name = "codex-rename-first-turn";
@@ -39,6 +46,10 @@ let
   };
 in
 {
+  home.packages = [
+    codexZshCompletion
+  ];
+
   programs.codex = {
     enable = true;
     package = codexPackage;
