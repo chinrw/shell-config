@@ -8,11 +8,7 @@
 }:
 let
   source = inputs.everything-claude-code;
-  mcpServers = { };
-  extraHooks = { };
-  extraInstructions = "";
   # Skill allowlist: names linked into ~/.claude/skills/.
-  # null = link every skill from the source flake (legacy behavior).
   # Every entry here stays LINKED and therefore explicitly invocable. Whether
   # its description also reaches the system prompt is decided separately by
   # skillOverrides below -- a skill must be linked before an override can
@@ -105,8 +101,7 @@ let
   ];
   claudeCodePackage = inputs.claude-code-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
-  skillAllowlistShell =
-    if skillAllowlist == null then "" else lib.concatStringsSep " " skillAllowlist;
+  skillAllowlistShell = lib.concatStringsSep " " skillAllowlist;
 
   commandDenylistShell = lib.concatStringsSep " " commandDenylist;
 
@@ -124,53 +119,11 @@ let
     filename = "CLAUDE.md";
     localFilename = "CLAUDE.local.md";
     source = "shell-config/home-manager/programs/claude-code/";
-    extraText = lib.optionalString (extraInstructions != "") (
-      "\n\n## Host-specific (${hostname})\n\n" + extraInstructions
-    );
   };
   claudeAssetsDependencies = [
     "linkGeneration"
     "sharedAgentInstructions"
   ];
-
-  mcpServersFile =
-    if mcpServers == { } then
-      null
-    else
-      pkgs.writeText "claude-mcp-servers.json" (builtins.toJSON mcpServers);
-
-  mcpActivation = lib.optionalString (mcpServers != { }) ''
-    CLAUDE_JSON="$HOME/.claude.json"
-    TMP="$(${pkgs.coreutils}/bin/mktemp -p "$(${pkgs.coreutils}/bin/dirname "$CLAUDE_JSON")")"
-    if [ -f "$CLAUDE_JSON" ]; then
-      if ! ${pkgs.jq}/bin/jq --slurpfile m ${mcpServersFile} \
-        '.mcpServers = $m[0]' "$CLAUDE_JSON" > "$TMP"; then
-        ${pkgs.coreutils}/bin/rm -f "$TMP"
-        echo "claude-code activation: jq merge into ~/.claude.json failed; original file left unchanged" >&2
-        exit 1
-      fi
-    else
-      if ! ${pkgs.jq}/bin/jq -n --slurpfile m ${mcpServersFile} \
-        '{ mcpServers: $m[0] }' > "$TMP"; then
-        ${pkgs.coreutils}/bin/rm -f "$TMP"
-        echo "claude-code activation: jq creation of ~/.claude.json failed" >&2
-        exit 1
-      fi
-    fi
-    run ${pkgs.coreutils}/bin/mv "$TMP" "$CLAUDE_JSON"
-  '';
-
-  # No bundled default hooks. The former PreToolUse "block-destructive.sh"
-  # guard was dropped in favour of native protection: secret-file access is
-  # denied through settings.permissions.deny (below) — which, unlike the old
-  # Bash-matcher hook, actually covers the Read/Edit tools and Claude's Bash
-  # file commands — and destructive shell commands fall through to the normal
-  # permission prompt. Per-host hooks still merge in via the extraHooks arg.
-  defaultHooks = { };
-
-  mergedHooks =
-    (lib.mapAttrs (event: defaults: defaults ++ (extraHooks.${event} or [ ])) defaultHooks)
-    // (lib.removeAttrs extraHooks (lib.attrNames defaultHooks));
 
   # statusLine wrapper for the claude-hud plugin. The plugin is installed by
   # Claude Code itself into ~/.claude/plugins/cache/<marketplace>/claude-hud/<version>/,
@@ -273,7 +226,9 @@ let
   # like effortLevel / model / editorMode are intentionally NOT here — they live
   # in seedSettings and are preserved across switches.
   enforcedSettings = {
-    hooks = mergedHooks;
+    # Enforce empty hooks so removed guards do not linger in ~/.claude/settings.json;
+    # secret-file access is denied natively through permissions.deny below.
+    hooks = { };
     statusLine = {
       type = "command";
       command = "${claudeHudStatusline}";
@@ -597,9 +552,8 @@ in
     recursive = true;
   };
 
-  # Claude-only khazix-skills subfolders (aihot and neat-freak are shared via
-  # agent-skills.nix). Map each subfolder into ~/.claude/skills/<name> so the
-  # folder name matches the `name:` field in each SKILL.md frontmatter.
+  # Map each subfolder into ~/.claude/skills/<name> so the folder name matches
+  # the `name:` field in its SKILL.md frontmatter.
   home.file.".claude/skills/hv-analysis" = {
     source = "${inputs.khazix-skills}/hv-analysis";
     recursive = true;
@@ -736,7 +690,6 @@ in
 
       ${claudeInstructionsActivation}
     ''
-    + mcpActivation
     + settingsActivation
     + pluginBootstrapActivation
     # `marketplace add` rewrites its extraKnownMarketplaces entry without
